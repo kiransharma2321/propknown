@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Property {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  location      String
+  city          String
+  state         String
+  country       String   @default("India")
+  price         Float
+  currency      String   @default("INR")
+  beds          Int?
+  baths         Int?
+  sqft          Float?
+  propertyType  String
+  listingType   String
+  reraNumber    String?
+  aiScore       Float?
+  images        String[]
+  amenities     String[]
+  documents     Json     @default("[]")
+  status        String   @default("pending")
+  featured      Boolean  @default(false)
+  verified      Boolean  @default(false)
+  reraVerified  Boolean  @default(false)
+  realPhotos    Boolean  @default(false)
+  accuratePrice Boolean  @default(false)
+  ownerConsent  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  leads         Lead[]
+}
+
+model Lead {
+  id         String    @id @default(cuid())
+  name       String
+  email      String?
+  phone      String
+  message    String?
+  source     String
+  status     String    @default("new")
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+  notes      String?
+  assignedTo String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
