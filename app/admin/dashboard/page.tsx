@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText } from "lucide-react";
+import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 
@@ -385,6 +385,407 @@ function QuickAddTab() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────
+// SUBMISSIONS TAB
+// ─────────────────────────────────────────────────────────────────
+
+interface SubListItem {
+  id: string; title: string; propType: string; bhk?: string;
+  priceDisplay: string; city: string; area: string;
+  ownerName: string; ownerPhone: string; ownerEmail: string;
+  reraNumber?: string; status: string; rejectReason?: string;
+  createdAt: string; photoCount: number; videoCount: number; docCount: number;
+}
+
+interface SubDetail extends SubListItem {
+  description: string; features?: string; size?: string; sizeUnit?: string;
+  adminNotes?: string; videoUrls: string[];
+  photoFiles: { id: string; name: string; mimeType: string; data: string }[];
+  videoFiles: { id: string; name: string; mimeType: string; data: string }[];
+  docFiles:   { id: string; name: string; mimeType: string; docType?: string; data: string }[];
+}
+
+function SubmissionsTab() {
+  const [statusFilter, setStatusFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [list,        setList]         = useState<SubListItem[]>([]);
+  const [loadingList, setLoadingList]  = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const [reviewing,  setReviewing]  = useState<SubDetail | null>(null);
+  const [loadDetail, setLoadDetail] = useState(false);
+  const [rejectMsg,  setRejectMsg]  = useState("");
+  const [acting,     setActing]     = useState(false);
+  const [activePhoto, setActivePhoto] = useState(0);
+
+  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
+
+  const fetchList = async (st = statusFilter) => {
+    setLoadingList(true);
+    try {
+      const [listRes, pendRes] = await Promise.all([
+        fetch(`/api/admin/submissions?status=${st}`).then(r => r.json()),
+        fetch("/api/admin/submissions?status=pending").then(r => r.json()),
+      ]);
+      setList(Array.isArray(listRes) ? listRes : []);
+      setPendingCount(Array.isArray(pendRes) ? pendRes.length : 0);
+    } catch { setList([]); }
+    finally { setLoadingList(false); }
+  };
+
+  useEffect(() => { fetchList(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const changeFilter = (f: "pending" | "approved" | "rejected" | "all") => {
+    setStatusFilter(f);
+    fetchList(f);
+  };
+
+  const openDetail = async (id: string) => {
+    setLoadDetail(true); setReviewing(null); setActivePhoto(0); setRejectMsg("");
+    try {
+      const d = await fetch(`/api/admin/submissions/${id}`).then(r => r.json());
+      setReviewing(d);
+    } catch { alert("Failed to load submission."); }
+    finally { setLoadDetail(false); }
+  };
+
+  const doAction = async (action: "approve" | "reject") => {
+    if (!reviewing) return;
+    if (action === "reject" && !rejectMsg.trim()) { alert("Please enter a rejection reason."); return; }
+    setActing(true);
+    await fetch(`/api/admin/submissions/${reviewing.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, reason: rejectMsg.trim() || undefined }),
+    });
+    setActing(false);
+    setReviewing(null);
+    fetchList();
+  };
+
+  const doDelete = async (id: string) => {
+    if (!confirm("Permanently delete this submission?")) return;
+    await fetch(`/api/admin/submissions/${id}`, { method: "DELETE" });
+    if (reviewing?.id === id) setReviewing(null);
+    fetchList();
+  };
+
+  const isYoutube = (url: string) => url.includes("youtube.com") || url.includes("youtu.be");
+  const ytEmbed   = (url: string) => {
+    const m = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+    return m ? `https://www.youtube.com/embed/${m[1]}` : url;
+  };
+
+  const STATUS_TABS = [
+    { key: "pending",  label: "Pending" },
+    { key: "approved", label: "Approved" },
+    { key: "rejected", label: "Rejected" },
+    { key: "all",      label: "All" },
+  ] as const;
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-white">Property Submissions</h1>
+          {pendingCount > 0 && (
+            <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>
+          )}
+        </div>
+        <button onClick={() => fetchList()} className="text-zinc-400 hover:text-white text-sm border border-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+          Refresh
+        </button>
+      </div>
+
+      {/* Status filter tabs */}
+      <div className="flex gap-2 mb-5">
+        {STATUS_TABS.map(t => (
+          <button key={t.key} onClick={() => changeFilter(t.key)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-black" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
+            style={statusFilter === t.key ? { background: "#C9A24B" } : {}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-800/50 border-b border-zinc-800">
+              <tr>
+                {["Property", "Location", "Price", "Contact", "Files", "Status", "Date", ""].map(h => (
+                  <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800">
+              {loadingList ? (
+                <tr><td colSpan={8} className="text-center py-10"><Loader2 size={20} className="mx-auto animate-spin text-zinc-500" /></td></tr>
+              ) : list.length === 0 ? (
+                <tr><td colSpan={8} className="text-center py-10 text-zinc-500">No {statusFilter} submissions.</td></tr>
+              ) : list.map(s => (
+                <tr key={s.id} className="hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="text-white font-medium line-clamp-1">{s.title}</p>
+                    <p className="text-zinc-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-300 text-xs">{s.area}, {s.city}</td>
+                  <td className="px-4 py-3 font-semibold text-sm" style={{ color: "#C9A24B" }}>{s.priceDisplay}</td>
+                  <td className="px-4 py-3">
+                    <p className="text-zinc-200 text-xs">{s.ownerName}</p>
+                    <a href={`tel:${s.ownerPhone}`} className="text-yellow-400 hover:text-yellow-300 text-xs">{s.ownerPhone}</a>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1.5 text-xs">
+                      {s.photoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><ImageIcon size={10} />{s.photoCount}</span>}
+                      {s.videoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><Video size={10} />{s.videoCount}</span>}
+                      {s.docCount > 0 && <span className="flex items-center gap-0.5 text-yellow-500"><FileText size={10} />{s.docCount}</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      s.status === "approved" ? "bg-green-900/60 text-green-400" :
+                      s.status === "rejected" ? "bg-red-900/60 text-red-400" :
+                      "bg-yellow-900/60 text-yellow-400"
+                    }`}>{s.status}</span>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(s.createdAt).toLocaleDateString("en-IN")}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => openDetail(s.id)}
+                        className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-yellow-600 hover:text-yellow-400 transition-all">
+                        Review
+                      </button>
+                      <button onClick={() => doDelete(s.id)} className="text-zinc-600 hover:text-red-400 transition-colors p-1.5">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Detail modal */}
+      {(loadDetail || reviewing) && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
+            {loadDetail ? (
+              <div className="p-20 text-center"><Loader2 size={28} className="mx-auto animate-spin" style={{ color: "#C9A24B" }} /></div>
+            ) : reviewing && (
+              <>
+                {/* Modal header */}
+                <div className="flex items-start justify-between p-6 border-b border-zinc-800">
+                  <div>
+                    <h2 className="text-white font-bold text-lg">{reviewing.title}</h2>
+                    <p className="text-zinc-400 text-sm mt-0.5">{reviewing.propType}{reviewing.bhk ? ` · ${reviewing.bhk}` : ""} · {reviewing.area}, {reviewing.city}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                      reviewing.status === "approved" ? "bg-green-900/60 text-green-400" :
+                      reviewing.status === "rejected" ? "bg-red-900/60 text-red-400" :
+                      "bg-yellow-900/60 text-yellow-400"
+                    }`}>{reviewing.status}</span>
+                    <button onClick={() => setReviewing(null)} className="text-zinc-500 hover:text-white transition-colors"><XCircle size={20} /></button>
+                  </div>
+                </div>
+
+                <div className="p-6 grid lg:grid-cols-3 gap-6">
+                  {/* Left: Photos + Videos */}
+                  <div className="lg:col-span-2 space-y-4">
+                    {/* Photos */}
+                    {reviewing.photoFiles.length > 0 && (
+                      <div>
+                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <ImageIcon size={12} /> Photos ({reviewing.photoFiles.length})
+                        </p>
+                        <div className="aspect-video bg-zinc-800 rounded-xl overflow-hidden mb-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={reviewing.photoFiles[activePhoto]?.data} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        {reviewing.photoFiles.length > 1 && (
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {reviewing.photoFiles.map((f, i) => (
+                              <button key={f.id} onClick={() => setActivePhoto(i)}
+                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-500" : "border-zinc-700"}`}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={f.data} alt="" className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Videos */}
+                    {(reviewing.videoFiles.length > 0 || reviewing.videoUrls.length > 0) && (
+                      <div>
+                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <Video size={12} /> Videos
+                        </p>
+                        <div className="space-y-3">
+                          {reviewing.videoFiles.map(v => (
+                            <video key={v.id} src={v.data} controls className="w-full rounded-xl bg-black max-h-48" />
+                          ))}
+                          {reviewing.videoUrls.map((url, i) => (
+                            isYoutube(url) ? (
+                              <iframe key={i} src={ytEmbed(url)} title="Property video" className="w-full aspect-video rounded-xl" allowFullScreen />
+                            ) : (
+                              <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                                className="block text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-yellow-600 hover:text-white transition-all">
+                                Video link: {url}
+                              </a>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
+                      <p className="text-zinc-200 text-sm leading-relaxed whitespace-pre-line">{reviewing.description}</p>
+                    </div>
+
+                    {reviewing.features && (
+                      <div className="bg-zinc-800/50 rounded-xl p-4">
+                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Features</p>
+                        <p className="text-zinc-200 text-sm">{reviewing.features}</p>
+                      </div>
+                    )}
+
+                    {/* Documents — admin only */}
+                    {reviewing.docFiles.length > 0 && (
+                      <div>
+                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <FileText size={12} /> Documents ({reviewing.docFiles.length}) — admin only
+                        </p>
+                        <div className="space-y-2">
+                          {reviewing.docFiles.map(doc => (
+                            <div key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2.5">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <FileText size={13} className="text-yellow-500 shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-zinc-200 text-xs truncate">{doc.name}</p>
+                                  {doc.docType && <p className="text-zinc-500 text-[10px]">{doc.docType}</p>}
+                                </div>
+                              </div>
+                              <a href={doc.data} download={doc.name}
+                                className="shrink-0 ml-3 flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-all"
+                                style={{ background: "rgba(201,162,75,0.15)", color: "#C9A24B", border: "1px solid rgba(201,162,75,0.4)" }}>
+                                <Download size={11} /> Download
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: Info + Actions */}
+                  <div className="space-y-4">
+                    {/* Property info */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Property Info</p>
+                      {[
+                        ["Price",    reviewing.priceDisplay],
+                        ["Type",     `${reviewing.propType}${reviewing.bhk ? ` · ${reviewing.bhk}` : ""}`],
+                        ["Location", `${reviewing.area}, ${reviewing.city}`],
+                        reviewing.size ? ["Size", `${reviewing.size} ${reviewing.sizeUnit}`] : null,
+                        reviewing.reraNumber ? ["RERA", reviewing.reraNumber] : null,
+                      ].filter(Boolean).map((row) => (
+                        <div key={row![0] as string} className="flex gap-2">
+                          <span className="text-zinc-500 w-18 shrink-0 text-xs">{row![0] as string}</span>
+                          <span className="text-zinc-200 text-xs">{row![1] as string}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Submitter contact */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
+                      <p className="text-white font-semibold text-sm">{reviewing.ownerName}</p>
+                      <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 text-sm">
+                        <Phone size={13} /> {reviewing.ownerPhone}
+                      </a>
+                      <a href={`mailto:${reviewing.ownerEmail}`} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-200 text-xs">
+                        <Mail size={12} /> {reviewing.ownerEmail}
+                      </a>
+                      <a href={`https://wa.me/91${reviewing.ownerPhone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${reviewing.ownerName}, this is PropKnown regarding your property "${reviewing.title}".`)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg font-semibold transition-all"
+                        style={{ background: "#25D366", color: "#fff" }}>
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        WhatsApp Owner
+                      </a>
+                    </div>
+
+                    {/* Doc summary */}
+                    <div className="text-zinc-500 text-xs bg-zinc-800/30 rounded-lg p-3">
+                      Docs: {reviewing.docFiles.length} uploaded · Photos: {reviewing.photoFiles.length} · Videos: {reviewing.videoFiles.length + reviewing.videoUrls.length}
+                    </div>
+
+                    {/* Approve / Reject */}
+                    {reviewing.status === "pending" && (
+                      <div className="space-y-3 border-t border-zinc-800 pt-4">
+                        <button onClick={() => doAction("approve")} disabled={acting}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-black text-sm transition-all disabled:opacity-50"
+                          style={{ background: "#22c55e" }}>
+                          {acting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />}
+                          Approve & Go Live
+                        </button>
+                        <div className="space-y-2">
+                          <textarea value={rejectMsg} onChange={e => setRejectMsg(e.target.value)} rows={2}
+                            className={`${inpCls} resize-none`} placeholder="Rejection reason (required)…" />
+                          <button onClick={() => doAction("reject")} disabled={acting || !rejectMsg.trim()}
+                            className="w-full py-2.5 rounded-xl font-semibold text-sm border border-red-700 text-red-400 hover:bg-red-900/30 transition-all disabled:opacity-40">
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {reviewing.status === "approved" && (
+                      <div className="border-t border-zinc-800 pt-4">
+                        <div className="bg-green-900/30 border border-green-800 rounded-xl p-3 text-center">
+                          <CheckCircle size={16} className="mx-auto mb-1 text-green-400" />
+                          <p className="text-green-400 text-xs font-semibold">Live on Buy page</p>
+                          <a href="/buy" target="_blank" className="text-xs text-green-600 underline mt-1 inline-block">View →</a>
+                        </div>
+                        <button onClick={() => doAction("reject")} disabled={acting}
+                          className="mt-3 w-full py-2 rounded-xl text-sm border border-red-800 text-red-400 hover:bg-red-900/30 transition-all disabled:opacity-40">
+                          Revoke Approval
+                        </button>
+                      </div>
+                    )}
+
+                    {reviewing.status === "rejected" && reviewing.rejectReason && (
+                      <div className="border-t border-zinc-800 pt-4">
+                        <div className="bg-red-900/20 border border-red-800 rounded-xl p-3">
+                          <p className="text-red-400 text-xs font-semibold mb-1">Rejection reason</p>
+                          <p className="text-zinc-300 text-xs">{reviewing.rejectReason}</p>
+                        </div>
+                        <button onClick={() => doAction("approve")} disabled={acting}
+                          className="mt-3 w-full py-2.5 rounded-xl font-semibold text-black text-sm transition-all disabled:opacity-50"
+                          style={{ background: "#22c55e" }}>
+                          Re-approve
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -393,7 +794,7 @@ export default function AdminDashboard() {
   const [form, setForm]             = useState(EMPTY_FORM);
   const [saving, setSaving]         = useState(false);
   const [propTab, setPropTab]       = useState<"pending" | "approved">("pending");
-  const [adminTab, setAdminTab]     = useState<"aiBrain" | "quickAdd" | "properties" | "leads" | "settings">("aiBrain");
+  const [adminTab, setAdminTab]     = useState<"aiBrain" | "quickAdd" | "properties" | "leads" | "settings" | "submissions">("aiBrain");
   const [adminLeads, setAdminLeads] = useState<{ id:string; name:string; phone:string; email?:string; source:string; status:string; createdAt:string }[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [docFiles, setDocFiles]         = useState<DocFile[]>([]);
@@ -510,11 +911,12 @@ export default function AdminDashboard() {
   const inputCls = "bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-yellow-600";
 
   const SIDEBAR_TABS = [
-    { key: "aiBrain",    label: "AI Brain",       icon: Brain },
-    { key: "quickAdd",   label: "Quick Add",      icon: Zap },
-    { key: "properties", label: "Properties",     icon: LayoutDashboard },
-    { key: "leads",      label: "Leads",          icon: Users },
-    { key: "settings",   label: "Settings",       icon: Shield },
+    { key: "aiBrain",     label: "AI Brain",       icon: Brain },
+    { key: "quickAdd",    label: "Quick Add",      icon: Zap },
+    { key: "submissions", label: "Submissions",    icon: Inbox },
+    { key: "properties",  label: "Properties",     icon: LayoutDashboard },
+    { key: "leads",       label: "Leads",          icon: Users },
+    { key: "settings",    label: "Settings",       icon: Shield },
   ] as const;
 
   return (
@@ -554,8 +956,9 @@ export default function AdminDashboard() {
 
       {/* Main */}
       <main className="flex-1 p-6 overflow-y-auto">
-        {adminTab === "aiBrain" && <AiBrainTab />}
-        {adminTab === "quickAdd" && <QuickAddTab />}
+        {adminTab === "aiBrain"     && <AiBrainTab />}
+        {adminTab === "quickAdd"    && <QuickAddTab />}
+        {adminTab === "submissions" && <SubmissionsTab />}
 
         {adminTab === "leads" && (
           <>

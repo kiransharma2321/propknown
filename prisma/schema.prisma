@@ -53,3 +53,41 @@ model Lead {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
+
+model UploadedFile {
+  id        String   @id @default(cuid())
+  name      String
+  mimeType  String
+  sizeBytes Int
+  data      String   @db.Text
+  docType   String?
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PropertySubmission {
+  id           String   @id @default(cuid())
+  title        String
+  propType     String
+  bhk          String?
+  size         String?
+  sizeUnit     String?
+  priceDisplay String
+  city         String
+  area         String
+  description  String   @db.Text
+  features     String?
+  reraNumber   String?
+  ownerName    String
+  ownerPhone   String
+  ownerEmail   String
+  photoIds     String   @default("[]") @db.Text
+  videoIds     String   @default("[]") @db.Text
+  videoUrls    String   @default("[]") @db.Text
+  docIds       String   @default("[]") @db.Text
+  status       String   @default("pending")
+  rejectReason String?
+  adminNotes   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
