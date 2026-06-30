@@ -34,7 +34,7 @@ export const COMPANY = {
   phone:   "+91 97017 71333",
   whatsapp:"919701771333",
   email:   "kiranpropservices@gmail.com",
-  address: "Shop No 3, Venkateswara Nilyam, Opposite Vertex Prime, Nizampet Road, Hyderabad 500090",
+  address: "Shop No 3, Venkateswara Nilayam, Opposite Vertex Prime, Nizampet Road, Hyderabad 500090",
   founder: "Pinnelli Raghu Kiran",
   markets: ["India", "USA", "UAE", "UK", "Singapore"],
 };

@@ -308,8 +308,8 @@ export default function AIIntelligencePage() {
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
 
-                {/* Location */}
-                <div className="sm:col-span-6 relative" ref={dropRef}>
+                {/* Location — 5 cols (was 6; 1 col given to Unit so it can show "sq.yard" fully) */}
+                <div className="sm:col-span-5 relative" ref={dropRef}>
                   <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "#C9A24B" }} />Location</label>
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -366,15 +366,15 @@ export default function AIIntelligencePage() {
                   />
                 </div>
 
-                {/* Unit */}
-                <div className="sm:col-span-1">
+                {/* Unit — col-span-1 was too narrow; bumped to 2 so "sq.yard" is fully visible */}
+                <div className="sm:col-span-2">
                   <label className="label-dark">Unit</label>
                   <div className="relative">
                     <select value={unit} onChange={(e) => setUnit(e.target.value)}
-                      className="input-dark appearance-none pr-6 text-sm">
+                      className="input-dark appearance-none pr-7 text-sm" style={{ minWidth: "90px" }}>
                       {UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
                     </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
               </div>

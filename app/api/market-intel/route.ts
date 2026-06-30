@@ -286,17 +286,18 @@ function buildTavilyQuery(
   const portals = PORTAL_HINTS[countryCode] ?? "real estate listing";
 
   if (unit === "acres") {
-    return `agriculture farm land price per acre ${location} ${year} ${year - 1} real estate sale`;
+    return `"${location}" agriculture farm land price per acre ${year} ${year - 1} real estate sale`;
   }
   if (unit === "sqyard") {
-    return `plot residential land price per square yard ${location} ${year} ${year - 1} for sale`;
+    return `"${location}" plot residential land price per square yard ${year} ${year - 1} for sale`;
   }
   const typeLabel =
     propertyType === "villa"       ? "villa luxury"      :
     propertyType === "house"       ? "independent house" :
     propertyType === "commercial"  ? "commercial office" : "apartment flat";
 
-  return `${typeLabel} price per sqft ${location} ${year} ${year - 1} for sale ${portals}`;
+  // Location quoted first so search engines rank it as primary keyword
+  return `"${location}" ${typeLabel} price per sqft ${year} ${year - 1} for sale ${portals}`;
 }
 
 interface TavilyResult { title: string; url: string; content: string; score: number; }
@@ -364,36 +365,82 @@ function getPrompt(
   const [y1, y2, y3, y4, y5] = [y-4, y-3, y-2, y-1, y];
   const [f1, f2, f3, f4, f5] = [y+1, y+2, y+3, y+4, y+5];
 
-  // ── Fallback benchmark table ──────────────────────────────────────────────
+  // ── Fallback benchmark table — GRANULAR PER LOCALITY ─────────────────────
   const benchmarks = unit === "sqyard" ? `
-INDIA sq.yard benchmarks:
-- Prime (Jubilee Hills / Banjara Hills): ₹80,000–1,80,000/sq.yd
-- IT Corridor (Kokapet / Gachibowli / FD): ₹40,000–90,000/sq.yd
-- Mid-tier (Kondapur / Madhapur / KPHB): ₹20,000–45,000/sq.yd
-- Peripheral (Medchal / Shamshabad): ₹8,000–22,000/sq.yd
-- Rural (100km+): ₹2,500–8,000/sq.yd` : unit === "acres" ? `
+INDIA sq.yard benchmarks — each locality is DISTINCT, pick the EXACT match:
+- Jubilee Hills / Banjara Hills (Hyderabad ultra-prime): ₹1,20,000–2,50,000/sq.yd
+- Kokapet Golf View / Neopolis (Hyderabad IT premium+): ₹65,000–1,10,000/sq.yd
+- Financial District / Nanakramguda (Hyderabad IT premium): ₹70,000–1,20,000/sq.yd
+- Gachibowli (Hyderabad IT high-mid): ₹50,000–85,000/sq.yd
+- Kondapur / Madhapur (Hyderabad IT mid): ₹35,000–58,000/sq.yd
+- Manikonda / Puppalaguda (Hyderabad mid): ₹28,000–48,000/sq.yd
+- KPHB / Miyapur / Kukatpally (Hyderabad mid-affordable): ₹18,000–32,000/sq.yd
+- Medchal / Ameenpur / Kompally (peripheral): ₹10,000–20,000/sq.yd
+- Shamshabad / Shadnagar (outer): ₹6,000–12,000/sq.yd
+- Nalgonda / Miryalaguda (rural): ₹2,500–6,000/sq.yd` : unit === "acres" ? `
 INDIA acre benchmarks:
-- Near Hyderabad (<30km): Shankarpally, Moinabad: ₹80L–2Cr/acre
-- Mid-ring (30–60km): Medchal, Ameenpur: ₹50L–1.2Cr/acre
-- Outer (60–100km): Shadnagar, Vikarabad: ₹20L–60L/acre
-- Distant (100km+): Miryalaguda, Nalgonda: ₹10L–30L/acre` : `
-GLOBAL sq.ft benchmarks (SECONDARY — use real data above when available):
-India — Luxury (Jubilee Hills / Banjara Hills): ₹15,000–28,000/sqft
-India — IT Prime (Kokapet / Gachibowli / FD): ₹8,000–16,000/sqft
-India — Mid (Kondapur / Manikonda / KPHB): ₹5,500–9,000/sqft
-India — Peripheral (Medchal / Shadnagar): ₹3,000–5,500/sqft
-India — Rural (100km+): ₹1,500–3,500/sqft
-UAE — Dubai Prime (Marina / Downtown / Palm): AED 1,800–4,500/sqft
-UAE — Dubai Mid (JVC / JLT / Dubai South): AED 900–1,600/sqft
-UK — London Prime (Kensington / Chelsea / Mayfair): £1,200–3,500/sqft
-UK — London Mid: £600–1,200/sqft
-UK — Regional cities (Manchester / Birmingham): £250–500/sqft
-USA — Manhattan Prime: $1,500–4,500/sqft
-USA — NYC Mid: $800–1,500/sqft
-USA — Major US cities avg: $300–700/sqft
-Singapore — Prime: SGD 2,000–4,000/sqft
-Canada — Toronto Prime: CA$800–1,500/sqft
-Australia — Sydney Prime: A$700–1,500/sqft`;
+- Near Hyderabad (<30km): Shankarpally, Moinabad, Chevella: ₹1.2Cr–3Cr/acre
+- Mid-ring Hyderabad (30–60km): Medchal, Ameenpur, Patancheru: ₹60L–1.5Cr/acre
+- Outer ring Hyderabad (60–100km): Shadnagar, Vikarabad, Bibinagar: ₹25L–70L/acre
+- Distant Telangana (100km+): Miryalaguda, Nalgonda, Suryapet: ₹8L–25L/acre
+- Bangalore outskirts (<40km): Devanahalli, Nelamangala: ₹80L–2Cr/acre
+- Mumbai outskirts (<50km): Karjat, Khopoli: ₹50L–1.5Cr/acre` : `
+LOCALITY-SPECIFIC sq.ft benchmarks (SECONDARY — use live data above first):
+⚠️ CRITICAL: Every locality below has a DISTINCT price — never average them together.
+
+HYDERABAD (pick the exact sub-locality):
+- Jubilee Hills / Banjara Hills (ultra-prime): ₹15,000–28,000/sqft
+- Financial District / Nanakramguda (IT premium): ₹11,000–19,000/sqft
+- Kokapet Golf View / Neopolis (IT premium): ₹10,000–16,000/sqft
+- Gachibowli (IT high): ₹8,500–14,000/sqft
+- Kondapur / Madhapur (IT mid): ₹6,500–10,500/sqft
+- Manikonda / Puppalaguda (mid): ₹5,500–9,000/sqft
+- KPHB / Miyapur / Kukatpally (affordable): ₹4,500–7,000/sqft
+- Medchal / Ameenpur (peripheral): ₹3,200–5,500/sqft
+- Shamshabad / Shadnagar / Maheshwaram (outer): ₹2,200–4,000/sqft
+- Nalgonda / Miryalaguda (rural): ₹1,200–2,800/sqft
+
+BANGALORE:
+- Indiranagar / Koramangala (prime): ₹12,000–22,000/sqft
+- Whitefield (IT premium): ₹8,500–14,500/sqft
+- Sarjapur Road (IT high): ₹8,000–13,000/sqft
+- HSR Layout / Bellandur (mid-high): ₹7,500–12,000/sqft
+- Electronic City (IT mid): ₹5,500–8,500/sqft
+
+MUMBAI / PUNE:
+- Bandra West / Juhu (ultra-prime): ₹45,000–90,000/sqft
+- Andheri West / Powai (mid): ₹18,000–32,000/sqft
+- Thane / Navi Mumbai (affordable): ₹9,000–16,000/sqft
+- Hinjewadi Pune (IT hub): ₹7,500–13,000/sqft
+- Baner / Balewadi Pune (mid): ₹9,000–15,000/sqft
+
+UAE DUBAI (pick the exact community):
+- Palm Jumeirah / Downtown Dubai: AED 3,000–5,500/sqft
+- Dubai Marina (prime waterfront): AED 1,800–3,000/sqft
+- Business Bay (commercial-residential): AED 1,500–2,400/sqft
+- Jumeirah Village Circle (JVC) (affordable): AED 900–1,400/sqft
+- Jumeirah Lake Towers (JLT): AED 1,000–1,600/sqft
+- Dubai South / Discovery Gardens: AED 700–1,100/sqft
+- Meydan / Mohammed Bin Rashid City: AED 1,800–3,200/sqft
+- Al Barsha (mid): AED 900–1,500/sqft
+
+UK:
+- Kensington / Chelsea / Mayfair (London prime): £1,500–4,000/sqft
+- Canary Wharf / City of London: £800–1,400/sqft
+- London Mid (Zones 2-3): £600–1,000/sqft
+- Manchester / Birmingham / Leeds: £200–450/sqft
+
+USA:
+- Manhattan (NYC) Prime: $1,500–4,500/sqft
+- Brooklyn / Queens (NYC) Mid: $800–1,400/sqft
+- San Francisco / LA Prime: $800–1,500/sqft
+- Chicago / Houston / Dallas: $200–500/sqft
+
+SINGAPORE / AUSTRALIA / CANADA:
+- Singapore Prime (Orchard / Marina Bay): SGD 2,500–4,500/sqft
+- Singapore Mid: SGD 1,200–2,200/sqft
+- Sydney Prime: A$900–1,800/sqft
+- Toronto Prime: CA$800–1,400/sqft`;
 
   // ── Real data section ────────────────────────────────────────────────────
   const realSection = realDataBlock ? `
@@ -405,23 +452,31 @@ ${realDataBlock}
 ${dataType === "bayut" && bayutPricePsf
   ? `CRITICAL: The computed median price-per-sqft from Bayut listings is ${currency.symbol}${bayutPricePsf.toLocaleString()}/sqft.
 Your "currentPricePerSqft" MUST be ${bayutPricePsf} (the exact Bayut median). Do NOT invent a different figure.`
-  : `PRIORITY: Extract the most specific price-per-${unitLabel} figure from the data above and use it as "currentPricePerSqft". The benchmark table below is SECONDARY.`}
+  : `PRIORITY: Extract the most specific price-per-${unitLabel} figure from the data above for THIS EXACT locality: "${location}". The benchmark table below is SECONDARY.`}
 ═══════════════════════════════════════
-` : `(No live listing data available — use benchmark table below as your guide.)`;
+` : `(No live listing data available — use the locality-specific benchmark table below.)`;
 
-  return `You are a senior real estate market analyst. Generate realistic market intelligence for: "${location}" (${propertyType} properties).
+  return `You are a senior real estate market analyst. Generate realistic market intelligence for the SPECIFIC locality: "${location}" (${propertyType} properties).
 
 COUNTRY: ${countryCode.toUpperCase()} | CURRENCY: ${currency.code} (${currency.symbol}) | UNIT: per ${unitLabel}
 
 ${realSection}
 
+⚠️ LOCALITY PRICING RULE (MOST IMPORTANT):
+Each locality has a DISTINCT price. You MUST differentiate:
+- Kokapet vs Gachibowli vs Financial District → different prices (Kokapet ₹10K–16K, Gachibowli ₹8.5K–14K, Financial District ₹11K–19K)
+- Dubai Marina vs Business Bay vs JVC → different prices (Marina AED 1,800–3,000, Business Bay AED 1,500–2,400, JVC AED 900–1,400)
+- Never return a generic city average. Price the EXACT locality: "${location}"
+- If you are uncertain, pick from the MIDDLE of the locality's specific range in the benchmark table
+
 CRITICAL RULES:
 1. "currency" MUST be "${currency.code}" and "currencySymbol" MUST be "${currency.symbol}" — never use a different currency.
-2. "currentPricePerSqft" = price per ${unitLabel}${dataType === "bayut" && bayutPricePsf ? ` = EXACTLY ${bayutPricePsf} (from Bayut data)` : " (from real data if available, else from benchmarks)"}.
+2. "currentPricePerSqft" = price per ${unitLabel} for the SPECIFIC locality "${location}"${dataType === "bayut" && bayutPricePsf ? ` = EXACTLY ${bayutPricePsf} (from Bayut data)` : " — pick a SPECIFIC value within the locality's range, not the city average"}.
 3. "pricePerSqftUnit" MUST be "${unitKey}".
-4. Price MUST be AREA-SPECIFIC — prime areas cost 3–8× more than rural/outer areas in the same country.
+4. History values must show realistic growth leading up to "currentPricePerSqft". Forecast must show projected growth.
 5. History and forecast values must be in ${currency.code}, consistent with "currentPricePerSqft".
 6. "trend" must be one of: "Bullish", "Stable", or "Cautious".
+7. "summary" must mention the SPECIFIC locality "${location}" by name, not just the city.
 
 Return ONLY a valid JSON object — no markdown, no code fences, no explanations:
 
@@ -429,7 +484,7 @@ Return ONLY a valid JSON object — no markdown, no code fences, no explanations
   "locationName": "Full area name, City, Country",
   "currency": "${currency.code}",
   "currencySymbol": "${currency.symbol}",
-  "currentPricePerSqft": <number — price per ${unitLabel} in ${currency.code}>,
+  "currentPricePerSqft": <number — price per ${unitLabel} in ${currency.code} for "${location}" specifically>,
   "pricePerSqftUnit": "${unitKey}",
   "priceHistory5yr": [
     {"year": ${y1}, "value": <number>},
@@ -450,7 +505,7 @@ Return ONLY a valid JSON object — no markdown, no code fences, no explanations
   "rentalYield": <gross % e.g. 5.2>,
   "investmentRating": <0–10 with one decimal>,
   "bestFor": "short phrase",
-  "summary": "2–3 sentences of area-specific analysis grounded in the real data above",
+  "summary": "2–3 sentences of analysis specific to ${location} (mention the locality by name)",
   "keyDrivers": ["driver1", "driver2", "driver3", "driver4"]
 }
 
@@ -625,12 +680,17 @@ export async function POST(req: NextRequest) {
   // Tavily: use for non-UAE, OR as UAE fallback if Bayut failed
   if (!realDataBlock && tavilyKey) {
     try {
+      const tavilyQuery = buildTavilyQuery(loc, propType, resolvedUnit, countryCode);
+      console.log(`[Tavily] query for "${loc}": ${tavilyQuery}`);
       const { snippets, hasData } = await fetchTavilyContext(loc, propType, resolvedUnit, countryCode, tavilyKey);
       if (hasData) {
         realDataBlock  = snippets;
         dataSource     = "real_data";
         dataSourceLabel = "Based on current web listings";
         dataType       = "tavily";
+        console.log(`[Tavily] got data for "${loc}"`);
+      } else {
+        console.warn(`[Tavily] no useful data for "${loc}"`);
       }
     } catch (e) {
       console.warn("[Tavily] fetch failed (non-fatal):", e);
@@ -656,6 +716,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = normalise(raw!, loc, dataSource, dataSourceLabel, currency, bayutPricePsf);
+    console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
     return NextResponse.json(result);
   } catch {
     return NextResponse.json(mkFallback(loc, resolvedUnit, currency));
