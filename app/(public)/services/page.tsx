@@ -35,7 +35,7 @@ const GROUPS: Group[] = [
     color: "#C9A24B",
     services: [
       { icon: Home,     name: "Buy Property",        desc: "RERA-verified listings across Hyderabad and 10+ cities. AI-scored for investment value, legal safety, and fair pricing." },
-      { icon: TrendingUp,name: "Sell Property",      desc: "Maximum sale value in minimum time. Professional photography, digital marketing, and buyer matching from 5000+ active buyers." },
+      { icon: TrendingUp,name: "Sell Property",      desc: "Maximum sale value in minimum time. Professional photography, digital marketing, and buyer matching from our verified buyer network." },
       { icon: Building2, name: "Rental Assistance",  desc: "Find verified tenants or properties for rent. Rental agreements, background checks, and property inspection included." },
       { icon: Settings,  name: "Resale Assistance",  desc: "Expert guidance on resale properties — title verification, price negotiation, and documentation handled end-to-end." },
       { icon: Globe,     name: "NRI Services",        desc: "Remote property management, NRI tax compliance, Power of Attorney, and investment advisory for Indian diaspora worldwide." },

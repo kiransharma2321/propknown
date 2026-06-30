@@ -20,7 +20,7 @@ const CORE_VALUES = [
 const GOALS = [
   { title: "Market Expansion",        desc: "Scale from 5 countries to 20+ markets by 2028 with AI-powered local intelligence." },
   { title: "Technology Innovation",   desc: "Build the world's most comprehensive real estate AI — verified listings, predictive pricing, legal safety scores." },
-  { title: "Customer Satisfaction",   desc: "Maintain 98%+ client satisfaction through honest advisory and end-to-end support." },
+  { title: "Client Trust",             desc: "Deliver honest, end-to-end advisory that makes every client a long-term partner — not just a transaction." },
 ];
 
 const ADVANTAGES = [

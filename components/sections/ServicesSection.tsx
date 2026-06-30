@@ -13,7 +13,7 @@ const SERVICES = [
   {
     icon: TrendingUp,
     title: "Sell Property",
-    desc: "Maximum value realization with our network of 5000+ active buyers across all markets.",
+    desc: "Maximum value realization with our network of qualified, pre-vetted buyers across all markets.",
     href: "/sell",
     iconBg: "bg-green-50",
     iconColor: "#22c55e",

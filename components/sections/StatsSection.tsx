@@ -1,9 +1,9 @@
 const stats = [
-  { value: "2000+", label: "Enquiries Handled",     sub: "Buyers & sellers consulted" },
-  { value: "₹500Cr+", label: "Transaction Value",   sub: "Facilitated across markets" },
-  { value: "98%",  label: "Client Satisfaction",    sub: "Based on client feedback" },
-  { value: "20+",  label: "Years of Expertise",     sub: "Founder experience" },
-  { value: "5",    label: "Global Markets",          sub: "IN · US · UAE · UK · SG" },
+  { value: "RERA",  label: "Verified Platform",     sub: "Every listing cleared before listing" },
+  { value: "AI",    label: "Market Intelligence",    sub: "Live valuations, any location" },
+  { value: "Zero",  label: "Hidden Fees",            sub: "Transparent, success-based only" },
+  { value: "20+",   label: "Years of Expertise",     sub: "Founder experience" },
+  { value: "5",     label: "Global Markets",         sub: "IN · US · UAE · UK · SG" },
 ];
 
 export default function StatsSection() {
