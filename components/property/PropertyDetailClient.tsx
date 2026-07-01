@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
-  MapPin, Bed, Bath, Maximize, Star, Shield, CheckCircle,
+  MapPin, Bed, Bath, Maximize, Star, CheckCircle,
   ChevronLeft, ChevronRight, MessageCircle, Phone, Send,
   Building2, TrendingUp, AlertCircle, Globe,
 } from "lucide-react";
 import type { Listing } from "@/lib/listings";
 import { COMPANY } from "@/lib/utils";
+import CostCalculator from "@/components/ui/CostCalculator";
+import VerificationBadge from "@/components/ui/VerificationBadge";
 
 // Leaflet map — no SSR
 const PropertyMap = dynamic(() => import("@/components/property/PropertyMap"), {
@@ -375,6 +377,9 @@ out body qt 30;`;
               </div>
             )}
 
+            {/* ── TRUE COST CALCULATOR ── */}
+            <CostCalculator initialPrice={listing.price} compact />
+
             {/* ── MAP ── */}
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -640,34 +645,14 @@ out body qt 30;`;
               </div>
 
               {/* Verification badges */}
-              <div className="border border-gray-200 rounded-2xl p-5 space-y-3">
-                <h3 className="text-gray-900 font-bold text-sm mb-1">Listing Verification</h3>
-                {listing.badge && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <CheckCircle size={16} className="text-green-500 shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-800">{listing.badge} Registered</p>
-                      <p className="text-xs text-gray-400">{listing.badgeNo}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center gap-2.5 text-sm">
-                  <Shield size={16} className="text-blue-500 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-gray-800">PropKnown Verified</p>
-                    <p className="text-xs text-gray-400">Title & document checked</p>
-                  </div>
-                </div>
-                {listing.aiScore && (
-                  <div className="flex items-center gap-2.5 text-sm">
-                    <Star size={16} fill={GOLD} style={{ color: GOLD, flexShrink: 0 }} />
-                    <div>
-                      <p className="font-semibold text-gray-800">AI Investment Score: {listing.aiScore}/10</p>
-                      <p className="text-xs text-gray-400">Based on location, price & growth data</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <VerificationBadge
+                flags={{
+                  reraVerified: listing.badge === "RERA",
+                  reraNumber: listing.badge === "RERA" ? listing.badgeNo : undefined,
+                  layoutApproved: listing.badge === "HMDA" || listing.badge === "DTCP",
+                  layoutBadge: (listing.badge === "HMDA" || listing.badge === "DTCP") ? listing.badge : undefined,
+                }}
+              />
 
             </div>
           </div>

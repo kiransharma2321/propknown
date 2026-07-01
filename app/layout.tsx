@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import JarvisChat from "@/components/chatbot/JarvisChat";
+import ClientProviders from "@/components/ClientProviders";
 
 const BASE_URL = "https://www.propknown.com";
 
@@ -147,7 +148,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Header />
-        <main>{children}</main>
+        <ClientProviders>
+          <main>{children}</main>
+        </ClientProviders>
         <Footer />
         <WhatsAppButton />
         <JarvisChat />

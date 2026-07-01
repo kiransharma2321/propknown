@@ -3,8 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, MapPin, ChevronDown, Heart, MessageCircle, Star, CheckCircle, Building2, X, Clock } from "lucide-react";
+import { Search, MapPin, ChevronDown, Heart, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
+import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
 
 const LISTINGS = [
   { id:"aparna",    title:"Aparna Sarovar Grande 3BHK", location:"Nallagandla",  city:"Hyderabad",   display:"₹1.25 Cr",    price:12500000, sqft:1950, beds:3, baths:3, floor:"8th Floor",   facing:"East",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400006789", aiScore:8.4, type:"Apartment",  img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
@@ -34,6 +35,19 @@ interface Submission {
 function SubmissionCard({ s, saved, onToggleSave }: { s: Submission; saved: boolean; onToggleSave: () => void }) {
   const firstPhoto = s.photoIds[0] ? `/api/files/${s.photoIds[0]}` : null;
   const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'm interested in "${s.title}" at ${s.area}, ${s.city}. Asking: ${s.priceDisplay}`)}`;
+  const { add, remove, isAdded } = useComparison();
+  const added = isAdded(`sub-${s.id}`);
+
+  const compareItem: CompareItem = {
+    id: `sub-${s.id}`, title: s.title,
+    price: 0, priceDisplay: s.priceDisplay,
+    location: s.area, city: s.city, type: s.propType,
+    image: firstPhoto ?? undefined,
+    beds: s.bhk ? parseInt(s.bhk) || undefined : undefined,
+    sqft: s.size ? parseFloat(s.size) || undefined : undefined,
+    reraNumber: s.reraNumber,
+    source: "submission",
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-yellow-400 hover:shadow-lg transition-all group flex flex-col">
@@ -70,6 +84,17 @@ function SubmissionCard({ s, saved, onToggleSave }: { s: Submission; saved: bool
           {s.size && <span>{s.size} {s.sizeUnit}</span>}
           <span className="text-gray-400">{s.propType}</span>
         </div>
+        <button
+          onClick={() => added ? remove(`sub-${s.id}`) : add(compareItem)}
+          className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold py-1.5 rounded-lg mb-2 border transition-all"
+          style={added
+            ? { background:"rgba(201,162,75,0.15)", color:"#C9A24B", borderColor:"rgba(201,162,75,0.5)" }
+            : { background:"transparent", color:"#6b7280", borderColor:"#e5e7eb" }
+          }
+        >
+          <GitCompare size={10} />
+          {added ? "✓ In comparison" : "Add to compare"}
+        </button>
         <div className="mt-auto flex gap-2">
           <a href={waMsg} target="_blank" rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg transition-all"
@@ -89,6 +114,7 @@ function SubmissionCard({ s, saved, onToggleSave }: { s: Submission; saved: bool
 function BuyPageInner() {
   const searchParams = useSearchParams();
 
+  const { add, remove, isAdded } = useComparison();
   const [city,        setCity]        = useState(searchParams.get("city")   || "All Cities");
   const [area,        setArea]        = useState(searchParams.get("area")   || "");
   const [type,        setType]        = useState(searchParams.get("type")   || "All Types");
@@ -238,6 +264,15 @@ function BuyPageInner() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filtered.map(p => {
                 const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'm interested in "${p.title}" at ${p.location}. RERA/Badge: ${p.badgeNo}`)}`;
+                const added = isAdded(p.id);
+                const compareItem: CompareItem = {
+                  id: p.id, title: p.title, price: p.price, priceDisplay: p.display,
+                  sqft: p.sqft, beds: p.beds > 0 ? p.beds : undefined,
+                  location: p.location, city: p.city, type: p.type,
+                  image: p.img, aiScore: p.aiScore,
+                  reraNumber: p.badge === "RERA" ? p.badgeNo : undefined,
+                  badge: p.badge, status: p.status, source: "curated",
+                };
                 return (
                   <div key={p.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-yellow-400 hover:shadow-lg transition-all group flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden">
@@ -266,11 +301,22 @@ function BuyPageInner() {
                         <span>{p.floor}</span><span>{p.facing}</span>
                       </div>
                       {"extra" in p && p.extra && <p className="text-xs text-gray-400 mb-2">{p.extra as string}</p>}
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${["Ready to Move","Ready","Available"].includes(p.status) ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>{p.status}</span>
                         <CheckCircle size={12} className="text-green-500" />
                         <span className="text-[10px] text-gray-400 truncate">{p.badgeNo}</span>
                       </div>
+                      <button
+                        onClick={() => added ? remove(p.id) : add(compareItem)}
+                        className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold py-1.5 rounded-lg mb-2 border transition-all"
+                        style={added
+                          ? { background:"rgba(201,162,75,0.15)", color:"#C9A24B", borderColor:"rgba(201,162,75,0.5)" }
+                          : { background:"transparent", color:"#6b7280", borderColor:"#e5e7eb" }
+                        }
+                      >
+                        <GitCompare size={10} />
+                        {added ? "✓ In comparison" : "Add to compare"}
+                      </button>
                       <div className="mt-auto flex gap-2">
                         <a href={waMsg} target="_blank" rel="noopener noreferrer"
                           className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg transition-all"
