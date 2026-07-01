@@ -29,7 +29,7 @@ const CHECKLIST_ITEMS = [
   "RERA or HMDA number verified",
   "Owner identity verified",
   "Title deed checked with no disputes",
-  "Real photos â€” not stock images",
+  "Real photos - not stock images",
   "Accurate price within 20% of market rate",
   "Correct area measurement and unit",
   "Owner consent obtained",
@@ -260,7 +260,7 @@ function QuickAddTab() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "Georgia, serif" }}>Quick Add Listing</h1>
-        <p className="text-zinc-400 text-sm">Paste any property details â€” AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
+        <p className="text-zinc-400 text-sm">Paste any property details — AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -321,7 +321,7 @@ function QuickAddTab() {
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-yellow-500 bg-yellow-500/5" : "border-zinc-700 hover:border-zinc-500"}`}
             >
               <p className="text-zinc-400 text-sm">Drag &amp; drop photos here or click to browse</p>
-              <p className="text-zinc-600 text-xs mt-1">JPG, PNG â€” up to 10 photos</p>
+              <p className="text-zinc-600 text-xs mt-1">JPG, PNG — up to 10 photos</p>
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
             </div>
             {photos.length > 0 && (
@@ -368,7 +368,7 @@ function QuickAddTab() {
             <button disabled={!allChecked}
               className="w-full py-3 rounded-xl font-bold text-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "#C9A24B" }}>
-              {allChecked ? "âœ“ Approve & Publish" : "Complete All 10 Checklist Items to Approve"}
+              {allChecked ? "✓ Approve & Publish" : "Complete All 10 Checklist Items to Approve"}
             </button>
             <div>
               <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={2}
@@ -987,7 +987,7 @@ export default function AdminDashboard() {
                       <tr key={l.id} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{l.name}</td>
                         <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-yellow-400 hover:text-yellow-300">{l.phone}</a></td>
-                        <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "â€”"}</td>
+                        <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "—"}</td>
                         <td className="px-4 py-3"><span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
                         <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-zinc-800 text-zinc-300"}`}>{l.status}</span></td>
                         <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(l.createdAt).toLocaleDateString("en-IN")}</td>

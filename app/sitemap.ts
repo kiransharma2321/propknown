@@ -18,6 +18,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/privacy`,               lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
     { url: `${BASE}/terms`,                 lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
     { url: `${BASE}/disclaimer`,            lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
+    { url: `${BASE}/cost-calculator`,       lastModified: new Date(), changeFrequency: "monthly", priority: 0.70 },
+    { url: `${BASE}/verified`,              lastModified: new Date(), changeFrequency: "monthly", priority: 0.65 },
   ];
 
   const propertyPages: MetadataRoute.Sitemap = ALL_LISTINGS.map(l => ({
