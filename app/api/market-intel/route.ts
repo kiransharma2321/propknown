@@ -284,20 +284,29 @@ function buildTavilyQuery(
 ): string {
   const year    = new Date().getFullYear();
   const portals = PORTAL_HINTS[countryCode] ?? "real estate listing";
+  const locQuoted = `"${location}"`;
 
-  if (unit === "acres") {
-    return `"${location}" agriculture farm land price per acre ${year} ${year - 1} real estate sale`;
+  // Plot / residential land — explicit unit and type so results are plot-specific
+  if (propertyType === "plot" || unit === "sqyard") {
+    return `${locQuoted} residential plot site price per square yard gaj ${year} ${year - 1} for sale ${portals}`;
   }
-  if (unit === "sqyard") {
-    return `"${location}" plot residential land price per square yard ${year} ${year - 1} for sale`;
+
+  // Agriculture / farm land
+  if (propertyType === "agriculture" || unit === "acres") {
+    return `${locQuoted} agriculture farm land price per acre ${year} ${year - 1} real estate sale ${portals}`;
   }
+
+  // Local land units (ankanam, cent, guntha) — treat as plot
+  if (["ankanam", "cent", "guntha"].includes(unit)) {
+    return `${locQuoted} plot land price per square yard ${year} ${year - 1} for sale ${portals}`;
+  }
+
   const typeLabel =
     propertyType === "villa"       ? "villa luxury"      :
     propertyType === "house"       ? "independent house" :
     propertyType === "commercial"  ? "commercial office" : "apartment flat";
 
-  // Location quoted first so search engines rank it as primary keyword
-  return `"${location}" ${typeLabel} price per sqft ${year} ${year - 1} for sale ${portals}`;
+  return `${locQuoted} ${typeLabel} price per sqft ${year} ${year - 1} for sale ${portals}`;
 }
 
 interface TavilyResult { title: string; url: string; content: string; score: number; }
@@ -322,7 +331,7 @@ async function fetchTavilyContext(
       include_answer: true,
       max_results:    6,
     }),
-    signal: AbortSignal.timeout(9000),
+    signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) throw new Error(`Tavily ${res.status}`);
 
@@ -366,18 +375,23 @@ function getPrompt(
   const [f1, f2, f3, f4, f5] = [y+1, y+2, y+3, y+4, y+5];
 
   // ── Fallback benchmark table — GRANULAR PER LOCALITY ─────────────────────
-  const benchmarks = unit === "sqyard" ? `
-INDIA sq.yard benchmarks — each locality is DISTINCT, pick the EXACT match:
+  const benchmarks = (unit === "sqyard" || propertyType === "plot") ? `
+INDIA PLOT sq.yard benchmarks — EACH LOCALITY IS DISTINCT. Match the EXACT area name:
 - Jubilee Hills / Banjara Hills (Hyderabad ultra-prime): ₹1,20,000–2,50,000/sq.yd
-- Kokapet Golf View / Neopolis (Hyderabad IT premium+): ₹65,000–1,10,000/sq.yd
-- Financial District / Nanakramguda (Hyderabad IT premium): ₹70,000–1,20,000/sq.yd
-- Gachibowli (Hyderabad IT high-mid): ₹50,000–85,000/sq.yd
-- Kondapur / Madhapur (Hyderabad IT mid): ₹35,000–58,000/sq.yd
-- Manikonda / Puppalaguda (Hyderabad mid): ₹28,000–48,000/sq.yd
-- KPHB / Miyapur / Kukatpally (Hyderabad mid-affordable): ₹18,000–32,000/sq.yd
-- Medchal / Ameenpur / Kompally (peripheral): ₹10,000–20,000/sq.yd
-- Shamshabad / Shadnagar (outer): ₹6,000–12,000/sq.yd
-- Nalgonda / Miryalaguda (rural): ₹2,500–6,000/sq.yd` : unit === "acres" ? `
+- Kokapet / Neopolis / Golf View (Hyderabad IT premium): ₹55,000–1,00,000/sq.yd
+- Financial District / Nanakramguda (Hyderabad IT premium): ₹60,000–1,10,000/sq.yd
+- Gachibowli (Hyderabad IT high): ₹40,000–75,000/sq.yd
+- Kondapur / Madhapur (Hyderabad IT mid): ₹30,000–55,000/sq.yd
+- Manikonda / Puppalaguda (Hyderabad mid): ₹22,000–42,000/sq.yd
+- Tellapur / Osman Nagar (Hyderabad west mid-rim): ₹15,000–28,000/sq.yd
+- Nallagandla / Serilingampally (Hyderabad west mid): ₹20,000–38,000/sq.yd
+- KPHB / Miyapur / Kukatpally (Hyderabad mid-affordable): ₹15,000–28,000/sq.yd
+- Bachupally / Nizampet (Hyderabad north mid): ₹12,000–22,000/sq.yd
+- Kompally (Hyderabad north peripheral): ₹8,000–15,000/sq.yd
+- Medchal / Ameenpur / Shamirpet (outer peripheral): ₹6,000–12,000/sq.yd
+- Shamshabad / Shadnagar (outer south): ₹4,000–9,000/sq.yd
+- Nalgonda / Miryalaguda (rural): ₹2,000–5,000/sq.yd
+⚠️ CRITICAL: "${location}" must get its OWN price from the exact match above. Never give the same price for different localities.` : unit === "acres" ? `
 INDIA acre benchmarks:
 - Near Hyderabad (<30km): Shankarpally, Moinabad, Chevella: ₹1.2Cr–3Cr/acre
 - Mid-ring Hyderabad (30–60km): Medchal, Ameenpur, Patancheru: ₹60L–1.5Cr/acre
@@ -627,6 +641,30 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
   return (data.candidates?.[0]?.content?.parts?.[0]?.text as string) ?? "";
 }
 
+// ─── Simple in-memory cache (5 minute TTL) ────────────────────────────────────
+
+interface CacheEntry { data: Record<string, unknown>; ts: number; }
+const RESULT_CACHE = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key: string): Record<string, unknown> | null {
+  const entry = RESULT_CACHE.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL_MS) { RESULT_CACHE.delete(key); return null; }
+  return entry.data;
+}
+
+function setCache(key: string, data: Record<string, unknown>) {
+  // Keep cache bounded
+  if (RESULT_CACHE.size > 100) {
+    let oldestKey = "";
+    let oldestTs  = Infinity;
+    RESULT_CACHE.forEach((v, k) => { if (v.ts < oldestTs) { oldestTs = v.ts; oldestKey = k; } });
+    if (oldestKey) RESULT_CACHE.delete(oldestKey);
+  }
+  RESULT_CACHE.set(key, { data, ts: Date.now() });
+}
+
 // ─── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -643,6 +681,14 @@ export async function POST(req: NextRequest) {
   const geminiKey    = process.env.GEMINI_API_KEY;
   const tavilyKey    = process.env.TAVILY_API_KEY;
   const rapidApiKey  = process.env.RAPIDAPI_KEY;
+
+  // ── Cache check ──────────────────────────────────────────────────────────
+  const cacheKey = `${loc}|${propType}|${resolvedUnit}`;
+  const cached = getCached(cacheKey);
+  if (cached) {
+    console.log(`[market-intel] Cache HIT for "${cacheKey}"`);
+    return NextResponse.json(cached);
+  }
 
   // ── Step 0: Detect country + currency ────────────────────────────────────
   const { countryCode, currency } = await detectCurrency(loc);
@@ -678,19 +724,22 @@ export async function POST(req: NextRequest) {
   }
 
   // Tavily: use for non-UAE, OR as UAE fallback if Bayut failed
+  // Capped at 5.5s so we proceed to Gemini faster if Tavily is slow
   if (!realDataBlock && tavilyKey) {
     try {
       const tavilyQuery = buildTavilyQuery(loc, propType, resolvedUnit, countryCode);
       console.log(`[Tavily] query for "${loc}": ${tavilyQuery}`);
-      const { snippets, hasData } = await fetchTavilyContext(loc, propType, resolvedUnit, countryCode, tavilyKey);
-      if (hasData) {
-        realDataBlock  = snippets;
+      const tavilyPromise = fetchTavilyContext(loc, propType, resolvedUnit, countryCode, tavilyKey);
+      const timeout       = new Promise<null>((res) => setTimeout(() => res(null), 5500));
+      const tavilyResult  = await Promise.race([tavilyPromise, timeout]);
+      if (tavilyResult && tavilyResult.hasData) {
+        realDataBlock  = tavilyResult.snippets;
         dataSource     = "real_data";
         dataSourceLabel = "Based on current web listings";
         dataType       = "tavily";
         console.log(`[Tavily] got data for "${loc}"`);
       } else {
-        console.warn(`[Tavily] no useful data for "${loc}"`);
+        console.warn(`[Tavily] no/slow data for "${loc}"`);
       }
     } catch (e) {
       console.warn("[Tavily] fetch failed (non-fatal):", e);
@@ -717,8 +766,11 @@ export async function POST(req: NextRequest) {
   try {
     const result = normalise(raw!, loc, dataSource, dataSourceLabel, currency, bayutPricePsf);
     console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
+    setCache(cacheKey, result);
     return NextResponse.json(result);
   } catch {
-    return NextResponse.json(mkFallback(loc, resolvedUnit, currency));
+    const fallback = mkFallback(loc, resolvedUnit, currency);
+    setCache(cacheKey, fallback);
+    return NextResponse.json(fallback);
   }
 }

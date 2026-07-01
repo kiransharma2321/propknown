@@ -32,16 +32,43 @@ const PROPERTY_TYPES = [
   { value: "agriculture", label: "Agriculture / Farm Land", defaultUnit: "acres"  },
 ];
 
-const UNITS = [
+const LOADING_STEPS = [
+  "Searching current listings…",
+  "Analysing area trends…",
+  "Calculating market estimate…",
+];
+
+// Base units always available
+const BASE_UNITS = [
   { value: "sqft",   label: "sq.ft"   },
   { value: "sqyard", label: "sq.yard" },
+  { value: "sqmeter",label: "sq.m"    },
   { value: "acres",  label: "acres"   },
 ];
 
+// Additional local land units (AP/Telangana) shown only for plot/land/agriculture types
+const LOCAL_LAND_UNITS = [
+  { value: "ankanam", label: "Ankanam" },
+  { value: "cent",    label: "Cent"    },
+  { value: "guntha",  label: "Guntha"  },
+];
+
+const PLOT_LAND_TYPES = ["plot", "agriculture"];
+
 const UNIT_LABELS: Record<string, string> = {
-  sqft:   "Sq.Ft",
-  sqyard: "Sq.Yard",
-  acres:  "Acre",
+  sqft:    "Sq.Ft",
+  sqyard:  "Sq.Yard",
+  sqmeter: "Sq.M",
+  acres:   "Acre",
+  ankanam: "Ankanam",
+  cent:    "Cent",
+  guntha:  "Guntha",
+};
+
+// Sqft multiplier for local units (for display only)
+const UNIT_TO_SQFT: Record<string, number> = {
+  sqft: 1, sqyard: 9, sqmeter: 10.7639, acres: 43560,
+  ankanam: 36, cent: 435.6, guntha: 1089,
 };
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -184,10 +211,11 @@ export default function AIIntelligencePage() {
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState("");
 
-  const [downPct,  setDownPct]  = useState(20);
-  const [intRate,  setIntRate]  = useState(8.75);
-  const [tenure,   setTenure]   = useState(20);
-  const [showEMI,  setShowEMI]  = useState(false);
+  const [downPct,    setDownPct]    = useState(20);
+  const [intRate,    setIntRate]    = useState(8.75);
+  const [tenure,     setTenure]     = useState(20);
+  const [showEMI,    setShowEMI]    = useState(false);
+  const [loadStep,   setLoadStep]   = useState(0);
 
   const dropRef     = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -241,12 +269,22 @@ export default function AIIntelligencePage() {
   const analyze = async () => {
     const loc = (selected || query.split("·")[0]).trim();
     if (!loc) { setError("Please enter a location to analyze."); return; }
-    setLoading(true); setError(""); setResult(null); setShowEMI(false);
+    setLoading(true); setError(""); setResult(null); setShowEMI(false); setLoadStep(0);
+
+    // Progressive loading messages
+    const stepTimers = [
+      setTimeout(() => setLoadStep(1), 3000),
+      setTimeout(() => setLoadStep(2), 6000),
+    ];
+
+    // Resolve API unit: local land units → sqyard for the API (Gemini understands sqyard)
+    const apiUnit = ["ankanam", "cent", "guntha"].includes(unit) ? "sqyard" : unit;
+
     try {
       const res  = await fetch("/api/market-intel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: loc, propertyType: propType, unit }),
+        body: JSON.stringify({ location: loc, propertyType: propType, unit: apiUnit }),
       });
       const data = await res.json();
       if (res.ok && !data.error) {
@@ -257,6 +295,7 @@ export default function AIIntelligencePage() {
     } catch {
       setError("Could not analyze right now. Please WhatsApp us on 97017 71333.");
     } finally {
+      stepTimers.forEach(clearTimeout);
       setLoading(false);
     }
   };
@@ -266,7 +305,12 @@ export default function AIIntelligencePage() {
   const sym        = r?.currencySymbol ?? "₹";
   const curr       = r?.currency       ?? "INR";
   const areaNum    = Number(area) || 0;
-  const propValue  = r && areaNum > 0 ? Math.round(r.currentPricePerSqft * areaNum) : 0;
+  // For local land units, convert to sqyard first (API returns sqyard price for these)
+  const isLocalUnit  = ["ankanam", "cent", "guntha"].includes(unit);
+  const areaInApiUnit = isLocalUnit && areaNum > 0
+    ? (areaNum * (UNIT_TO_SQFT[unit] ?? 1)) / (UNIT_TO_SQFT["sqyard"] ?? 9)
+    : areaNum;
+  const propValue  = r && areaInApiUnit > 0 ? Math.round(r.currentPricePerSqft * areaInApiUnit) : 0;
   const loanAmt    = propValue > 0 ? Math.round(propValue * (1 - downPct / 100)) : 0;
   const monthlyEMI = loanAmt  > 0 ? calcEMI(loanAmt, intRate, tenure) : 0;
   const totalPay   = monthlyEMI * tenure * 12;
@@ -277,8 +321,6 @@ export default function AIIntelligencePage() {
   const ts     = TREND_STYLE[trend] ?? TREND_STYLE.Stable;
   const rating = r?.investmentRating ?? 0;
   const ratingColor = rating >= 8 ? "text-green-600" : rating >= 6 ? "text-yellow-600" : "text-red-600";
-
-  const locLabel = r?.locationName ?? (selected || query.split("·")[0].trim());
 
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
@@ -366,16 +408,25 @@ export default function AIIntelligencePage() {
                   />
                 </div>
 
-                {/* Unit — col-span-1 was too narrow; bumped to 2 so "sq.yard" is fully visible */}
+                {/* Unit — local land units for plot/agriculture */}
                 <div className="sm:col-span-2">
                   <label className="label-dark">Unit</label>
                   <div className="relative">
                     <select value={unit} onChange={(e) => setUnit(e.target.value)}
                       className="input-dark appearance-none pr-7 text-sm" style={{ minWidth: "90px" }}>
-                      {UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                      {BASE_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                      {PLOT_LAND_TYPES.includes(propType) && (
+                        <>
+                          <option disabled>── Local units ──</option>
+                          {LOCAL_LAND_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label} ★</option>)}
+                        </>
+                      )}
                     </select>
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
+                  {PLOT_LAND_TYPES.includes(propType) && (
+                    <p className="text-[9px] text-amber-600 mt-0.5">★ AP/Telangana local units</p>
+                  )}
                 </div>
               </div>
 
@@ -395,7 +446,7 @@ export default function AIIntelligencePage() {
               <button onClick={analyze} disabled={loading}
                 className="btn-gold w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
                 {loading
-                  ? <><Loader2 size={16} className="animate-spin" />Analyzing {locLabel || "location"}…</>
+                  ? <><Loader2 size={16} className="animate-spin" />{LOADING_STEPS[loadStep]}</>
                   : <><Bot size={16} />Generate Market Intelligence</>}
               </button>
 
@@ -617,6 +668,18 @@ export default function AIIntelligencePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Local land unit note */}
+                {isLocalUnit && (
+                  <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <AlertCircle size={13} className="text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      <span className="text-amber-700 font-semibold">Local units: </span>
+                      Price shown per sq.yard (API unit). Your area of {areaNum} {UNIT_LABELS[unit]} = {areaInApiUnit.toFixed(2)} sq.yards.
+                      Standard conversions: 1 ankanam = 36 sqft, 1 cent = 435.6 sqft, 1 guntha = 1,089 sqft. These can vary slightly by region — verify locally.
+                    </p>
+                  </div>
+                )}
 
                 {/* Disclaimer */}
                 <div className="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-xl p-4">

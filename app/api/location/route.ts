@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 interface NomItem {
   display_name: string;
+  type?: string;
+  addresstype?: string;
   address?: {
     suburb?: string;
     neighbourhood?: string;
     quarter?: string;
+    city_district?: string;
     city?: string;
     town?: string;
     village?: string;
+    county?: string;
     state?: string;
     country?: string;
+    country_code?: string;
   };
 }
 
@@ -22,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=12&addressdetails=1`,
       {
         headers: {
           "Accept-Language": "en",
@@ -37,15 +42,31 @@ export async function GET(req: NextRequest) {
     const results = data
       .map((item) => {
         const a = item.address ?? {};
-        const name = a.suburb ?? a.neighbourhood ?? a.quarter ?? a.city ?? a.town ?? a.village ?? q;
-        const parts = item.display_name.split(",").slice(1, 3).map((s) => s.trim()).filter(Boolean);
-        return { name, hint: parts.join(", ") || a.country || "", full: item.display_name };
+        // Pick the most specific name available
+        const name =
+          a.suburb ?? a.neighbourhood ?? a.quarter ?? a.city_district ??
+          a.city ?? a.town ?? a.village ?? q;
+
+        // Build a meaningful hint: city + state/country
+        const city    = a.city ?? a.town ?? a.county ?? "";
+        const state   = a.state ?? "";
+        const country = a.country ?? "";
+        const hintParts: string[] = [];
+        if (city && city !== name)    hintParts.push(city);
+        if (state && state !== city)  hintParts.push(state);
+        if (country)                   hintParts.push(country);
+        const hint = hintParts.slice(0, 2).join(", ");
+
+        return { name, hint, full: item.display_name };
       })
       .filter((r) => {
-        if (seen.has(r.name)) return false;
-        seen.add(r.name);
+        // Dedup by name+hint so same-named areas in different cities both show
+        const key = `${r.name}|${r.hint}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
         return true;
-      });
+      })
+      .slice(0, 8);
 
     return NextResponse.json(results, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
