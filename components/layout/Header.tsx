@@ -5,6 +5,7 @@ import { Menu, X, Phone } from "lucide-react";
 import Link from "next/link";
 import { COMPANY } from "@/lib/utils";
 import PKLogo from "./PKLogo";
+import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
 
 const navLinks = [
   { label: "Home",         href: "/" },
@@ -14,6 +15,7 @@ const navLinks = [
   { label: "AI Intel",     href: "/ai-intelligence" },
   { label: "Invest",       href: "/invest" },
   { label: "For Builders", href: "/builders" },
+  { label: "NRI",          href: "/nri" },
   { label: "About",        href: "/about" },
   { label: "Contact",      href: "/contact" },
 ];
@@ -64,6 +66,7 @@ export default function Header() {
         </ul>
 
         <div className="hidden lg:flex items-center gap-3">
+          <CurrencyToggle />
           <Link href="/contact" className="btn-gold text-sm py-2 px-4">
             Get Consultation
           </Link>

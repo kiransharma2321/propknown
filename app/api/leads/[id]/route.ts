@@ -1,12 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const lead = await prisma.lead.findUnique({
+      where: { id: params.id },
+      include: { property: { select: { id: true, title: true } } },
+    });
+    if (!lead) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(lead);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const body = await req.json();
+    const body = await req.json() as Record<string, unknown>;
+
+    // Safely extract only allowed fields
+    const allowed: Record<string, unknown> = {};
+    const allowedKeys = ["status", "notes", "assignedTo", "followUpDate", "leadValue", "tags"];
+    for (const k of allowedKeys) {
+      if (k in body) allowed[k] = body[k];
+    }
+
+    // Append to timeline if a note or status change is provided
+    if ("notes" in body || "status" in body) {
+      const existing = await prisma.lead.findUnique({ where: { id: params.id }, select: { timeline: true } });
+      const timeline = Array.isArray(existing?.timeline) ? existing.timeline : [];
+      const entry: Record<string, string> = { ts: new Date().toISOString() };
+      if ("status" in body) entry.type = "status";
+      if ("notes" in body) entry.type = "note";
+      if ("notes" in body && typeof body.notes === "string") entry.text = body.notes;
+      if ("status" in body && typeof body.status === "string") entry.text = `Status → ${body.status}`;
+      allowed.timeline = [...timeline, entry];
+    }
+
+    // followUpDate: parse ISO string to Date
+    if (allowed.followUpDate && typeof allowed.followUpDate === "string") {
+      allowed.followUpDate = new Date(allowed.followUpDate);
+    }
+
     const lead = await prisma.lead.update({
       where: { id: params.id },
-      data: body,
+      data: allowed as Parameters<typeof prisma.lead.update>[0]["data"],
     });
     return NextResponse.json(lead);
   } catch (err) {
@@ -15,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await prisma.lead.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });

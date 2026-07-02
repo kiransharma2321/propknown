@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MapPin, Bed, Bath, Maximize, Star, Shield } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import CurrencyPrice from "@/components/ui/CurrencyPrice";
 
 interface PropertyCardProps {
   id: string;
@@ -22,7 +22,7 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({
-  id, title, location, city, price, currency = "INR",
+  id, title, location, city, price,
   beds, baths, sqft, propertyType, listingType,
   images = [], aiScore, reraNumber, featured, verified,
 }: PropertyCardProps) {
@@ -94,7 +94,7 @@ export default function PropertyCard({
         {/* Price + RERA */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-gold-400 font-bold text-lg">{formatPrice(price, currency)}</p>
+            <CurrencyPrice priceINR={price} />
             {reraNumber && (
               <div className="flex items-center gap-1 mt-1">
                 <Shield size={10} className="text-green-400" />

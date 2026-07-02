@@ -942,7 +942,13 @@ export default function AdminDashboard() {
             </button>
           ))}
           <a href="/crm/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
-            <Users size={15} /> CRM
+            <Users size={15} /> CRM Pipeline
+          </a>
+          <a href="/admin/bulk-import" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+            <FileText size={15} /> Bulk Import
+          </a>
+          <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+            <Home size={15} /> NRI Page
           </a>
           <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
             <Home size={15} /> View Website
