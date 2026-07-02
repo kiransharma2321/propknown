@@ -25,9 +25,6 @@ export function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-export const ADMIN_CREDENTIALS = { username: "propknown", password: "***REMOVED***" };
-export const CRM_CREDENTIALS   = { username: "crm",       password: "***REMOVED***" };
-
 export const COMPANY = {
   name:    "PROPKNOWN INFRA PVT LTD",
   tagline: "KNOW. INVEST. GROW.",

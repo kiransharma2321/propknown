@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { Resend } from "resend";
+import { sendAdminEmail, buildSubmissionHtml } from "@/lib/email";
 import { notifyNewSubmission } from "@/lib/notifications";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,34 +52,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Bell notification (fire-and-forget)
+    // Bell notification
     notifyNewSubmission({ id: submission.id, title, ownerName, city }).catch(() => null);
 
-    // Email admin (fire-and-forget)
-    resend.emails.send({
-      from: "PropKnown <onboarding@resend.dev>",
-      to: "kiranpropservices@gmail.com",
+    // Email admin — to both kiranpropservices@gmail.com and raghupinnelli@gmail.com, logs message ID
+    sendAdminEmail({
       subject: `New Property Submission: ${title}`,
-      html: `
-        <h2 style="color:#C9A24B">New Property Submission — Review Required</h2>
-        <table style="border-collapse:collapse;width:100%">
-          <tr><td style="padding:6px 12px;font-weight:bold">Title</td><td style="padding:6px 12px">${title}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Type</td><td style="padding:6px 12px">${propType}${bhk ? ` — ${bhk}` : ""}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Location</td><td style="padding:6px 12px">${area}, ${city}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Price</td><td style="padding:6px 12px">${priceDisplay}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Owner</td><td style="padding:6px 12px">${ownerName}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Phone</td><td style="padding:6px 12px">${ownerPhone}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Email</td><td style="padding:6px 12px">${ownerEmail}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Photos</td><td style="padding:6px 12px">${photoIds.length} uploaded</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">Documents</td><td style="padding:6px 12px">${docIds.length} uploaded</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:bold">RERA</td><td style="padding:6px 12px">${reraNumber || "Not provided"}</td></tr>
-        </table>
-        <p style="margin-top:20px">
-          <a href="https://www.propknown.com/admin/dashboard" style="background:#C9A24B;color:#000;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold">
-            Review in Admin Dashboard →
-          </a>
-        </p>
-      `,
+      html: buildSubmissionHtml({
+        title, propType, bhk, priceDisplay, city, area,
+        ownerName, ownerPhone, ownerEmail, reraNumber,
+        photoCount: photoIds.length, docCount: docIds.length,
+      }),
     }).catch(() => null);
 
     return NextResponse.json({ id: submission.id, message: "Submission received successfully." });

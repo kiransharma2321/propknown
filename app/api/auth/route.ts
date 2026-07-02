@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_CREDENTIALS, CRM_CREDENTIALS } from "@/lib/utils";
+import { ADMIN_CREDENTIALS, CRM_CREDENTIALS } from "@/lib/credentials";
 
 export async function POST(req: NextRequest) {
   const { username, password, role } = await req.json();

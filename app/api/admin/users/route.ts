@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/rbac";
 import { cookies } from "next/headers";
-import { ADMIN_CREDENTIALS } from "@/lib/utils";
+import { ADMIN_CREDENTIALS } from "@/lib/credentials";
 
 async function isMasterAdmin(): Promise<boolean> {
   const cookieStore = await cookies();
