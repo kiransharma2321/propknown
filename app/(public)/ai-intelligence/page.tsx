@@ -46,12 +46,6 @@ const BASE_UNITS = [
   { value: "acres",  label: "acres"   },
 ];
 
-// Additional local land units (AP/Telangana) shown only for plot/land/agriculture types
-const LOCAL_LAND_UNITS = [
-  { value: "ankanam", label: "Ankanam" },
-  { value: "cent",    label: "Cent"    },
-  { value: "guntha",  label: "Guntha"  },
-];
 
 const PLOT_LAND_TYPES = ["plot", "agriculture"];
 
@@ -63,13 +57,58 @@ const UNIT_LABELS: Record<string, string> = {
   ankanam: "Ankanam",
   cent:    "Cent",
   guntha:  "Guntha",
+  ground:  "Ground",
+  bigha:   "Bigha",
+  gaz:     "Gaz (Sq.Yard)",
 };
 
-// Sqft multiplier for local units (for display only)
+// Sqft multiplier for all units
 const UNIT_TO_SQFT: Record<string, number> = {
   sqft: 1, sqyard: 9, sqmeter: 10.7639, acres: 43560,
   ankanam: 36, cent: 435.6, guntha: 1089,
+  ground: 2400, bigha: 27000, gaz: 9,
 };
+
+// Region detection from location string → returns local units for plot/land
+function getRegionUnits(location: string): { value: string; label: string; note: string }[] {
+  const loc = location.toLowerCase();
+  // AP / Telangana
+  if (loc.match(/hyderabad|telangana|andhra|vizag|guntur|nellore|vijayawada|tirupati|kakinada/)) {
+    return [
+      { value: "ankanam", label: "Ankanam",   note: "= 36 sq.ft" },
+      { value: "cent",    label: "Cent",       note: "= 435.6 sq.ft" },
+      { value: "guntha",  label: "Guntha",     note: "= 1,089 sq.ft" },
+    ];
+  }
+  // Tamil Nadu / Kerala
+  if (loc.match(/chennai|coimbatore|madurai|tamil|kerala|thrissur|kochi|trivandrum|calicut/)) {
+    return [
+      { value: "cent",   label: "Cent",   note: "= 435.6 sq.ft" },
+      { value: "ground", label: "Ground", note: "= 2,400 sq.ft" },
+    ];
+  }
+  // Karnataka
+  if (loc.match(/bangalore|bengaluru|mysore|karnataka|hubli|mangalore/)) {
+    return [
+      { value: "guntha", label: "Guntha", note: "= 1,089 sq.ft" },
+    ];
+  }
+  // Maharashtra / Gujarat
+  if (loc.match(/mumbai|pune|nagpur|maharashtra|gujarat|surat|ahmedabad/)) {
+    return [
+      { value: "guntha", label: "Guntha", note: "= 1,089 sq.ft" },
+    ];
+  }
+  // North India
+  if (loc.match(/delhi|ncr|gurgaon|noida|faridabad|haryana|punjab|rajasthan|uttar pradesh|up |lucknow|kanpur|jaipur/)) {
+    return [
+      { value: "gaz",   label: "Gaz (Sq.Yard)", note: "= 9 sq.ft" },
+      { value: "bigha", label: "Bigha",          note: "≈ 27,000 sq.ft (varies)" },
+    ];
+  }
+  // International / default — no local units
+  return [];
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 interface Loc { name: string; hint: string; }
@@ -278,7 +317,8 @@ export default function AIIntelligencePage() {
     ];
 
     // Resolve API unit: local land units → sqyard for the API (Gemini understands sqyard)
-    const apiUnit = ["ankanam", "cent", "guntha"].includes(unit) ? "sqyard" : unit;
+    const LOCAL_LAND = ["ankanam", "cent", "guntha", "ground", "bigha", "gaz"];
+    const apiUnit = LOCAL_LAND.includes(unit) ? "sqyard" : unit;
 
     try {
       const res  = await fetch("/api/market-intel", {
@@ -306,7 +346,8 @@ export default function AIIntelligencePage() {
   const curr       = r?.currency       ?? "INR";
   const areaNum    = Number(area) || 0;
   // For local land units, convert to sqyard first (API returns sqyard price for these)
-  const isLocalUnit  = ["ankanam", "cent", "guntha"].includes(unit);
+  const LOCAL_UNITS_SET = ["ankanam", "cent", "guntha", "ground", "bigha", "gaz"];
+  const isLocalUnit  = LOCAL_UNITS_SET.includes(unit);
   const areaInApiUnit = isLocalUnit && areaNum > 0
     ? (areaNum * (UNIT_TO_SQFT[unit] ?? 1)) / (UNIT_TO_SQFT["sqyard"] ?? 9)
     : areaNum;
@@ -408,25 +449,35 @@ export default function AIIntelligencePage() {
                   />
                 </div>
 
-                {/* Unit — local land units for plot/agriculture */}
+                {/* Unit — region-aware local land units for plot/agriculture */}
                 <div className="sm:col-span-2">
                   <label className="label-dark">Unit</label>
                   <div className="relative">
                     <select value={unit} onChange={(e) => setUnit(e.target.value)}
                       className="input-dark appearance-none pr-7 text-sm" style={{ minWidth: "90px" }}>
                       {BASE_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
-                      {PLOT_LAND_TYPES.includes(propType) && (
-                        <>
-                          <option disabled>── Local units ──</option>
-                          {LOCAL_LAND_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label} ★</option>)}
-                        </>
-                      )}
+                      {PLOT_LAND_TYPES.includes(propType) && (() => {
+                        const localUnits = getRegionUnits(query || selected);
+                        if (!localUnits.length) return null;
+                        return (
+                          <>
+                            <option disabled>── Local units ──</option>
+                            {localUnits.map((u) => <option key={u.value} value={u.value}>{u.label} ★</option>)}
+                          </>
+                        );
+                      })()}
                     </select>
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
-                  {PLOT_LAND_TYPES.includes(propType) && (
-                    <p className="text-[9px] text-amber-600 mt-0.5">★ AP/Telangana local units</p>
-                  )}
+                  {PLOT_LAND_TYPES.includes(propType) && (() => {
+                    const localUnits = getRegionUnits(query || selected);
+                    const currentLocal = localUnits.find(u => u.value === unit);
+                    return currentLocal
+                      ? <p className="text-[9px] text-amber-600 mt-0.5">★ Local unit: 1 {currentLocal.label} {currentLocal.note}</p>
+                      : localUnits.length > 0
+                        ? <p className="text-[9px] text-amber-600 mt-0.5">★ Local units available for this region</p>
+                        : null;
+                  })()}
                 </div>
               </div>
 
