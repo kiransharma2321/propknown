@@ -22,7 +22,7 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({
-  id, title, location, city, price,
+  id, title, location, city, price, currency,
   beds, baths, sqft, propertyType, listingType,
   images = [], aiScore, reraNumber, featured, verified,
 }: PropertyCardProps) {
@@ -94,7 +94,7 @@ export default function PropertyCard({
         {/* Price + RERA */}
         <div className="flex items-end justify-between">
           <div>
-            <CurrencyPrice priceINR={price} />
+            <CurrencyPrice priceINR={price} sourceCurrency={currency} />
             {reraNumber && (
               <div className="flex items-center gap-1 mt-1">
                 <Shield size={10} className="text-green-400" />

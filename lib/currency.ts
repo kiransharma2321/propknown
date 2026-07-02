@@ -27,6 +27,14 @@ export function convertPrice(priceINR: number, to: CurrencyCode): number {
   return priceINR * rate;
 }
 
+// Normalize an amount denominated in any supported currency back to INR,
+// so listings priced in AED/USD/etc. can be run through convertPrice/formatCurrency.
+export function toINR(amount: number, from: CurrencyCode): number {
+  const rate = CURRENCY_MAP[from]?.rateFromINR;
+  if (!rate) return amount;
+  return amount / rate;
+}
+
 export function formatCurrency(priceINR: number, to: CurrencyCode): string {
   const info = CURRENCY_MAP[to];
   if (!info) return `₹${priceINR.toLocaleString("en-IN")}`;

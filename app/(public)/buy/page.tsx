@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Search, MapPin, ChevronDown, Heart, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
+import CurrencyPrice from "@/components/ui/CurrencyPrice";
 
 const LISTINGS = [
   { id:"aparna",    title:"Aparna Sarovar Grande 3BHK", location:"Nallagandla",  city:"Hyderabad",   display:"₹1.25 Cr",    price:12500000, sqft:1950, beds:3, baths:3, floor:"8th Floor",   facing:"East",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400006789", aiScore:8.4, type:"Apartment",  img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
@@ -294,7 +295,9 @@ function BuyPageInner() {
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{p.title}</h3>
                       <div className="flex items-center gap-1 text-gray-400 text-xs mb-2"><MapPin size={10} />{p.location}, {p.city}</div>
-                      <p className="text-xl font-bold mb-2" style={{ color:"#C9A24B", fontFamily:"var(--font-playfair,Georgia,serif)" }}>{p.display}</p>
+                      <p className="mb-2" style={{ fontFamily:"var(--font-playfair,Georgia,serif)" }}>
+                        <CurrencyPrice priceINR={p.price} className="text-xl font-bold text-[#C9A24B]" />
+                      </p>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-1">
                         {p.beds > 0 && <span>{p.beds} BHK</span>}
                         {p.sqft > 0 && <span>{p.sqft.toLocaleString()} sqft</span>}

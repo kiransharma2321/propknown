@@ -12,6 +12,7 @@ import type { Listing } from "@/lib/listings";
 import { COMPANY } from "@/lib/utils";
 import CostCalculator from "@/components/ui/CostCalculator";
 import VerificationBadge from "@/components/ui/VerificationBadge";
+import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
@@ -348,8 +349,8 @@ out body qt 30;`;
                 <MapPin size={14} />
                 <span>{listing.location}, {listing.city}</span>
               </div>
-              <p className="text-3xl font-bold mb-5" style={{ color: GOLD, fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                {listing.display}
+              <p className="text-3xl font-bold mb-5" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                <CurrencyPrice priceINR={listing.price} sourceCurrency={listing.currency} className="text-3xl font-bold text-[#C9A24B]" />
               </p>
 
               {/* Key stats */}
