@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus } from "lucide-react";
+import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type LeadStatus = "new" | "contacted" | "visit_booked" | "negotiation" | "won" | "lost";
@@ -202,6 +202,12 @@ export default function CRMDashboard() {
           <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white bg-zinc-800">
             <LayoutDashboard size={15} /> Lead Pipeline
           </button>
+          <a href="/crm/contacts" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+            <Users size={15} /> Contacts
+          </a>
+          <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+            <TrendingUp size={15} /> Deals
+          </a>
           <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
             <Home size={15} /> Admin
           </a>
