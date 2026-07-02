@@ -12,6 +12,7 @@ import type { Listing } from "@/lib/listings";
 import { COMPANY } from "@/lib/utils";
 import CostCalculator from "@/components/ui/CostCalculator";
 import VerificationBadge from "@/components/ui/VerificationBadge";
+import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
 const PropertyMap = dynamic(() => import("@/components/property/PropertyMap"), {
@@ -122,6 +123,18 @@ export default function PropertyDetailClient({
   const waText = encodeURIComponent(
     `Hi PropKnown, I'm interested in "${listing.title}" (${listing.location}, ${listing.display}). Please share details and arrange a visit.`
   );
+
+  // ── Track recently viewed ─────────────────────────────────────────────────
+  useEffect(() => {
+    addRecentlyViewed({
+      id: listing.id,
+      title: listing.title,
+      price: `₹${listing.price?.toLocaleString("en-IN") ?? ""}`,
+      city: listing.city,
+      type: listing.type ?? "",
+      image: listing.images?.[0],
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Geocode if no coords ──────────────────────────────────────────────────
   useEffect(() => {

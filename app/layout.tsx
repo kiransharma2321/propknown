@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import JarvisChat from "@/components/chatbot/JarvisChat";
 import ClientProviders from "@/components/ClientProviders";
+import { Analytics } from "@vercel/analytics/react";
 
 const BASE_URL = "https://www.propknown.com";
 
@@ -154,6 +155,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <WhatsAppButton />
         <JarvisChat />
+        <Analytics />
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
+              }}
+            />
+          </>
+        )}
       </body>
     </html>
   );

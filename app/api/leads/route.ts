@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
+import { notifyNewLead } from "@/lib/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const NOTIFY_TO = "raghupinnelli@gmail.com";
@@ -78,8 +79,9 @@ export async function POST(req: NextRequest) {
       data: { name, phone, email, message, source: source ?? "website", propertyId: propertyId ?? null },
     });
 
-    // Fire-and-forget email notification via Resend
+    // Fire-and-forget notifications
     sendLeadEmail({ name, phone, email, message, source: source ?? "website" });
+    notifyNewLead({ id: lead.id, name, source: source ?? "website", phone }).catch(() => null);
 
     const waLink = `https://wa.me/91${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${name}, thank you for your enquiry on PropKnown. How can we help you today?`)}`;
     return NextResponse.json({ success: true, id: lead.id, whatsappLink: waLink }, { status: 201 });

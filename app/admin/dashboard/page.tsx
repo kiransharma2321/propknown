@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download } from "lucide-react";
+import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 
@@ -955,7 +956,11 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex items-center justify-end px-6 pt-4 pb-0 shrink-0">
+          <NotificationBell />
+        </div>
+        <div className="flex-1 p-6 overflow-y-auto">
         {adminTab === "aiBrain"     && <AiBrainTab />}
         {adminTab === "quickAdd"    && <QuickAddTab />}
         {adminTab === "submissions" && <SubmissionsTab />}
@@ -1280,6 +1285,7 @@ export default function AdminDashboard() {
             </div>
           </>
         )}
+        </div>
       </main>
     </div>
   );

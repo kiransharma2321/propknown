@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Resend } from "resend";
+import { notifyNewSubmission } from "@/lib/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -53,7 +54,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Notify admin (fire-and-forget)
+    // Bell notification (fire-and-forget)
+    notifyNewSubmission({ id: submission.id, title, ownerName, city }).catch(() => null);
+
+    // Email admin (fire-and-forget)
     resend.emails.send({
       from: "PropKnown <onboarding@resend.dev>",
       to: "kiranpropservices@gmail.com",
