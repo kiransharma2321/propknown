@@ -13,6 +13,7 @@ import { COMPANY } from "@/lib/utils";
 import CostCalculator from "@/components/ui/CostCalculator";
 import VerificationBadge from "@/components/ui/VerificationBadge";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
+import FavoriteButton from "@/components/buyer/FavoriteButton";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
@@ -342,9 +343,19 @@ out body qt 30;`;
                   {listing.status}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                {listing.title}
-              </h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                  {listing.title}
+                </h1>
+                <FavoriteButton
+                  listingId={listing.id}
+                  title={listing.title}
+                  priceDisplay={listing.display}
+                  location={`${listing.location}, ${listing.city}`}
+                  image={listing.images[0]}
+                  className="shrink-0 w-10 h-10 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors mt-1"
+                />
+              </div>
               <div className="flex items-center gap-2 text-gray-500 text-sm mb-4">
                 <MapPin size={14} />
                 <span>{listing.location}, {listing.city}</span>

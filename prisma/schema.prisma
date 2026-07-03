@@ -90,6 +90,43 @@ model UploadedFile {
   createdAt DateTime @default(now())
 }
 
+model BuyerUser {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  favorites    Favorite[]
+  alerts       Alert[]
+}
+
+model Favorite {
+  id           String    @id @default(cuid())
+  buyerId      String
+  buyer        BuyerUser @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  listingId    String
+  title        String
+  priceDisplay String?
+  location     String?
+  image        String?
+  createdAt    DateTime  @default(now())
+
+  @@unique([buyerId, listingId])
+}
+
+model Alert {
+  id        String    @id @default(cuid())
+  buyerId   String
+  buyer     BuyerUser @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  city      String?
+  propType  String?
+  minBudget Float?
+  maxBudget Float?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+}
+
 model PropertySubmission {
   id           String   @id @default(cuid())
   title        String

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MapPin, Bed, Bath, Maximize, Star, Shield } from "lucide-react";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
+import FavoriteButton from "@/components/buyer/FavoriteButton";
 
 interface PropertyCardProps {
   id: string;
@@ -48,12 +49,22 @@ export default function PropertyCard({
             </span>
           )}
         </div>
-        {aiScore && (
-          <div className="absolute top-3 right-3 bg-black/90 border border-gold-500 rounded-sm px-2 py-1 flex items-center gap-1">
-            <Star size={10} className="text-gold-400 fill-gold-400" />
-            <span className="text-gold-400 text-[11px] font-bold">{aiScore.toFixed(1)}</span>
-          </div>
-        )}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          {aiScore && (
+            <div className="bg-black/90 border border-gold-500 rounded-sm px-2 py-1 flex items-center gap-1">
+              <Star size={10} className="text-gold-400 fill-gold-400" />
+              <span className="text-gold-400 text-[11px] font-bold">{aiScore.toFixed(1)}</span>
+            </div>
+          )}
+          <FavoriteButton
+            listingId={id}
+            title={title}
+            location={`${location}, ${city}`}
+            image={img}
+            className="w-8 h-8 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors"
+            strokeColor="#ccc"
+          />
+        </div>
       </div>
 
       {/* Info */}

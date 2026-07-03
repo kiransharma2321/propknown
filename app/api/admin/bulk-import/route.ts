@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { notifyMatchingAlerts } from "@/lib/alerts";
 
 interface ImportRow {
   title: string;
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
           },
         });
         results.push({ row: i + 1, status: "ok", id: sub.id });
+
+        if (sub.status === "approved") {
+          notifyMatchingAlerts({
+            id: sub.id, title: sub.title, propType: sub.propType,
+            city: sub.city, area: sub.area, priceDisplay: sub.priceDisplay,
+          }).catch(() => null);
+        }
       } catch (e) {
         results.push({ row: i + 1, status: "error", error: String(e) });
       }

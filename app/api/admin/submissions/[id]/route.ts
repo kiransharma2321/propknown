@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { notifyMatchingAlerts } from "@/lib/alerts";
 
 export async function GET(
   _req: NextRequest,
@@ -65,6 +66,13 @@ export async function PATCH(
       adminNotes:   notes ?? null,
     },
   });
+
+  if (action === "approve") {
+    notifyMatchingAlerts({
+      id: updated.id, title: updated.title, propType: updated.propType,
+      city: updated.city, area: updated.area, priceDisplay: updated.priceDisplay,
+    }).catch(() => null);
+  }
 
   return NextResponse.json({ id: updated.id, status: updated.status });
 }

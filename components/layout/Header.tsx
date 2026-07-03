@@ -6,23 +6,27 @@ import Link from "next/link";
 import { COMPANY } from "@/lib/utils";
 import PKLogo from "./PKLogo";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
+import { LanguageToggle, useLanguage } from "@/components/ui/LanguageToggle";
+import AccountLink from "@/components/buyer/AccountLink";
+import type { DictKey } from "@/lib/i18n";
 
-const navLinks = [
-  { label: "Home",         href: "/" },
-  { label: "Buy",          href: "/buy" },
-  { label: "Sell",         href: "/sell" },
-  { label: "Services",     href: "/services" },
-  { label: "AI Intel",     href: "/ai-intelligence" },
-  { label: "Invest",       href: "/invest" },
-  { label: "For Builders", href: "/builders" },
-  { label: "NRI",          href: "/nri" },
-  { label: "About",        href: "/about" },
-  { label: "Contact",      href: "/contact" },
+const navLinks: { key: DictKey; href: string }[] = [
+  { key: "navHome",     href: "/" },
+  { key: "navBuy",      href: "/buy" },
+  { key: "navSell",     href: "/sell" },
+  { key: "navServices", href: "/services" },
+  { key: "navAiIntel",  href: "/ai-intelligence" },
+  { key: "navInvest",   href: "/invest" },
+  { key: "navBuilders", href: "/builders" },
+  { key: "navNri",      href: "/nri" },
+  { key: "navAbout",    href: "/about" },
+  { key: "navContact",  href: "/contact" },
 ];
 
 export default function Header() {
   const [open, setOpen]         = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -49,6 +53,7 @@ export default function Header() {
             <a href={`mailto:${COMPANY.email}`} className="text-gray-500 text-xs hover:text-gray-800 transition-colors">
               {COMPANY.email}
             </a>
+            <AccountLink />
           </div>
         </div>
       </div>
@@ -60,15 +65,16 @@ export default function Header() {
         <ul className="hidden xl:flex items-center gap-6">
           {navLinks.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="nav-link text-[13px]">{l.label}</Link>
+              <Link href={l.href} className="nav-link text-[13px]">{t(l.key)}</Link>
             </li>
           ))}
         </ul>
 
         <div className="hidden lg:flex items-center gap-3">
+          <LanguageToggle />
           <CurrencyToggle />
           <Link href="/contact" className="btn-gold text-sm py-2 px-4">
-            Get Consultation
+            {t("getConsultation")}
           </Link>
         </div>
 
@@ -83,13 +89,16 @@ export default function Header() {
             {navLinks.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="nav-link block py-1" onClick={() => setOpen(false)}>
-                  {l.label}
+                  {t(l.key)}
                 </Link>
               </li>
             ))}
             <li className="pt-2 border-t border-gray-200">
+              <AccountLink className="flex items-center gap-1.5 text-sm text-gray-600 py-1" />
+            </li>
+            <li>
               <Link href="/contact" className="btn-gold text-sm w-full justify-center" onClick={() => setOpen(false)}>
-                Get Consultation
+                {t("getConsultation")}
               </Link>
             </li>
           </ul>

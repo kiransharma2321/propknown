@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/ui/LanguageToggle";
 
 const HERO_VIDEO = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4";
 
@@ -23,6 +24,7 @@ const BUDGETS = [
 
 export default function HeroSection() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [city,     setCity]     = useState("");
   const [area,     setArea]     = useState("");
@@ -73,7 +75,7 @@ export default function HeroSection() {
           style={{ background: "rgba(201,162,75,0.12)" }}
         >
           <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-          AI-Powered · RERA Verified · Zero Broker Spam
+          {t("heroBadge")}
         </div>
 
         {/* Headline */}
@@ -81,15 +83,15 @@ export default function HeroSection() {
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
           style={{ fontFamily: "var(--font-playfair, Georgia, serif)", textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
-          Know Before You
+          {t("heroHeadline1")}
           <br />
           <span style={{
             background: "linear-gradient(135deg,#C9A24B,#e8c97a,#C9A24B)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-          }}>Invest</span>
+          }}>{t("heroHeadline2")}</span>
         </h1>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          India&apos;s first AI-verified real estate platform. Smart search. Honest prices. Zero fake listings.
+          {t("heroSubhead")}
         </p>
 
         {/* Search card */}
@@ -176,7 +178,7 @@ export default function HeroSection() {
                 style={{ background: "#C9A24B" }}
               >
                 <Search size={16} />
-                Search Properties
+                {t("heroSearchBtn")}
               </button>
             </div>
           </div>

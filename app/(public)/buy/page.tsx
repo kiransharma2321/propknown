@@ -3,10 +3,11 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, MapPin, ChevronDown, Heart, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
+import { Search, MapPin, ChevronDown, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
+import FavoriteButton from "@/components/buyer/FavoriteButton";
 
 const LISTINGS = [
   { id:"aparna",    title:"Aparna Sarovar Grande 3BHK", location:"Nallagandla",  city:"Hyderabad",   display:"₹1.25 Cr",    price:12500000, sqft:1950, beds:3, baths:3, floor:"8th Floor",   facing:"East",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400006789", aiScore:8.4, type:"Apartment",  img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
@@ -33,7 +34,7 @@ interface Submission {
   createdAt: string;
 }
 
-function SubmissionCard({ s, saved, onToggleSave }: { s: Submission; saved: boolean; onToggleSave: () => void }) {
+function SubmissionCard({ s }: { s: Submission }) {
   const firstPhoto = s.photoIds[0] ? `/api/files/${s.photoIds[0]}` : null;
   const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'm interested in "${s.title}" at ${s.area}, ${s.city}. Asking: ${s.priceDisplay}`)}`;
   const { add, remove, isAdded } = useComparison();
@@ -71,10 +72,14 @@ function SubmissionCard({ s, saved, onToggleSave }: { s: Submission; saved: bool
             <Clock size={9} /> New
           </span>
         </div>
-        <button onClick={onToggleSave}
-          className="absolute bottom-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm">
-          <Heart size={14} fill={saved ? "#C9A24B" : "none"} stroke={saved ? "#C9A24B" : "#555"} />
-        </button>
+        <FavoriteButton
+          listingId={`sub-${s.id}`}
+          title={s.title}
+          priceDisplay={s.priceDisplay}
+          location={`${s.area}, ${s.city}`}
+          image={firstPhoto ?? undefined}
+          className="absolute bottom-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+        />
       </div>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{s.title}</h3>
@@ -120,7 +125,6 @@ function BuyPageInner() {
   const [area,        setArea]        = useState(searchParams.get("area")   || "");
   const [type,        setType]        = useState(searchParams.get("type")   || "All Types");
   const [budget,      setBudget]      = useState(searchParams.get("budget") || "Any Budget");
-  const [saved,       setSaved]       = useState<string[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   useEffect(() => {
@@ -165,9 +169,6 @@ function BuyPageInner() {
   });
 
   const clearAll = () => { setCity("All Cities"); setArea(""); setType("All Types"); setBudget("Any Budget"); };
-
-  const toggleSave = (id: string) =>
-    setSaved(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
 
   const totalCount = filtered.length + filteredSubs.length;
 
@@ -250,7 +251,7 @@ function BuyPageInner() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredSubs.map(s => (
-                <SubmissionCard key={s.id} s={s} saved={saved.includes(s.id)} onToggleSave={() => toggleSave(s.id)} />
+                <SubmissionCard key={s.id} s={s} />
               ))}
             </div>
           </div>
@@ -287,10 +288,14 @@ function BuyPageInner() {
                           <Star size={10} fill="currentColor" /> {p.aiScore}
                         </span>
                       </div>
-                      <button onClick={() => toggleSave(p.id)}
-                        className="absolute bottom-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm">
-                        <Heart size={14} fill={saved.includes(p.id) ? "#C9A24B" : "none"} stroke={saved.includes(p.id) ? "#C9A24B" : "#555"} />
-                      </button>
+                      <FavoriteButton
+                        listingId={p.id}
+                        title={p.title}
+                        priceDisplay={p.display}
+                        location={`${p.location}, ${p.city}`}
+                        image={p.img}
+                        className="absolute bottom-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+                      />
                     </div>
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{p.title}</h3>
