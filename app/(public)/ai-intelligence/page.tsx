@@ -352,6 +352,13 @@ export default function AIIntelligencePage() {
     ? (areaNum * (UNIT_TO_SQFT[unit] ?? 1)) / (UNIT_TO_SQFT["sqyard"] ?? 9)
     : areaNum;
   const propValue  = r && areaInApiUnit > 0 ? Math.round(r.currentPricePerSqft * areaInApiUnit) : 0;
+  // API always prices local land units (ankanam/cent/guntha/...) per sq.yard — convert the
+  // displayed rate (headline price + charts) into the buyer's actually-selected unit so
+  // "ankanam" shows a real ₹/ankanam figure instead of the underlying ₹/sq.yard number.
+  const unitConvFactor = isLocalUnit ? (UNIT_TO_SQFT[unit] ?? 9) / (UNIT_TO_SQFT["sqyard"] ?? 9) : 1;
+  const displayUnitKey   = isLocalUnit ? unit : (r?.pricePerSqftUnit ?? "sqft");
+  const displayUnitLabel = UNIT_LABELS[displayUnitKey] ?? displayUnitKey;
+  const displayPrice     = r ? Math.round(r.currentPricePerSqft * unitConvFactor) : 0;
   const loanAmt    = propValue > 0 ? Math.round(propValue * (1 - downPct / 100)) : 0;
   const monthlyEMI = loanAmt  > 0 ? calcEMI(loanAmt, intRate, tenure) : 0;
   const totalPay   = monthlyEMI * tenure * 12;
@@ -549,12 +556,12 @@ export default function AIIntelligencePage() {
                   {/* Big price */}
                   <div className="mb-6">
                     <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">
-                      Current Price per {UNIT_LABELS[r.pricePerSqftUnit] ?? r.pricePerSqftUnit}
+                      Current Price per {displayUnitLabel}
                     </p>
                     <p className="text-5xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                      {sym}{r.currentPricePerSqft.toLocaleString()}
+                      {sym}{displayPrice.toLocaleString()}
                       <span className="text-xl text-gray-400 font-normal ml-2">
-                        /{UNIT_LABELS[r.pricePerSqftUnit] ?? r.pricePerSqftUnit}
+                        /{displayUnitLabel}
                       </span>
                     </p>
                     {areaNum > 0 && (
@@ -595,7 +602,7 @@ export default function AIIntelligencePage() {
                         AI Estimated
                       </span>
                     </p>
-                    <LineChart id="hist" points={r.priceHistory5yr} formatFn={fmtFn} />
+                    <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(p.value * unitConvFactor) }))} formatFn={fmtFn} />
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -607,11 +614,11 @@ export default function AIIntelligencePage() {
                         Projected
                       </span>
                     </p>
-                    <LineChart id="fore" points={r.priceForecast5yr} formatFn={fmtFn} dashed />
+                    <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(p.value * unitConvFactor) }))} formatFn={fmtFn} dashed />
                     <p className="text-center text-gray-400 text-xs mt-1">
                       {r.priceForecast5yr[4]?.year} forecast:
                       <span className="text-green-600 font-semibold ml-1">
-                        {sym}{r.priceForecast5yr[4]?.value.toLocaleString()}/{UNIT_LABELS[r.pricePerSqftUnit] ?? r.pricePerSqftUnit}
+                        {sym}{Math.round((r.priceForecast5yr[4]?.value ?? 0) * unitConvFactor).toLocaleString()}/{displayUnitLabel}
                       </span>
                       <span className="text-green-500 ml-2">
                         (+{Math.round(((r.priceForecast5yr[4]?.value ?? 0) / r.currentPricePerSqft - 1) * 100)}%)
@@ -726,8 +733,8 @@ export default function AIIntelligencePage() {
                     <AlertCircle size={13} className="text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-gray-600 text-xs leading-relaxed">
                       <span className="text-amber-700 font-semibold">Local units: </span>
-                      Price shown per sq.yard (API unit). Your area of {areaNum} {UNIT_LABELS[unit]} = {areaInApiUnit.toFixed(2)} sq.yards.
-                      Standard conversions: 1 ankanam = 36 sqft, 1 cent = 435.6 sqft, 1 guntha = 1,089 sqft. These can vary slightly by region — verify locally.
+                      Price per {UNIT_LABELS[unit]} is converted from the underlying market data (priced per sq.yard) using standard ratios:
+                      1 ankanam = 36 sqft, 1 cent = 435.6 sqft, 1 guntha = 1,089 sqft. These can vary slightly by region — verify locally.
                     </p>
                   </div>
                 )}

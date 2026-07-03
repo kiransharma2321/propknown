@@ -116,7 +116,11 @@ async function callGemini(
       safetySettings: SAFETY_SETTINGS,
       generationConfig: {
         temperature,
+        // gemini-2.5-flash spends part of maxOutputTokens on internal "thinking" before the
+        // visible reply, which was silently truncating longer answers mid-sentence.
+        // Disabling thinking gives the full budget to the actual response.
         maxOutputTokens: 1024,
+        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
     signal: AbortSignal.timeout(22000),

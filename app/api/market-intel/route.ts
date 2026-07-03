@@ -633,7 +633,11 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.25, maxOutputTokens: 2048 },
+      // gemini-2.5-flash spends part of maxOutputTokens on internal "thinking" before the
+      // visible answer — with thinking left on, the JSON reply was getting truncated
+      // mid-object (finishReason: MAX_TOKENS) and every request silently fell back to the
+      // generic, non-area-specific estimate. Disabling thinking fixes this.
+      generationConfig: { temperature: 0.25, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
   const data = await res.json();
