@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 export async function GET(req: NextRequest) {
+  const session = await getAdminSession();
+  if (!session || !canRole(session.role, "submissions")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status") ?? "pending";
 

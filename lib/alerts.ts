@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { sendAdminEmail } from "@/lib/email";
+import { sendAdminEmail, escapeHtml } from "@/lib/email";
 
 // Parses free-text price strings like "₹85 Lakhs", "₹2.8 Cr", "₹25L/acre" into an approximate INR number.
 function parsePriceToINR(display: string): number | null {
@@ -56,6 +56,8 @@ export async function notifyMatchingAlerts(listing: NewListing): Promise<void> {
 }
 
 function buildAlertHtml(buyerName: string, listing: NewListing): string {
+  const name = escapeHtml(buyerName), title = escapeHtml(listing.title);
+  const area = escapeHtml(listing.area), city = escapeHtml(listing.city), price = escapeHtml(listing.priceDisplay);
   return `
     <div style="font-family:sans-serif;max-width:560px;background:#fff;border-radius:12px;border:1px solid #e5e5e5;overflow:hidden">
       <div style="background:#0a0a0a;padding:20px 24px">
@@ -64,10 +66,10 @@ function buildAlertHtml(buyerName: string, listing: NewListing): string {
         <p style="color:#999;font-size:11px;margin:4px 0 0">New Property Alert Match</p>
       </div>
       <div style="padding:24px">
-        <p style="color:#333;font-size:14px">Hi ${buyerName},</p>
+        <p style="color:#333;font-size:14px">Hi ${name},</p>
         <p style="color:#333;font-size:14px">A new property just went live matching one of your saved alerts:</p>
-        <h2 style="margin:12px 0;color:#0a0a0a;font-size:16px">${listing.title}</h2>
-        <p style="color:#555;font-size:13px">${listing.area}, ${listing.city} &middot; <strong style="color:#C9A24B">${listing.priceDisplay}</strong></p>
+        <h2 style="margin:12px 0;color:#0a0a0a;font-size:16px">${title}</h2>
+        <p style="color:#555;font-size:13px">${area}, ${city} &middot; <strong style="color:#C9A24B">${price}</strong></p>
         <div style="margin-top:20px">
           <a href="https://www.propknown.com/buy" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">View on PropKnown →</a>
         </div>

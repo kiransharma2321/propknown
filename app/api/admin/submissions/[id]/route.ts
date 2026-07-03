@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { notifyMatchingAlerts } from "@/lib/alerts";
+import { getAdminSession, canRole } from "@/lib/rbac";
+
+async function requireSubmissionsAccess() {
+  const session = await getAdminSession();
+  return session && canRole(session.role, "submissions");
+}
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await requireSubmissionsAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const sub = await prisma.propertySubmission.findUnique({ where: { id: params.id } });
   if (!sub) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -51,6 +61,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await requireSubmissionsAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json();
   const { action, reason, notes } = body;
 
@@ -81,6 +95,10 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!(await requireSubmissionsAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   await prisma.propertySubmission.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });
 }

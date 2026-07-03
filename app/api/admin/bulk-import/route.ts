@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { notifyMatchingAlerts } from "@/lib/alerts";
+import { getAdminSession, canRole } from "@/lib/rbac";
+
+async function requireBulkImportAccess() {
+  const session = await getAdminSession();
+  return session && canRole(session.role, "bulk_import");
+}
 
 interface ImportRow {
   title: string;
@@ -33,6 +39,10 @@ function parseCSV(text: string): ImportRow[] {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await requireBulkImportAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const { rows, autoApprove } = await req.json() as { rows: ImportRow[]; autoApprove?: boolean };
 
@@ -96,6 +106,10 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   // CSV parse endpoint
+  if (!(await requireBulkImportAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const { csv } = await req.json() as { csv: string };
     const rows = parseCSV(csv);

@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getAdminSession, canRole } from "@/lib/rbac";
+
+async function requirePropertiesAccess() {
+  const session = await getAdminSession();
+  return session && canRole(session.role, "properties");
+}
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!(await requirePropertiesAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const property = await prisma.property.findUnique({
       where: { id: params.id },
@@ -16,6 +26,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!(await requirePropertiesAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const body = await req.json();
     const property = await prisma.property.update({ where: { id: params.id }, data: body });
@@ -27,6 +41,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!(await requirePropertiesAccess())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     await prisma.property.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
