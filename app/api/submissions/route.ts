@@ -26,6 +26,7 @@ export async function GET() {
       videoIds:    JSON.parse(s.videoIds  || "[]"),
       videoUrls:   JSON.parse(s.videoUrls || "[]"),
       verificationFlags: s.verificationFlags,
+      constructionPct: s.constructionPct,
       createdAt:   s.createdAt,
     }))
   );

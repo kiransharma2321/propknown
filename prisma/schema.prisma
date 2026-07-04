@@ -36,6 +36,17 @@ model Property {
   // Granular honesty-first verification checks shown via the PropKnown Verified stamp —
   // shape matches components/ui/VerificationBadge.tsx's VerificationFlags.
   verificationFlags Json @default("{}")
+  // Legal Safety Checklist (Feature: Legal Shield) — shape matches lib/legalShield.ts's
+  // LegalChecklist (Record<itemKey, "verified"|"pending"|"na">). Admin-set only.
+  legalChecklist Json @default("{}")
+  legalNotes     String?
+  // Construction Progress Tracker — array of { id, title, note, photoUrl?, date, pctComplete }
+  // milestones, newest last. Only shown for listingType/status "under construction".
+  constructionMilestones Json @default("[]")
+  constructionPct        Int?
+  expectedCompletion     String?
+  // NRI virtual tour — external video URL (YouTube/Drive link), admin-provided
+  videoTourUrl   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   leads         Lead[]
@@ -157,6 +168,15 @@ model PropertySubmission {
   // shape matches components/ui/VerificationBadge.tsx's VerificationFlags. Admin-toggled
   // in the submission review UI; never auto-set to true.
   verificationFlags Json @default("{}")
+  // Legal Safety Checklist (Feature: Legal Shield) — shape matches lib/legalShield.ts's
+  // LegalChecklist (Record<itemKey, "verified"|"pending"|"na">). Admin-set only.
+  legalChecklist Json @default("{}")
+  legalNotes     String?
+  // Construction Progress Tracker — array of { id, title, note, photoUrl?, date, pctComplete }
+  // milestones, newest last. Only shown for propType/status implying under-construction.
+  constructionMilestones Json @default("[]")
+  constructionPct        Int?
+  expectedCompletion     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

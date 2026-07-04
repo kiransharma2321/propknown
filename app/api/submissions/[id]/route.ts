@@ -30,6 +30,11 @@ export async function GET(
     videoIds:    JSON.parse(sub.videoIds  || "[]"),
     videoUrls:   JSON.parse(sub.videoUrls || "[]"),
     verificationFlags: sub.verificationFlags,
+    legalChecklist: sub.legalChecklist,
+    legalNotes:     sub.legalNotes,
+    constructionMilestones: sub.constructionMilestones,
+    constructionPct:        sub.constructionPct,
+    expectedCompletion:     sub.expectedCompletion,
     // docIds intentionally excluded from public endpoint
     createdAt:   sub.createdAt,
   });

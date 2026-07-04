@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as ImageIcon } from "lucide-react";
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
+import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
+import type { LegalChecklist } from "@/lib/legalShield";
 
 interface SubDetail {
   id: string; title: string; propType: string; bhk?: string;
@@ -13,6 +15,8 @@ interface SubDetail {
   reraNumber?: string; ownerName: string; ownerPhone: string;
   photoIds: string[]; videoIds: string[]; videoUrls: string[];
   verificationFlags?: VerificationFlags;
+  legalChecklist?: LegalChecklist;
+  legalNotes?: string;
   createdAt: string;
 }
 
@@ -127,11 +131,13 @@ export default function SubmissionDetailPage() {
             </div>
 
             {sub.features && (
-              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
+              <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-6">
                 <h3 className="text-gray-900 font-bold mb-3">Key Features</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{sub.features}</p>
               </div>
             )}
+
+            <LegalChecklistBadge id="legal-shield" checklist={sub.legalChecklist ?? {}} notes={sub.legalNotes} />
           </div>
 
           {/* Right: Details card */}
@@ -169,7 +175,7 @@ export default function SubmissionDetailPage() {
               </div>
 
               <div className="mb-5">
-                <VerificationBadge flags={sub.verificationFlags ?? {}} />
+                <VerificationBadge flags={sub.verificationFlags ?? {}} detailLinkHref="#legal-shield" />
               </div>
 
               <div className="space-y-3">

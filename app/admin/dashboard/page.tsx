@@ -6,6 +6,7 @@ import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import type { VerificationFlags } from "@/components/ui/VerificationBadge";
+import { LEGAL_CHECKLIST_ITEMS, type LegalChecklist, type ChecklistStatus } from "@/lib/legalShield";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -406,6 +407,8 @@ interface SubDetail extends SubListItem {
   videoFiles: { id: string; name: string; mimeType: string; data: string }[];
   docFiles:   { id: string; name: string; mimeType: string; docType?: string; data: string }[];
   verificationFlags?: VerificationFlags;
+  legalChecklist?: LegalChecklist;
+  legalNotes?: string;
 }
 
 function SubmissionsTab() {
@@ -421,6 +424,9 @@ function SubmissionsTab() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [vFlags,     setVFlags]     = useState<VerificationFlags>({});
   const [savingVFlags, setSavingVFlags] = useState(false);
+  const [legal,      setLegal]      = useState<LegalChecklist>({});
+  const [legalNotesDraft, setLegalNotesDraft] = useState("");
+  const [savingLegal, setSavingLegal] = useState(false);
 
   const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
 
@@ -450,6 +456,8 @@ function SubmissionsTab() {
       const d = await fetch(`/api/admin/submissions/${id}`).then(r => r.json());
       setReviewing(d);
       setVFlags(d.verificationFlags ?? {});
+      setLegal(d.legalChecklist ?? {});
+      setLegalNotesDraft(d.legalNotes ?? "");
     } catch { alert("Failed to load submission."); }
     finally { setLoadDetail(false); }
   };
@@ -466,6 +474,21 @@ function SubmissionsTab() {
       setReviewing(r => r ? { ...r, verificationFlags: vFlags } : r);
     } finally {
       setSavingVFlags(false);
+    }
+  };
+
+  const saveLegalChecklist = async () => {
+    if (!reviewing) return;
+    setSavingLegal(true);
+    try {
+      await fetch(`/api/admin/submissions/${reviewing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ legalChecklist: legal, legalNotes: legalNotesDraft.trim() || null }),
+      });
+      setReviewing(r => r ? { ...r, legalChecklist: legal, legalNotes: legalNotesDraft.trim() } : r);
+    } finally {
+      setSavingLegal(false);
     }
   };
 
@@ -795,6 +818,42 @@ function SubmissionsTab() {
                         style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
                       >
                         {savingVFlags ? "Saving…" : "Save Verification Checks"}
+                      </button>
+                    </div>
+
+                    {/* Legal Safety Checklist — 3-way status per item, honest defaults to "pending" */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2.5">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <Shield size={12} /> Legal Safety Checklist
+                      </p>
+                      {LEGAL_CHECKLIST_ITEMS.map((item) => (
+                        <div key={item.key} className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-zinc-300 truncate">{item.label}</span>
+                          <select
+                            value={legal[item.key] ?? "pending"}
+                            onChange={e => setLegal(l => ({ ...l, [item.key]: e.target.value as ChecklistStatus }))}
+                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-yellow-600 shrink-0"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="verified">Verified</option>
+                            <option value="na">N/A</option>
+                          </select>
+                        </div>
+                      ))}
+                      <textarea
+                        value={legalNotesDraft}
+                        onChange={e => setLegalNotesDraft(e.target.value)}
+                        rows={2}
+                        placeholder="Notes for buyers (optional)…"
+                        className={`${inpCls} text-xs resize-none`}
+                      />
+                      <button
+                        onClick={saveLegalChecklist}
+                        disabled={savingLegal}
+                        className="w-full py-2 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
+                        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+                      >
+                        {savingLegal ? "Saving…" : "Save Legal Checklist"}
                       </button>
                     </div>
 

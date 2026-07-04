@@ -25,9 +25,13 @@ interface Props {
   compact?: boolean;
   /** Use on dark card backgrounds (e.g. PropertyCard's dark theme) for readable contrast. */
   dark?: boolean;
+  /** Where the "What this means" link goes — defaults to the general /verified explainer.
+   *  Pass an in-page anchor (e.g. "#legal-shield") to link to this property's own
+   *  Legal Safety Checklist section instead. */
+  detailLinkHref?: string;
 }
 
-export default function VerificationBadge({ flags, compact = false, dark = false }: Props) {
+export default function VerificationBadge({ flags, compact = false, dark = false, detailLinkHref = "/verified" }: Props) {
   const trueChecks = CHECKS.filter(c => !!flags[c.key]);
   const anyVerified = trueChecks.length > 0 || flags.propknownVerified;
 
@@ -61,7 +65,7 @@ export default function VerificationBadge({ flags, compact = false, dark = false
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-gray-900 font-bold text-sm">PropKnown Verification</h3>
         <Link
-          href="/verified"
+          href={detailLinkHref}
           className="text-[10px] flex items-center gap-1 hover:underline"
           style={{ color: "#C9A24B" }}
         >

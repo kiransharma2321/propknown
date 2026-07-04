@@ -50,6 +50,11 @@ export async function GET(
     rejectReason: sub.rejectReason,
     adminNotes:   sub.adminNotes,
     verificationFlags: sub.verificationFlags,
+    legalChecklist: sub.legalChecklist,
+    legalNotes:     sub.legalNotes,
+    constructionMilestones: sub.constructionMilestones,
+    constructionPct:        sub.constructionPct,
+    expectedCompletion:     sub.expectedCompletion,
     createdAt:    sub.createdAt,
     videoUrls,
     photoFiles:   photoFiles.map(f => ({ id: f.id, name: f.name, mimeType: f.mimeType, data: f.data })),
@@ -67,12 +72,18 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { action, reason, notes, verificationFlags } = body;
+  const {
+    action, reason, notes, verificationFlags,
+    legalChecklist, legalNotes,
+    constructionMilestones, constructionPct, expectedCompletion,
+  } = body;
 
   if (action !== undefined && !["approve", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
-  if (action === undefined && verificationFlags === undefined) {
+  const hasOtherUpdate = [verificationFlags, legalChecklist, legalNotes, constructionMilestones, constructionPct, expectedCompletion]
+    .some(v => v !== undefined);
+  if (action === undefined && !hasOtherUpdate) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   }
 
@@ -82,9 +93,15 @@ export async function PATCH(
     data.rejectReason = action === "reject" ? (reason ?? null) : null;
     if (notes !== undefined) data.adminNotes = notes;
   }
-  // Verification checks are admin-toggled independently of approve/reject so a listing's
-  // checks can be updated any time, not just at first review.
+  // Each of these panels (verification, legal checklist, construction progress) is
+  // admin-toggled independently of approve/reject and of each other, so any subset can be
+  // updated at any time without needing to touch the others.
   if (verificationFlags !== undefined) data.verificationFlags = verificationFlags;
+  if (legalChecklist !== undefined) data.legalChecklist = legalChecklist;
+  if (legalNotes !== undefined) data.legalNotes = legalNotes;
+  if (constructionMilestones !== undefined) data.constructionMilestones = constructionMilestones;
+  if (constructionPct !== undefined) data.constructionPct = constructionPct;
+  if (expectedCompletion !== undefined) data.expectedCompletion = expectedCompletion;
 
   const updated = await prisma.propertySubmission.update({
     where: { id: params.id },
@@ -98,7 +115,13 @@ export async function PATCH(
     }).catch(() => null);
   }
 
-  return NextResponse.json({ id: updated.id, status: updated.status, verificationFlags: updated.verificationFlags });
+  return NextResponse.json({
+    id: updated.id, status: updated.status,
+    verificationFlags: updated.verificationFlags,
+    legalChecklist: updated.legalChecklist, legalNotes: updated.legalNotes,
+    constructionMilestones: updated.constructionMilestones,
+    constructionPct: updated.constructionPct, expectedCompletion: updated.expectedCompletion,
+  });
 }
 
 export async function DELETE(
