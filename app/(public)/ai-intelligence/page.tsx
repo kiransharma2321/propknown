@@ -744,10 +744,10 @@ export default function AIIntelligencePage() {
                   <AlertCircle size={14} className="text-yellow-600 shrink-0 mt-0.5" />
                   <p className="text-gray-500 text-xs leading-relaxed">
                     <span className="text-yellow-700 font-semibold">Disclaimer: </span>
-                    Prices shown are indicative <strong>asking-price ranges</strong> from current listings
-                    {r.dataSource === "bayut_data" ? " (Bayut.com)" : r.dataSource === "real_data" ? " (web search)" : " (AI estimates)"}{" "}
-                    — not registered transaction prices, which typically run lower.
-                    {" "}Verify actual rates with RERA / DLD / relevant authority and a PropKnown advisor before making any investment decision.
+                    AI estimate from current listings & trends
+                    {r.dataSource === "bayut_data" ? " (Bayut.com)" : r.dataSource === "real_data" ? " (web search)" : ""}{" "}
+                    — actual prices vary. Asking prices typically run above final registered/closing prices.
+                    {" "}Verify with a PropKnown advisor and RERA / DLD / relevant authority before making any investment decision.
                   </p>
                 </div>
               </div>

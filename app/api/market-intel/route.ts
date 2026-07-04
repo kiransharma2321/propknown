@@ -286,27 +286,28 @@ function buildTavilyQuery(
   const portals = PORTAL_HINTS[countryCode] ?? "real estate listing";
   const locQuoted = `"${location}"`;
 
-  // Plot / residential land — explicit unit and type so results are plot-specific
+  // Plot / residential land — explicit area, unit, and "current asking rate" framing so
+  // results are plot-specific and don't drift toward a "starting from" teaser price.
   if (propertyType === "plot" || unit === "sqyard") {
-    return `${locQuoted} residential plot site price per square yard gaj ${year} ${year - 1} for sale ${portals}`;
+    return `residential plot price per sqyard in ${locQuoted} ${year} current rate gaj site rate for sale ${portals}`;
   }
 
   // Agriculture / farm land
   if (propertyType === "agriculture" || unit === "acres") {
-    return `${locQuoted} agriculture farm land price per acre ${year} ${year - 1} real estate sale ${portals}`;
+    return `agriculture farm land price per acre in ${locQuoted} ${year} current rate for sale ${portals}`;
   }
 
-  // Local land units (ankanam, cent, guntha) — treat as plot
+  // Local land units (ankanam, cent, guntha) — API always prices these as sqyard
   if (["ankanam", "cent", "guntha"].includes(unit)) {
-    return `${locQuoted} plot land price per square yard ${year} ${year - 1} for sale ${portals}`;
+    return `plot land price per sqyard in ${locQuoted} ${year} current rate for sale ${portals}`;
   }
 
   const typeLabel =
-    propertyType === "villa"       ? "villa luxury"      :
-    propertyType === "house"       ? "independent house" :
-    propertyType === "commercial"  ? "commercial office" : "apartment flat";
+    propertyType === "villa"       ? "villa"              :
+    propertyType === "house"       ? "independent house"  :
+    propertyType === "commercial"  ? "commercial office"  : "apartment";
 
-  return `${locQuoted} ${typeLabel} price per sqft ${year} ${year - 1} for sale ${portals}`;
+  return `${typeLabel} price per sqft in ${locQuoted} ${year} current rate for sale ${portals}`;
 }
 
 interface TavilyResult { title: string; url: string; content: string; score: number; }
@@ -352,6 +353,126 @@ async function fetchTavilyContext(
 
   const combined = parts.join("\n\n");
   return { snippets: combined, hasData: combined.length > 60 };
+}
+
+// ─── Structured locality benchmarks (code-level, not just prompt text) ───────
+// Same numbers as the prompt's benchmark tables below, but queryable in JS so we can
+// sanity-clamp Gemini/Tavily output instead of just hoping the model follows instructions.
+// Real-estate web search results often surface promotional "starting from" teaser prices
+// (the cheapest unit in a project) which drag the extracted figure well below the real
+// prevailing rate — this table catches and corrects that.
+interface Benchmark { keywords: string[]; unit: "sqyard" | "sqft" | "acres"; min: number; max: number; }
+
+const BENCHMARKS: Benchmark[] = [
+  // ── India — plot / land, per sq.yard ──
+  { keywords: ["jubilee hills", "banjara hills"],                          unit: "sqyard", min: 120000, max: 250000 },
+  { keywords: ["kokapet", "neopolis", "golf view"],                        unit: "sqyard", min: 55000,  max: 100000 },
+  { keywords: ["financial district", "nanakramguda"],                     unit: "sqyard", min: 60000,  max: 110000 },
+  { keywords: ["gachibowli"],                                              unit: "sqyard", min: 40000,  max: 75000 },
+  { keywords: ["kondapur", "madhapur"],                                    unit: "sqyard", min: 30000,  max: 55000 },
+  { keywords: ["manikonda", "puppalaguda"],                                unit: "sqyard", min: 22000,  max: 42000 },
+  { keywords: ["tellapur", "osman nagar"],                                 unit: "sqyard", min: 15000,  max: 28000 },
+  { keywords: ["nallagandla", "serilingampally"],                          unit: "sqyard", min: 20000,  max: 38000 },
+  { keywords: ["kphb", "miyapur", "kukatpally"],                           unit: "sqyard", min: 15000,  max: 28000 },
+  { keywords: ["bachupally", "nizampet"],                                  unit: "sqyard", min: 12000,  max: 22000 },
+  { keywords: ["kompally"],                                                unit: "sqyard", min: 8000,   max: 15000 },
+  { keywords: ["medchal", "ameenpur", "shamirpet"],                        unit: "sqyard", min: 6000,   max: 12000 },
+  { keywords: ["shamshabad", "shadnagar"],                                 unit: "sqyard", min: 4000,   max: 9000 },
+  { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqyard", min: 2000,   max: 5000 },
+
+  // ── India — land, per acre ──
+  { keywords: ["shankarpally", "moinabad", "chevella"],                    unit: "acres",  min: 12000000, max: 30000000 },
+  { keywords: ["patancheru"],                                              unit: "acres",  min: 6000000,  max: 15000000 },
+  { keywords: ["vikarabad", "bibinagar"],                                  unit: "acres",  min: 2500000,  max: 7000000 },
+  { keywords: ["suryapet"],                                                unit: "acres",  min: 800000,   max: 2500000 },
+  { keywords: ["devanahalli", "nelamangala"],                              unit: "acres",  min: 8000000,  max: 20000000 },
+  { keywords: ["karjat", "khopoli"],                                       unit: "acres",  min: 5000000,  max: 15000000 },
+
+  // ── India — apartments/villas/houses, per sq.ft ──
+  { keywords: ["jubilee hills", "banjara hills"],                          unit: "sqft",   min: 15000, max: 28000 },
+  { keywords: ["financial district", "nanakramguda"],                     unit: "sqft",   min: 11000, max: 19000 },
+  { keywords: ["kokapet", "neopolis", "golf view"],                        unit: "sqft",   min: 10000, max: 16000 },
+  { keywords: ["gachibowli"],                                              unit: "sqft",   min: 8500,  max: 14000 },
+  { keywords: ["kondapur", "madhapur"],                                    unit: "sqft",   min: 6500,  max: 10500 },
+  { keywords: ["manikonda", "puppalaguda"],                                unit: "sqft",   min: 5500,  max: 9000 },
+  { keywords: ["kphb", "miyapur", "kukatpally"],                           unit: "sqft",   min: 4500,  max: 7000 },
+  { keywords: ["medchal", "ameenpur"],                                     unit: "sqft",   min: 3200,  max: 5500 },
+  { keywords: ["shamshabad", "shadnagar", "maheshwaram"],                  unit: "sqft",   min: 2200,  max: 4000 },
+  { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqft",   min: 1200,  max: 2800 },
+  { keywords: ["indiranagar", "koramangala"],                              unit: "sqft",   min: 12000, max: 22000 },
+  { keywords: ["whitefield"],                                              unit: "sqft",   min: 8500,  max: 14500 },
+  { keywords: ["sarjapur"],                                                unit: "sqft",   min: 8000,  max: 13000 },
+  { keywords: ["hsr layout", "bellandur"],                                 unit: "sqft",   min: 7500,  max: 12000 },
+  { keywords: ["electronic city"],                                         unit: "sqft",   min: 5500,  max: 8500 },
+  { keywords: ["bandra", "juhu"],                                          unit: "sqft",   min: 45000, max: 90000 },
+  { keywords: ["andheri", "powai"],                                        unit: "sqft",   min: 18000, max: 32000 },
+  { keywords: ["thane", "navi mumbai"],                                    unit: "sqft",   min: 9000,  max: 16000 },
+  { keywords: ["hinjewadi"],                                               unit: "sqft",   min: 7500,  max: 13000 },
+  { keywords: ["baner", "balewadi"],                                       unit: "sqft",   min: 9000,  max: 15000 },
+
+  // ── Dubai, per sq.ft ──
+  { keywords: ["palm jumeirah", "downtown dubai"],                         unit: "sqft",   min: 3000, max: 5500 },
+  { keywords: ["dubai marina"],                                            unit: "sqft",   min: 1800, max: 3000 },
+  { keywords: ["business bay"],                                            unit: "sqft",   min: 1500, max: 2400 },
+  { keywords: ["jumeirah village circle", "jvc"],                          unit: "sqft",   min: 900,  max: 1400 },
+  { keywords: ["jumeirah lake towers", "jlt"],                             unit: "sqft",   min: 1000, max: 1600 },
+  { keywords: ["dubai south", "discovery gardens"],                        unit: "sqft",   min: 700,  max: 1100 },
+  { keywords: ["meydan", "mohammed bin rashid"],                           unit: "sqft",   min: 1800, max: 3200 },
+  { keywords: ["al barsha"],                                                unit: "sqft",   min: 900,  max: 1500 },
+
+  // ── UK, per sq.ft ──
+  { keywords: ["kensington", "chelsea", "mayfair"],                        unit: "sqft",   min: 1500, max: 4000 },
+  { keywords: ["canary wharf", "city of london"],                          unit: "sqft",   min: 800,  max: 1400 },
+  { keywords: ["manchester", "birmingham", "leeds"],                       unit: "sqft",   min: 200,  max: 450 },
+
+  // ── USA, per sq.ft ──
+  { keywords: ["manhattan"],                                               unit: "sqft",   min: 1500, max: 4500 },
+  { keywords: ["brooklyn", "queens"],                                      unit: "sqft",   min: 800,  max: 1400 },
+  { keywords: ["san francisco", "los angeles"],                            unit: "sqft",   min: 800,  max: 1500 },
+  { keywords: ["chicago", "houston", "dallas"],                            unit: "sqft",   min: 200,  max: 500 },
+
+  // ── Singapore / Australia / Canada, per sq.ft ──
+  { keywords: ["orchard", "marina bay"],                                   unit: "sqft",   min: 2500, max: 4500 },
+  { keywords: ["sydney"],                                                  unit: "sqft",   min: 900,  max: 1800 },
+  { keywords: ["toronto"],                                                 unit: "sqft",   min: 800,  max: 1400 },
+];
+
+// Local land units (ankanam/cent/guntha) are always requested from the API as "sqyard" —
+// the frontend converts to the user's selected unit for display, so the plot/sqyard
+// benchmark applies to those requests too.
+function benchmarkUnitFor(propertyType: string, unit: string): "sqyard" | "sqft" | "acres" {
+  if (unit === "acres" || propertyType === "agriculture") return "acres";
+  if (unit === "sqyard" || propertyType === "plot") return "sqyard";
+  return "sqft";
+}
+
+function findBenchmark(location: string, propertyType: string, unit: string): Benchmark | null {
+  const loc = location.toLowerCase();
+  const wantUnit = benchmarkUnitFor(propertyType, unit);
+  return BENCHMARKS.find((b) => b.unit === wantUnit && b.keywords.some((k) => loc.includes(k))) ?? null;
+}
+
+// Corrects prices that are implausibly low for a known micro-market — e.g. an LLM/web-search
+// pipeline anchoring on a promotional "starting from ₹45L" teaser instead of the typical
+// per-unit rate. Only pulls LOW outliers up; genuinely premium listings above the benchmark
+// max are left alone (that's plausible upside, not an extraction error), aside from an
+// extreme sanity cap for runaway values.
+function clampToBenchmark(price: number, location: string, propertyType: string, unit: string): number {
+  const b = findBenchmark(location, propertyType, unit);
+  if (!b) return price;
+  if (price < b.min * 0.85) {
+    // Snap into the lower third of the real range rather than the raw min or a full
+    // recentering — keeps some signal from the (too-low) original figure's relative position.
+    const corrected = Math.round(b.min + (b.max - b.min) * 0.3);
+    console.warn(`[market-intel] Clamped too-low price for "${location}": ${price} → ${corrected} (benchmark ${b.min}-${b.max})`);
+    return corrected;
+  }
+  if (price > b.max * 2) {
+    const corrected = Math.round(b.max * 1.3);
+    console.warn(`[market-intel] Clamped too-high price for "${location}": ${price} → ${corrected} (benchmark ${b.min}-${b.max})`);
+    return corrected;
+  }
+  return price;
 }
 
 // ─── Gemini prompt ────────────────────────────────────────────────────────────
@@ -466,7 +587,8 @@ ${realDataBlock}
 ${dataType === "bayut" && bayutPricePsf
   ? `CRITICAL: The computed median price-per-sqft from Bayut listings is ${currency.symbol}${bayutPricePsf.toLocaleString()}/sqft.
 Your "currentPricePerSqft" MUST be ${bayutPricePsf} (the exact Bayut median). Do NOT invent a different figure.`
-  : `PRIORITY: Extract the most specific price-per-${unitLabel} figure from the data above for THIS EXACT locality: "${location}". The benchmark table below is SECONDARY.`}
+  : `PRIORITY: Extract the PREVAILING/TYPICAL price-per-${unitLabel} for THIS EXACT locality: "${location}" from the data above. The benchmark table below is SECONDARY.
+⚠️ DO NOT use promotional "starting from ₹X" or "from ₹X onwards" teaser prices — those describe the cheapest/smallest unit in one specific project, not the typical rate for the area. Use the median or typical rate implied across the listings/snippets, not the lowest number you see.`}
 ═══════════════════════════════════════
 ` : `(No live listing data available — use the locality-specific benchmark table below.)`;
 
@@ -491,6 +613,7 @@ CRITICAL RULES:
 5. History and forecast values must be in ${currency.code}, consistent with "currentPricePerSqft".
 6. "trend" must be one of: "Bullish", "Stable", or "Cautious".
 7. "summary" must mention the SPECIFIC locality "${location}" by name, not just the city.
+8. Give the PREVAILING current asking-price rate for typical/comparable properties in this exact micro-market — never a promotional minimum, "starting from" teaser, or distressed-sale outlier. When genuinely uncertain, prefer the middle of the locality's known range over a low guess.
 
 Return ONLY a valid JSON object — no markdown, no code fences, no explanations:
 
@@ -530,7 +653,7 @@ Return ONLY the JSON object. No other text.`;
 
 // ─── Fallback ─────────────────────────────────────────────────────────────────
 
-function mkFallback(location: string, unit: string, currency: CurrencyInfo, quotaHit = false) {
+function mkFallback(location: string, propertyType: string, unit: string, currency: CurrencyInfo, quotaHit = false) {
   const y        = new Date().getFullYear();
   const unitKey  = unit === "sqyard" ? "sqyard" : unit === "acres" ? "acres" : "sqft";
   const basePrices: Record<string, Record<string, number>> = {
@@ -542,8 +665,13 @@ function mkFallback(location: string, unit: string, currency: CurrencyInfo, quot
     ca: { sqft: 600,     sqyard: 5400,    acres: 2000000  },
     au: { sqft: 500,     sqyard: 4500,    acres: 1800000  },
   };
-  const base  = basePrices[currency.code === "INR" ? "in" : currency.code.toLowerCase().slice(0,2)]?.[unitKey]
-             ?? basePrices.in[unitKey];
+  // Prefer a known locality's real benchmark midpoint over a flat, non-specific city/country
+  // default — the fallback path should still be area-aware whenever we can be.
+  const benchmark = findBenchmark(location, propertyType, unit);
+  const base  = benchmark
+    ? Math.round(benchmark.min + (benchmark.max - benchmark.min) * 0.5)
+    : basePrices[currency.code === "INR" ? "in" : currency.code.toLowerCase().slice(0,2)]?.[unitKey]
+      ?? basePrices.in[unitKey];
   const scale = 1.08;
   const hist  = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({ year: yr, value: Math.round(base / Math.pow(scale, 4 - i)) }));
   const fore  = [1,2,3,4,5].map((n) => ({ year: y + n, value: Math.round(base * Math.pow(scale, n)) }));
@@ -580,20 +708,31 @@ type DataSource = "bayut_data" | "real_data" | "ai_only";
 function normalise(
   raw: Record<string, unknown>,
   location: string,
+  propertyType: string,
+  unit: string,
   dataSource: DataSource,
   dataSourceLabel: string,
   currency: CurrencyInfo,
   bayutPricePsf?: number
 ): Record<string, unknown> {
   const y    = new Date().getFullYear();
-  // For Bayut: lock the price to the computed median — Gemini can't override it
-  const now  = dataSource === "bayut_data" && bayutPricePsf
+  // For Bayut: lock the price to the computed median — Gemini can't override it. Trusted as
+  // real live data, so it's exempt from the benchmark clamp below.
+  const rawNow = dataSource === "bayut_data" && bayutPricePsf
     ? bayutPricePsf
     : (Number(raw.currentPricePerSqft) || 5500);
+  const now = dataSource === "bayut_data"
+    ? rawNow
+    : clampToBenchmark(rawNow, location, propertyType, unit);
+  const clampRatio = rawNow > 0 ? now / rawNow : 1;
 
   const rate = (Number(raw.growthRate) || 8) / 100;
 
   let hist = raw.priceHistory5yr as { year: number; value: number }[] | undefined;
+  if (Array.isArray(hist) && hist.length >= 2 && clampRatio !== 1) {
+    // Keep history proportionally consistent with a clamped current price
+    hist = hist.map((h) => ({ year: h.year, value: Math.round(h.value * clampRatio) }));
+  }
   if (!Array.isArray(hist) || hist.length < 2) {
     hist = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({
       year: yr, value: Math.round(now / Math.pow(1 + rate, 4 - i)),
@@ -601,6 +740,9 @@ function normalise(
   }
 
   let fore = raw.priceForecast5yr as { year: number; value: number }[] | undefined;
+  if (Array.isArray(fore) && fore.length >= 2 && clampRatio !== 1) {
+    fore = fore.map((f) => ({ year: f.year, value: Math.round(f.value * clampRatio) }));
+  }
   if (!Array.isArray(fore) || fore.length < 2) {
     fore = [1,2,3,4,5].map((n) => ({
       year: y + n, value: Math.round(now * Math.pow(1 + rate, n)),
@@ -710,7 +852,7 @@ export async function POST(req: NextRequest) {
   const { countryCode, currency } = await detectCurrency(loc);
 
   if (!geminiKey) {
-    return NextResponse.json(mkFallback(loc, resolvedUnit, currency));
+    return NextResponse.json(mkFallback(loc, propType, resolvedUnit, currency));
   }
 
   // ── Step 1: Real data — Bayut (UAE) or Tavily (elsewhere) ────────────────
@@ -773,28 +915,29 @@ export async function POST(req: NextRequest) {
     console.error("Gemini attempt 1 failed:", e1);
     if (e1 instanceof GeminiQuotaError) {
       // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly estimate.
+      // Not cached: quota resets quickly and this degraded estimate shouldn't be served to the
+      // next several users who query the same locality within the cache window.
       console.warn("[market-intel] Quota exceeded — skipping retry");
-      const fallback = mkFallback(loc, resolvedUnit, currency, true);
-      setCache(cacheKey, fallback);
-      return NextResponse.json(fallback);
+      return NextResponse.json(mkFallback(loc, propType, resolvedUnit, currency, true));
     }
     try {
       raw = parseGemini(await callGemini(geminiKey, prompt));
     } catch (e2) {
       console.error("Gemini attempt 2 failed:", e2);
-      const fallback = mkFallback(loc, resolvedUnit, currency, e2 instanceof GeminiQuotaError);
-      setCache(cacheKey, fallback);
+      const quotaHit = e2 instanceof GeminiQuotaError;
+      const fallback = mkFallback(loc, propType, resolvedUnit, currency, quotaHit);
+      if (!quotaHit) setCache(cacheKey, fallback);
       return NextResponse.json(fallback);
     }
   }
 
   try {
-    const result = normalise(raw!, loc, dataSource, dataSourceLabel, currency, bayutPricePsf);
+    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf);
     console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
     setCache(cacheKey, result);
     return NextResponse.json(result);
   } catch {
-    const fallback = mkFallback(loc, resolvedUnit, currency);
+    const fallback = mkFallback(loc, propType, resolvedUnit, currency);
     setCache(cacheKey, fallback);
     return NextResponse.json(fallback);
   }
