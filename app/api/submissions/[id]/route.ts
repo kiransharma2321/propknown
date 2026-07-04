@@ -29,6 +29,7 @@ export async function GET(
     photoIds:    JSON.parse(sub.photoIds  || "[]"),
     videoIds:    JSON.parse(sub.videoIds  || "[]"),
     videoUrls:   JSON.parse(sub.videoUrls || "[]"),
+    verificationFlags: sub.verificationFlags,
     // docIds intentionally excluded from public endpoint
     createdAt:   sub.createdAt,
   });

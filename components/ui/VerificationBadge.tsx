@@ -23,23 +23,34 @@ const CHECKS: { key: keyof VerificationFlags; label: string; desc: string }[] = 
 interface Props {
   flags: VerificationFlags;
   compact?: boolean;
+  /** Use on dark card backgrounds (e.g. PropertyCard's dark theme) for readable contrast. */
+  dark?: boolean;
 }
 
-export default function VerificationBadge({ flags, compact = false }: Props) {
+export default function VerificationBadge({ flags, compact = false, dark = false }: Props) {
   const trueChecks = CHECKS.filter(c => !!flags[c.key]);
   const anyVerified = trueChecks.length > 0 || flags.propknownVerified;
 
   if (compact) {
     if (!anyVerified) {
-      return (
+      return dark ? (
+        <span className="inline-flex items-center gap-1 text-[10px] text-zinc-400 bg-black/60 border border-zinc-700 px-2 py-0.5 rounded-full">
+          <Clock size={9} /> Verification in progress
+        </span>
+      ) : (
         <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">
           <Clock size={9} /> Verification in progress
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-semibold">
-        <Shield size={9} fill="#16a34a" />
+      <span
+        className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+        style={dark
+          ? { background: "rgba(0,0,0,0.7)", border: "1px solid #C9A24B", color: "#e8c97a" }
+          : { background: "rgba(201,162,75,0.1)", border: "1px solid rgba(201,162,75,0.4)", color: "#8a6a2e" }}
+      >
+        <Shield size={9} fill="#C9A24B" stroke={dark ? "#e8c97a" : "#8a6a2e"} />
         PropKnown Verified · {trueChecks.length} check{trueChecks.length !== 1 ? "s" : ""}
       </span>
     );

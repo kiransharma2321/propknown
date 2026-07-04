@@ -15,7 +15,7 @@ export default function ContactPage() {
         <div className="text-center mb-14">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Reach Us</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            Contact <span className="gold-text">PropKnown</span>
+            Talk to a <span className="gold-text">PropKnown Expert</span>
           </h1>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">
             Our team of experts is ready to help you make smarter real estate decisions.

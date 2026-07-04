@@ -26,7 +26,7 @@ export default function SellPage() {
             Sell With Confidence
           </p>
           <h1 className="section-heading mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            Sell Your Property at <span className="gold-text">Maximum Value</span>
+            List With <span className="gold-text">Confidence</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg mb-8">
             List your property yourself with photos &amp; documents, or let our expert team handle everything end-to-end.

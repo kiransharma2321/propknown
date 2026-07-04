@@ -91,7 +91,7 @@ export default function NRIPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-5"
             style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-            Invest in India <span style={{ color: GOLD }}>from Anywhere</span>
+            Invest From Anywhere, <span style={{ color: GOLD }}>With Confidence</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed mb-8">
             PropKnown is built for NRIs — RERA-verified properties, honest legal guidance, virtual site tours,

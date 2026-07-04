@@ -8,6 +8,7 @@ import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
+import VerificationBadge from "@/components/ui/VerificationBadge";
 
 const LISTINGS = [
   { id:"aparna",    title:"Aparna Sarovar Grande 3BHK", location:"Nallagandla",  city:"Hyderabad",   display:"₹1.25 Cr",    price:12500000, sqft:1950, beds:3, baths:3, floor:"8th Floor",   facing:"East",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400006789", aiScore:8.4, type:"Apartment",  img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
@@ -31,6 +32,7 @@ interface Submission {
   size?: string; sizeUnit?: string; priceDisplay: string;
   city: string; area: string; reraNumber?: string;
   photoIds: string[]; videoIds: string[]; videoUrls: string[];
+  verificationFlags?: import("@/components/ui/VerificationBadge").VerificationFlags;
   createdAt: string;
 }
 
@@ -89,6 +91,9 @@ function SubmissionCard({ s }: { s: Submission }) {
           {s.bhk && <span>{s.bhk}</span>}
           {s.size && <span>{s.size} {s.sizeUnit}</span>}
           <span className="text-gray-400">{s.propType}</span>
+        </div>
+        <div className="mb-2">
+          <VerificationBadge compact flags={s.verificationFlags ?? {}} />
         </div>
         <button
           onClick={() => added ? remove(`sub-${s.id}`) : add(compareItem)}
@@ -181,7 +186,7 @@ function BuyPageInner() {
         <div className="mb-10">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color:"#C9A24B" }}>Property Search</p>
           <h1 className="section-heading" style={{ fontFamily:"var(--font-playfair,Georgia,serif)" }}>
-            Buy <span className="gold-text">Properties</span>
+            Verified Properties, <span className="gold-text">Zero Guesswork</span>
           </h1>
           <p className="text-gray-500 mt-3">
             {isSearchActive ? `${totalCount} matching properties` : `${LISTINGS.length + submissions.length} verified properties`}
@@ -309,10 +314,21 @@ function BuyPageInner() {
                         <span>{p.floor}</span><span>{p.facing}</span>
                       </div>
                       {"extra" in p && p.extra && <p className="text-xs text-gray-400 mb-2">{p.extra as string}</p>}
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${["Ready to Move","Ready","Available"].includes(p.status) ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>{p.status}</span>
                         <CheckCircle size={12} className="text-green-500" />
                         <span className="text-[10px] text-gray-400 truncate">{p.badgeNo}</span>
+                      </div>
+                      <div className="mb-2">
+                        <VerificationBadge
+                          compact
+                          flags={{
+                            reraVerified: p.badge === "RERA",
+                            reraNumber: p.badge === "RERA" ? p.badgeNo : undefined,
+                            layoutApproved: p.badge === "HMDA" || p.badge === "DTCP",
+                            layoutBadge: (p.badge === "HMDA" || p.badge === "DTCP") ? p.badge : undefined,
+                          }}
+                        />
                       </div>
                       <button
                         onClick={() => added ? remove(p.id) : add(compareItem)}

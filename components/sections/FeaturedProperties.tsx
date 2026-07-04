@@ -88,14 +88,14 @@ export default function FeaturedProperties() {
           <div>
             <p className="text-gold-400 text-sm tracking-widest uppercase mb-2">Curated Selection</p>
             <h2 className="section-heading">
-              Featured <span className="gold-text">Properties</span>
+              Verified Properties, <span className="gold-text">Zero Guesswork</span>
             </h2>
             <p className="text-zinc-400 mt-3 max-w-md">
               Hand-picked, RERA-verified properties with AI-scored investment potential.
             </p>
           </div>
           <Link href="/buy" className="btn-outline-gold whitespace-nowrap self-start md:self-auto">
-            View All Properties <ArrowRight size={16} />
+            Explore Verified Listings <ArrowRight size={16} />
           </Link>
         </div>
 

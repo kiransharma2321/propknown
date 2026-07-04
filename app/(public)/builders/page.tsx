@@ -14,10 +14,10 @@ export default function BuildersPage() {
         <div className="text-center mb-14">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Developer Partners</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            For <span className="gold-text">Builders</span>
+            Sell Faster, <span className="gold-text">Sell Smarter</span>
           </h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
-            Channel partner excellence. Sell faster, sell smarter. PropKnown is your growth engine.
+            Channel partner excellence, AI-powered buyer targeting, and full RERA compliance support — PropKnown is your growth engine.
           </p>
         </div>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPin, Bed, Bath, Maximize, Star, Shield } from "lucide-react";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
+import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 
 interface PropertyCardProps {
   id: string;
@@ -19,15 +20,22 @@ interface PropertyCardProps {
   aiScore?: number | null;
   reraNumber?: string | null;
   featured?: boolean;
+  /** @deprecated pass verificationFlags for real per-check honesty instead of a single bit */
   verified?: boolean;
+  verificationFlags?: VerificationFlags;
 }
 
 export default function PropertyCard({
   id, title, location, city, price, currency,
   beds, baths, sqft, propertyType, listingType,
-  images = [], aiScore, reraNumber, featured, verified,
+  images = [], aiScore, reraNumber, featured, verified, verificationFlags,
 }: PropertyCardProps) {
   const img = images[0] ?? "/images/property-placeholder.jpg";
+  // Back-compat: a legacy `verified` boolean maps to "all checks passed"; prefer real
+  // per-check flags whenever the caller provides them.
+  const flags: VerificationFlags = verificationFlags ?? (verified
+    ? { reraVerified: true, titleVerified: true, documentsChecked: true, layoutApproved: true, encumbranceClear: true, reraNumber: reraNumber ?? undefined }
+    : {});
 
   return (
     <Link href={`/buy/${id}`} className="card-dark group block">
@@ -113,11 +121,7 @@ export default function PropertyCard({
               </div>
             )}
           </div>
-          {verified && (
-            <span className="bg-green-950 border border-green-700 text-green-400 text-[10px] px-2 py-1 rounded-sm">
-              Verified
-            </span>
-          )}
+          <VerificationBadge flags={flags} compact dark />
         </div>
       </div>
     </Link>

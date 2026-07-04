@@ -39,7 +39,7 @@ export default function AboutPage() {
         <div className="text-center mb-16">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Our Story</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            About <span className="gold-text">PropKnown</span>
+            Built on Expertise. <span className="gold-text">Driven by Trust.</span>
           </h1>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">
             Founded 01 October 2023 · Hyderabad, India · {COMPANY.markets.join(" · ")}

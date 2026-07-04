@@ -5,6 +5,7 @@ import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Ho
 import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
+import type { VerificationFlags } from "@/components/ui/VerificationBadge";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -404,6 +405,7 @@ interface SubDetail extends SubListItem {
   photoFiles: { id: string; name: string; mimeType: string; data: string }[];
   videoFiles: { id: string; name: string; mimeType: string; data: string }[];
   docFiles:   { id: string; name: string; mimeType: string; docType?: string; data: string }[];
+  verificationFlags?: VerificationFlags;
 }
 
 function SubmissionsTab() {
@@ -417,6 +419,8 @@ function SubmissionsTab() {
   const [rejectMsg,  setRejectMsg]  = useState("");
   const [acting,     setActing]     = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [vFlags,     setVFlags]     = useState<VerificationFlags>({});
+  const [savingVFlags, setSavingVFlags] = useState(false);
 
   const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
 
@@ -445,8 +449,24 @@ function SubmissionsTab() {
     try {
       const d = await fetch(`/api/admin/submissions/${id}`).then(r => r.json());
       setReviewing(d);
+      setVFlags(d.verificationFlags ?? {});
     } catch { alert("Failed to load submission."); }
     finally { setLoadDetail(false); }
+  };
+
+  const saveVerification = async () => {
+    if (!reviewing) return;
+    setSavingVFlags(true);
+    try {
+      await fetch(`/api/admin/submissions/${reviewing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verificationFlags: vFlags }),
+      });
+      setReviewing(r => r ? { ...r, verificationFlags: vFlags } : r);
+    } finally {
+      setSavingVFlags(false);
+    }
   };
 
   const doAction = async (action: "approve" | "reject") => {
@@ -727,6 +747,55 @@ function SubmissionsTab() {
                     {/* Doc summary */}
                     <div className="text-zinc-500 text-xs bg-zinc-800/30 rounded-lg p-3">
                       Docs: {reviewing.docFiles.length} uploaded · Photos: {reviewing.photoFiles.length} · Videos: {reviewing.videoFiles.length + reviewing.videoUrls.length}
+                    </div>
+
+                    {/* PropKnown Verified checks — honesty-first: stamp only reflects what's
+                        actually ticked here. Independent of approve/reject status. */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2.5">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <Shield size={12} /> PropKnown Verified Checks
+                      </p>
+                      {([
+                        ["reraVerified", "RERA Registered"],
+                        ["titleVerified", "Title / Ownership Clear"],
+                        ["documentsChecked", "Documents Checked"],
+                        ["layoutApproved", "Approved Layout (HMDA/DTCP)"],
+                        ["encumbranceClear", "Encumbrance Clear"],
+                      ] as [keyof VerificationFlags, string][]).map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={!!vFlags[key]}
+                            onChange={e => setVFlags(f => ({ ...f, [key]: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-yellow-600"
+                          />
+                          {label}
+                        </label>
+                      ))}
+                      {vFlags.reraVerified && (
+                        <input
+                          value={vFlags.reraNumber ?? ""}
+                          onChange={e => setVFlags(f => ({ ...f, reraNumber: e.target.value }))}
+                          placeholder="RERA number"
+                          className={`${inpCls} text-xs py-1.5`}
+                        />
+                      )}
+                      {vFlags.layoutApproved && (
+                        <input
+                          value={vFlags.layoutBadge ?? ""}
+                          onChange={e => setVFlags(f => ({ ...f, layoutBadge: e.target.value }))}
+                          placeholder="Layout badge (e.g. HMDA, DTCP)"
+                          className={`${inpCls} text-xs py-1.5`}
+                        />
+                      )}
+                      <button
+                        onClick={saveVerification}
+                        disabled={savingVFlags}
+                        className="w-full py-2 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
+                        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+                      >
+                        {savingVFlags ? "Saving…" : "Save Verification Checks"}
+                      </button>
                     </div>
 
                     {/* Approve / Reject */}

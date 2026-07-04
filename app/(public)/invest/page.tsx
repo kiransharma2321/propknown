@@ -22,11 +22,11 @@ export default function InvestPage() {
         <div className="text-center mb-14">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Grow Your Wealth</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            Real Estate <span className="gold-text">Investment</span>
+            Invest With <span className="gold-text">Insight, Not Guesswork</span>
           </h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
-            Diversify your portfolio with curated real estate opportunities in India and globally.
-            NRI-friendly. AI-scored. Expert-guided.
+            Diversify your portfolio with curated, AI-scored real estate opportunities in India and globally.
+            NRI-friendly. Expert-guided.
           </p>
         </div>
 

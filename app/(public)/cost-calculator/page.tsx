@@ -54,7 +54,7 @@ export default function CostCalculatorPage() {
             <div>
               <p className="text-sm tracking-widest uppercase font-semibold" style={{ color: GOLD }}>Transparent Pricing</p>
               <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                True Cost <span style={{ color: GOLD }}>Calculator</span>
+                Know Your True Cost <span style={{ color: GOLD }}>of Ownership</span>
               </h1>
             </div>
           </div>

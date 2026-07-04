@@ -49,6 +49,7 @@ export async function GET(
     status:       sub.status,
     rejectReason: sub.rejectReason,
     adminNotes:   sub.adminNotes,
+    verificationFlags: sub.verificationFlags,
     createdAt:    sub.createdAt,
     videoUrls,
     photoFiles:   photoFiles.map(f => ({ id: f.id, name: f.name, mimeType: f.mimeType, data: f.data })),
@@ -66,19 +67,28 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { action, reason, notes } = body;
+  const { action, reason, notes, verificationFlags } = body;
 
-  if (!["approve", "reject"].includes(action)) {
+  if (action !== undefined && !["approve", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
+  if (action === undefined && verificationFlags === undefined) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+  }
+
+  const data: Record<string, unknown> = {};
+  if (action) {
+    data.status       = action === "approve" ? "approved" : "rejected";
+    data.rejectReason = action === "reject" ? (reason ?? null) : null;
+    if (notes !== undefined) data.adminNotes = notes;
+  }
+  // Verification checks are admin-toggled independently of approve/reject so a listing's
+  // checks can be updated any time, not just at first review.
+  if (verificationFlags !== undefined) data.verificationFlags = verificationFlags;
 
   const updated = await prisma.propertySubmission.update({
     where: { id: params.id },
-    data: {
-      status:       action === "approve" ? "approved" : "rejected",
-      rejectReason: action === "reject" ? (reason ?? null) : null,
-      adminNotes:   notes ?? null,
-    },
+    data,
   });
 
   if (action === "approve") {
@@ -88,7 +98,7 @@ export async function PATCH(
     }).catch(() => null);
   }
 
-  return NextResponse.json({ id: updated.id, status: updated.status });
+  return NextResponse.json({ id: updated.id, status: updated.status, verificationFlags: updated.verificationFlags });
 }
 
 export async function DELETE(

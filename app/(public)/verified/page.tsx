@@ -73,7 +73,7 @@ export default function VerifiedPage() {
             <div>
               <p className="text-sm tracking-widest uppercase font-semibold text-green-600">Due Diligence</p>
               <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                What does <span style={{ color: GOLD }}>PropKnown Verified</span> mean?
+                <span style={{ color: GOLD }}>PropKnown Verified</span> — Trust You Can Check
               </h1>
             </div>
           </div>

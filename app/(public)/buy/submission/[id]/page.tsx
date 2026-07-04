@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as ImageIcon } from "lucide-react";
+import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 
 interface SubDetail {
   id: string; title: string; propType: string; bhk?: string;
@@ -11,6 +12,7 @@ interface SubDetail {
   city: string; area: string; description: string; features?: string;
   reraNumber?: string; ownerName: string; ownerPhone: string;
   photoIds: string[]; videoIds: string[]; videoUrls: string[];
+  verificationFlags?: VerificationFlags;
   createdAt: string;
 }
 
@@ -136,7 +138,7 @@ export default function SubmissionDetailPage() {
           <div>
             <div className="sticky top-24 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 mb-4 inline-block">
-                Owner Listed · Verified by PropKnown
+                Owner Listed
               </span>
 
               <h1 className="text-gray-900 font-bold text-xl mb-1 leading-snug">{sub.title}</h1>
@@ -166,6 +168,10 @@ export default function SubmissionDetailPage() {
                 </div>
               </div>
 
+              <div className="mb-5">
+                <VerificationBadge flags={sub.verificationFlags ?? {}} />
+              </div>
+
               <div className="space-y-3">
                 <a href={waMsg} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-black text-sm transition-all hover:opacity-90"
@@ -179,7 +185,7 @@ export default function SubmissionDetailPage() {
               </div>
 
               <p className="text-gray-400 text-[11px] mt-4 text-center">
-                Listed by {sub.ownerName} · Verified by PropKnown team
+                Listed by {sub.ownerName}
               </p>
             </div>
           </div>

@@ -174,10 +174,10 @@ export default function ServicesPage() {
         <div className="text-center mb-16">
           <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>What We Do</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            Our <span className="gold-text">Services</span>
+            End-to-End <span className="gold-text">Real Estate Services</span>
           </h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
-            End-to-end real estate services — from first enquiry to key handover and beyond.
+            From first enquiry to key handover and beyond — expert support at every step.
           </p>
         </div>
 

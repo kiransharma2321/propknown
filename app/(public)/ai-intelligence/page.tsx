@@ -384,7 +384,7 @@ export default function AIIntelligencePage() {
             <Bot size={13} /> AI Market Intelligence
           </div>
           <h1 className="section-heading mb-3" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-            Real Estate Intelligence for <span className="gold-text">Any Location</span>
+            AI Market Intelligence — Know Any Area&apos;s <span className="gold-text">True Value</span>
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto">
             Type any city, area, or neighbourhood worldwide. Get AI-generated market analysis —
@@ -508,7 +508,7 @@ export default function AIIntelligencePage() {
                 className="btn-gold w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
                 {loading
                   ? <><Loader2 size={16} className="animate-spin" />{LOADING_STEPS[loadStep]}</>
-                  : <><Bot size={16} />Generate Market Intelligence</>}
+                  : <><Bot size={16} />Get Market Intelligence</>}
               </button>
 
               <p className="text-center text-gray-400 text-xs mt-3">
