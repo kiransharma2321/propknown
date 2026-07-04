@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 import UnitConverter from "@/components/ui/UnitConverter";
+import { useCurrency } from "@/components/ui/CurrencyToggle";
+import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/currency";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const HOT_MARKETS = [
@@ -241,6 +243,7 @@ const TREND_STYLE: Record<string, { bg: string; border: string; text: string; do
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function AIIntelligencePage() {
+  const { currency: selectedCurrency } = useCurrency();
   const [query,       setQuery]       = useState("");
   const [selected,    setSelected]    = useState("");
   const [suggestions, setSuggestions] = useState<Loc[]>([]);
@@ -345,8 +348,17 @@ export default function AIIntelligencePage() {
 
   // ── Derived values ───────────────────────────────────────────────────────────
   const r          = result;
-  const sym        = r?.currencySymbol ?? "₹";
   const curr       = r?.currency       ?? "INR";
+  // The API returns the price in the searched location's NATIVE currency (e.g. AED for a
+  // Dubai search) — that's a different concern from the header's user-selected DISPLAY
+  // currency. Convert native -> INR -> selected display currency whenever the native
+  // currency is one we have exchange rates for; otherwise show the native currency as-is
+  // (we don't have rates for every currency the API can detect, e.g. JPY/EUR/QAR).
+  const isConvertible = (c: string): c is CurrencyCode => c in CURRENCY_MAP;
+  const toDisplay = (amountInNativeCurrency: number): number =>
+    isConvertible(curr) ? convertPrice(toINR(amountInNativeCurrency, curr), selectedCurrency) : amountInNativeCurrency;
+  const sym = isConvertible(curr) ? (CURRENCY_MAP[selectedCurrency]?.symbol ?? "₹") : (r?.currencySymbol ?? "₹");
+  const dispCurr = isConvertible(curr) ? selectedCurrency : curr;
   const areaNum    = Number(area) || 0;
   // For local land units, convert to sqyard first (API returns sqyard price for these)
   const LOCAL_UNITS_SET = ["ankanam", "cent", "guntha", "ground", "bigha", "gaz"];
@@ -354,20 +366,22 @@ export default function AIIntelligencePage() {
   const areaInApiUnit = isLocalUnit && areaNum > 0
     ? (areaNum * (UNIT_TO_SQFT[unit] ?? 1)) / (UNIT_TO_SQFT["sqyard"] ?? 9)
     : areaNum;
-  const propValue  = r && areaInApiUnit > 0 ? Math.round(r.currentPricePerSqft * areaInApiUnit) : 0;
   // API always prices local land units (ankanam/cent/guntha/...) per sq.yard — convert the
   // displayed rate (headline price + charts) into the buyer's actually-selected unit so
   // "ankanam" shows a real ₹/ankanam figure instead of the underlying ₹/sq.yard number.
   const unitConvFactor = isLocalUnit ? (UNIT_TO_SQFT[unit] ?? 9) / (UNIT_TO_SQFT["sqyard"] ?? 9) : 1;
   const displayUnitKey   = isLocalUnit ? unit : (r?.pricePerSqftUnit ?? "sqft");
   const displayUnitLabel = UNIT_LABELS[displayUnitKey] ?? displayUnitKey;
-  const displayPrice     = r ? Math.round(r.currentPricePerSqft * unitConvFactor) : 0;
+  // Convert native currency -> selected display currency (toDisplay) on top of the existing
+  // unit conversion (unitConvFactor) — these are independent dimensions (unit vs currency).
+  const displayPrice = r ? Math.round(toDisplay(r.currentPricePerSqft * unitConvFactor)) : 0;
+  const propValue  = r && areaInApiUnit > 0 ? Math.round(toDisplay(r.currentPricePerSqft * areaInApiUnit)) : 0;
   const loanAmt    = propValue > 0 ? Math.round(propValue * (1 - downPct / 100)) : 0;
   const monthlyEMI = loanAmt  > 0 ? calcEMI(loanAmt, intRate, tenure) : 0;
   const totalPay   = monthlyEMI * tenure * 12;
   const totalInt   = totalPay - loanAmt;
 
-  const fmtFn  = r ? (v: number) => fmtSqft(v, r.currencySymbol) : (v: number) => String(v);
+  const fmtFn  = r ? (v: number) => fmtSqft(v, sym) : (v: number) => String(v);
   const trend  = r?.trend ?? "Stable";
   const ts     = TREND_STYLE[trend] ?? TREND_STYLE.Stable;
   const rating = r?.investmentRating ?? 0;
@@ -570,14 +584,14 @@ export default function AIIntelligencePage() {
                     {r.priceRangeMin != null && r.priceRangeMax != null && (
                       <p className="text-gray-500 text-sm mt-1">
                         Realistic range: <span className="font-semibold text-gray-700">
-                          {sym}{Math.round(r.priceRangeMin * unitConvFactor).toLocaleString()} – {sym}{Math.round(r.priceRangeMax * unitConvFactor).toLocaleString()}
+                          {sym}{Math.round(toDisplay(r.priceRangeMin * unitConvFactor)).toLocaleString()} – {sym}{Math.round(toDisplay(r.priceRangeMax * unitConvFactor)).toLocaleString()}
                         </span> / {displayUnitLabel}
                       </p>
                     )}
                     {areaNum > 0 && (
                       <p className="text-gray-500 text-sm mt-1">
                         Estimated value for {areaNum.toLocaleString()} {UNIT_LABELS[unit] ?? unit}:
-                        <span className="font-semibold text-gray-900 ml-1">{fmtPrice(propValue, sym, curr)}</span>
+                        <span className="font-semibold text-gray-900 ml-1">{fmtPrice(propValue, sym, dispCurr)}</span>
                       </p>
                     )}
                     {r.typicalListings && (
@@ -617,7 +631,7 @@ export default function AIIntelligencePage() {
                         AI Estimated
                       </span>
                     </p>
-                    <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(p.value * unitConvFactor) }))} formatFn={fmtFn} />
+                    <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} />
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -629,11 +643,11 @@ export default function AIIntelligencePage() {
                         Projected
                       </span>
                     </p>
-                    <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(p.value * unitConvFactor) }))} formatFn={fmtFn} dashed />
+                    <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} dashed />
                     <p className="text-center text-gray-400 text-xs mt-1">
                       {r.priceForecast5yr[4]?.year} forecast:
                       <span className="text-green-600 font-semibold ml-1">
-                        {sym}{Math.round((r.priceForecast5yr[4]?.value ?? 0) * unitConvFactor).toLocaleString()}/{displayUnitLabel}
+                        {sym}{Math.round(toDisplay((r.priceForecast5yr[4]?.value ?? 0) * unitConvFactor)).toLocaleString()}/{displayUnitLabel}
                       </span>
                       <span className="text-green-500 ml-2">
                         (+{Math.round(((r.priceForecast5yr[4]?.value ?? 0) / r.currentPricePerSqft - 1) * 100)}%)
@@ -673,7 +687,7 @@ export default function AIIntelligencePage() {
                       <Calculator size={16} style={{ color: "#C9A24B" }} /> EMI Calculator
                       {areaNum > 0 && (
                         <span className="text-gray-400 text-xs font-normal">
-                          — based on {fmtPrice(propValue, sym, curr)} estimate
+                          — based on {fmtPrice(propValue, sym, dispCurr)} estimate
                         </span>
                       )}
                     </span>
@@ -691,7 +705,7 @@ export default function AIIntelligencePage() {
                               className="flex-1 accent-yellow-500" />
                             <span className="text-gray-900 text-sm font-semibold w-10 text-right">{downPct}%</span>
                           </div>
-                          <p className="text-gray-400 text-xs mt-1">Loan: {fmtPrice(loanAmt, sym, curr)}</p>
+                          <p className="text-gray-400 text-xs mt-1">Loan: {fmtPrice(loanAmt, sym, dispCurr)}</p>
                         </div>
                         <div>
                           <label className="label-dark">Interest Rate % p.a.</label>
@@ -717,19 +731,19 @@ export default function AIIntelligencePage() {
                             style={{ background: "rgba(201,162,75,0.08)", borderColor: "rgba(201,162,75,0.3)" }}>
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Monthly EMI</p>
                             <p className="font-bold text-xl" style={{ color: "#C9A24B", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                              {fmtPrice(Math.round(monthlyEMI), sym, curr)}
+                              {fmtPrice(Math.round(monthlyEMI), sym, dispCurr)}
                             </p>
                           </div>
                           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Total Interest</p>
                             <p className="text-gray-900 font-bold text-xl" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                              {fmtPrice(Math.round(totalInt), sym, curr)}
+                              {fmtPrice(Math.round(totalInt), sym, dispCurr)}
                             </p>
                           </div>
                           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Total Payable</p>
                             <p className="text-gray-900 font-bold text-xl" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                              {fmtPrice(Math.round(totalPay), sym, curr)}
+                              {fmtPrice(Math.round(totalPay), sym, dispCurr)}
                             </p>
                           </div>
                         </div>

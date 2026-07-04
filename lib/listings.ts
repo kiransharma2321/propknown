@@ -248,8 +248,28 @@ export function findListingById(id: string): Listing | null {
   return ALL_LISTINGS.find(l => l.id === id) ?? null;
 }
 
+const NEARBY_RADIUS_KM = 5; // "nearby" means genuinely nearby — 1-5km, not just same city
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Genuinely nearby (1-5km, by real coordinates), closest first. Falls back to same-city
+// (previous behaviour) only when the listing has no coordinates to measure distance from.
 export function findNearbyListings(listing: Listing, max = 4): Listing[] {
+  if (listing.lat == null || listing.lng == null) {
+    return ALL_LISTINGS.filter(l => l.id !== listing.id && l.city === listing.city).slice(0, max);
+  }
   return ALL_LISTINGS
-    .filter(l => l.id !== listing.id && l.city === listing.city)
-    .slice(0, max);
+    .filter(l => l.id !== listing.id && l.lat != null && l.lng != null)
+    .map(l => ({ listing: l, dist: haversineKm(listing.lat!, listing.lng!, l.lat!, l.lng!) }))
+    .filter(({ dist }) => dist <= NEARBY_RADIUS_KM)
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, max)
+    .map(({ listing: l }) => l);
 }

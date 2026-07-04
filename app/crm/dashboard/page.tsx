@@ -54,7 +54,7 @@ const SOURCE_LABELS: Record<string, string> = {
   sell:              "Sell Page",
   invest:            "Invest Page",
   "ai-intelligence": "AI Tool",
-  chatbot:           "JARVIS Chat",
+  chatbot:           "KnownAI Chat",
   brochure:          "Brochure",
   builders:          "Builders",
   webhook:           "Webhook",

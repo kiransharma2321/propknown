@@ -18,7 +18,7 @@ interface Lead {
 
 const SOURCE_LABELS: Record<string, string> = {
   "homepage-cta": "Homepage", contact: "Contact", buy: "Buy Page",
-  "ai-intelligence": "AI Tool", chatbot: "JARVIS", manual: "Manual",
+  "ai-intelligence": "AI Tool", chatbot: "KnownAI", manual: "Manual",
   webhook: "Webhook", "meta-ads": "Meta", "google-ads": "Google",
 };
 

@@ -6,27 +6,24 @@ import Link from "next/link";
 import { COMPANY } from "@/lib/utils";
 import PKLogo from "./PKLogo";
 import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
-import { LanguageToggle, useLanguage } from "@/components/ui/LanguageToggle";
 import AccountLink from "@/components/buyer/AccountLink";
-import type { DictKey } from "@/lib/i18n";
 
-const navLinks: { key: DictKey; href: string }[] = [
-  { key: "navHome",     href: "/" },
-  { key: "navBuy",      href: "/buy" },
-  { key: "navSell",     href: "/sell" },
-  { key: "navServices", href: "/services" },
-  { key: "navAiIntel",  href: "/ai-intelligence" },
-  { key: "navInvest",   href: "/invest" },
-  { key: "navBuilders", href: "/builders" },
-  { key: "navNri",      href: "/nri" },
-  { key: "navAbout",    href: "/about" },
-  { key: "navContact",  href: "/contact" },
+const navLinks = [
+  { label: "Home",         href: "/" },
+  { label: "Buy",          href: "/buy" },
+  { label: "Sell",         href: "/sell" },
+  { label: "Services",     href: "/services" },
+  { label: "AI Intel",     href: "/ai-intelligence" },
+  { label: "Invest",       href: "/invest" },
+  { label: "For Builders", href: "/builders" },
+  { label: "NRI",          href: "/nri" },
+  { label: "About",        href: "/about" },
+  { label: "Contact",      href: "/contact" },
 ];
 
 export default function Header() {
   const [open, setOpen]         = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { t } = useLanguage();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -65,16 +62,15 @@ export default function Header() {
         <ul className="hidden xl:flex items-center gap-6">
           {navLinks.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="nav-link text-[13px]">{t(l.key)}</Link>
+              <Link href={l.href} className="nav-link text-[13px]">{l.label}</Link>
             </li>
           ))}
         </ul>
 
         <div className="hidden lg:flex items-center gap-3">
-          <LanguageToggle />
           <CurrencyToggle />
           <Link href="/contact" className="btn-gold text-sm py-2 px-4">
-            {t("getConsultation")}
+            Request Consultation
           </Link>
         </div>
 
@@ -89,7 +85,7 @@ export default function Header() {
             {navLinks.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="nav-link block py-1" onClick={() => setOpen(false)}>
-                  {t(l.key)}
+                  {l.label}
                 </Link>
               </li>
             ))}
@@ -98,7 +94,7 @@ export default function Header() {
             </li>
             <li>
               <Link href="/contact" className="btn-gold text-sm w-full justify-center" onClick={() => setOpen(false)}>
-                {t("getConsultation")}
+                Request Consultation
               </Link>
             </li>
           </ul>

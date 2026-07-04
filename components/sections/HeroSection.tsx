@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/components/ui/LanguageToggle";
 
 const HERO_VIDEO = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4";
 
@@ -22,9 +21,11 @@ const BUDGETS = [
   "₹1Cr – ₹2Cr", "₹2Cr – ₹5Cr", "₹5 Crore+",
 ];
 
+const HERO_POSTER = "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1920&q=80";
+
 export default function HeroSection() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const [videoFailed, setVideoFailed] = useState(false);
 
   const [city,     setCity]     = useState("");
   const [area,     setArea]     = useState("");
@@ -47,19 +48,23 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Video background – desktop only */}
-      <video
-        className="absolute inset-0 w-full h-full object-cover hidden md:block"
-        autoPlay loop muted playsInline
-        poster="https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1920&q=80"
-      >
-        <source src={HERO_VIDEO} type="video/mp4" />
-      </video>
+      {/* Video background – desktop only. Falls back to a static image seamlessly if the
+          video ever fails to load, so the hero can never break. */}
+      {!videoFailed && (
+        <video
+          className="absolute inset-0 w-full h-full object-cover hidden md:block"
+          autoPlay loop muted playsInline
+          poster={HERO_POSTER}
+          onError={() => setVideoFailed(true)}
+        >
+          <source src={HERO_VIDEO} type="video/mp4" />
+        </video>
+      )}
 
-      {/* Mobile fallback */}
+      {/* Fallback background image — shown on mobile always, and on desktop if the video fails */}
       <div
-        className="absolute inset-0 md:hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200&q=80')" }}
+        className={`absolute inset-0 bg-cover bg-center ${videoFailed ? "" : "md:hidden"}`}
+        style={{ backgroundImage: `url('${HERO_POSTER}')` }}
       />
 
       {/* Dark overlay */}
@@ -75,7 +80,7 @@ export default function HeroSection() {
           style={{ background: "rgba(201,162,75,0.12)" }}
         >
           <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-          {t("heroBadge")}
+          AI-Powered Intelligence · RERA-Verified Listings · Zero Broker Spam
         </div>
 
         {/* Headline */}
@@ -83,15 +88,15 @@ export default function HeroSection() {
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
           style={{ fontFamily: "var(--font-playfair, Georgia, serif)", textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
-          {t("heroHeadline1")}
+          Know Before You
           <br />
           <span style={{
             background: "linear-gradient(135deg,#C9A24B,#e8c97a,#C9A24B)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-          }}>{t("heroHeadline2")}</span>
+          }}>Invest</span>
         </h1>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          {t("heroSubhead")}
+          India&apos;s first AI-powered, RERA-verified real estate advisory. Honest pricing. Zero fake listings. Expert guidance — across India and beyond.
         </p>
 
         {/* Search card */}
@@ -178,7 +183,7 @@ export default function HeroSection() {
                 style={{ background: "#C9A24B" }}
               >
                 <Search size={16} />
-                {t("heroSearchBtn")}
+                Search Properties
               </button>
             </div>
           </div>

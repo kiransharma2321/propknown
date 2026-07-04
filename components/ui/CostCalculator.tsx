@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Calculator, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useCurrency } from "@/components/ui/CurrencyToggle";
+import { formatCurrency } from "@/lib/currency";
 
 const GOLD = "#C9A24B";
 
@@ -32,12 +34,6 @@ const GST_LABELS: Record<PropStatus, string> = {
   other_uc:      "Under-Construction, price > ₹45L (5% GST)",
 };
 
-function fmtINR(n: number) {
-  if (n >= 10_000_000) return `₹${(n / 10_000_000).toFixed(2)} Cr`;
-  if (n >= 100_000)    return `₹${(n / 100_000).toFixed(2)} L`;
-  return `₹${Math.round(n).toLocaleString("en-IN")}`;
-}
-
 function calcEMI(principal: number, annualRate: number, tenureYears: number) {
   if (!principal || !annualRate || !tenureYears) return { emi: 0, totalInterest: 0, totalPayment: 0 };
   const r = annualRate / 12 / 100;
@@ -54,6 +50,10 @@ interface Props {
 }
 
 export default function CostCalculator({ initialPrice, compact = false }: Props) {
+  const { currency } = useCurrency();
+  // All internal math is INR-based (stamp duty/GST are Indian tax law figures) — this only
+  // re-displays the computed totals in the user's selected currency for convenience.
+  const fmt = (n: number) => formatCurrency(n, currency);
   const [expanded, setExpanded] = useState(!compact);
 
   // Core inputs
@@ -171,7 +171,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                 placeholder="e.g. 8500000"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400"
               />
-              {price > 0 && <p className="text-[10px] text-gray-400 mt-1">{fmtINR(price)}</p>}
+              {price > 0 && <p className="text-[10px] text-gray-400 mt-1">{fmt(price)}</p>}
             </div>
 
             <div>
@@ -197,24 +197,24 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
           {price > 0 && (
             <>
               <div className="border border-gray-100 rounded-xl p-4 space-y-0">
-                <Row label="Base Price" value={fmtINR(price)} />
+                <Row label="Base Price" value={fmt(price)} />
                 <Row
                   label={`Stamp Duty (${stampRate}%)`}
-                  value={fmtINR(breakdown.stampAmt)}
+                  value={fmt(breakdown.stampAmt)}
                   sub={`Editable — ${state} rate`}
                   editable editVal={String(stampRate)}
                   onEdit={v => setStampRate(parseFloat(v) || 0)}
                 />
                 <Row
                   label={`Registration Fee (${regRate}%)`}
-                  value={fmtINR(breakdown.regAmt)}
+                  value={fmt(breakdown.regAmt)}
                   editable editVal={String(regRate)}
                   onEdit={v => setRegRate(parseFloat(v) || 0)}
                 />
                 {breakdown.gstAmt > 0 && (
                   <Row
                     label={`GST (${breakdown.gstRate}%)`}
-                    value={fmtINR(breakdown.gstAmt)}
+                    value={fmt(breakdown.gstAmt)}
                     sub="Under-construction only; on agreement value"
                   />
                 )}
@@ -223,20 +223,20 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                 )}
                 <Row
                   label="Legal / Documentation"
-                  value={fmtINR(legalFee)}
+                  value={fmt(legalFee)}
                   editable editVal={String(legalFee)}
                   onEdit={v => setLegalFee(parseFloat(v) || 0)}
                 />
                 <Row
                   label={`Brokerage (${brokerage}%)`}
-                  value={fmtINR(breakdown.brokeAmt)}
+                  value={fmt(breakdown.brokeAmt)}
                   sub="Edit rate; PropKnown: success-based only"
                   editable editVal={String(brokerage)}
                   onEdit={v => setBrokerage(parseFloat(v) || 0)}
                 />
                 <Row
                   label="Maintenance / Corpus Deposit"
-                  value={fmtINR(maintenance)}
+                  value={fmt(maintenance)}
                   editable editVal={String(maintenance)}
                   onEdit={v => setMaintenance(parseFloat(v) || 0)}
                 />
@@ -248,10 +248,10 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                   <div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Grand Total — All-In Cost to Own</p>
                     <p className="text-2xl font-bold" style={{ color: GOLD, fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                      {fmtINR(breakdown.total)}
+                      {fmt(breakdown.total)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      +{fmtINR(breakdown.total - price)} over base price ({((breakdown.total / price - 1) * 100).toFixed(1)}% extra)
+                      +{fmt(breakdown.total - price)} over base price ({((breakdown.total / price - 1) * 100).toFixed(1)}% extra)
                     </p>
                   </div>
                 </div>
@@ -281,7 +281,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                             className="flex-1" />
                           <span className="text-sm font-semibold text-gray-700 w-10 text-right">{loanPct}%</span>
                         </div>
-                        <p className="text-[11px] text-gray-500 mt-1">= {fmtINR(loanAmt)}</p>
+                        <p className="text-[11px] text-gray-500 mt-1">= {fmt(loanAmt)}</p>
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Interest Rate (%/yr)</label>
@@ -299,9 +299,9 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                     {emiData.emi > 0 && (
                       <div className="grid grid-cols-3 gap-3 pt-2">
                         {[
-                          { label: "Monthly EMI", val: fmtINR(emiData.emi) },
-                          { label: "Total Interest", val: fmtINR(emiData.totalInterest) },
-                          { label: "Total Payment", val: fmtINR(emiData.totalPayment) },
+                          { label: "Monthly EMI", val: fmt(emiData.emi) },
+                          { label: "Total Interest", val: fmt(emiData.totalInterest) },
+                          { label: "Total Payment", val: fmt(emiData.totalPayment) },
                         ].map(({ label, val }) => (
                           <div key={label} className="bg-gray-50 rounded-lg p-3 text-center">
                             <p className="text-[10px] text-gray-400 mb-1">{label}</p>

@@ -448,10 +448,31 @@ function benchmarkUnitFor(propertyType: string, unit: string): "sqyard" | "sqft"
   return "sqft";
 }
 
+// The BENCHMARKS table is keyed by unit+locality only, with no property-type dimension --
+// every sqft-priced type (apartment, villa, house, commercial) was hitting the identical
+// bucket, so a villa and an apartment in the same locality got clamped to the same range
+// regardless of what Gemini/Tavily actually returned. Villas and independent houses command
+// a real premium over apartments in the same micro-market (larger private land share, lower
+// density, more exclusivity); commercial office space is typically closer to apartment rates.
+// These multipliers scale the shared per-locality sqft benchmark by type rather than
+// requiring a fully separate, harder-to-verify benchmark row per type per locality.
+const SQFT_TYPE_MULTIPLIER: Record<string, number> = {
+  apartment:  1.0,
+  house:      1.15,
+  villa:      1.3,
+  commercial: 1.05,
+};
+
 function findBenchmark(location: string, propertyType: string, unit: string): Benchmark | null {
   const loc = location.toLowerCase();
   const wantUnit = benchmarkUnitFor(propertyType, unit);
-  return BENCHMARKS.find((b) => b.unit === wantUnit && b.keywords.some((k) => loc.includes(k))) ?? null;
+  const match = BENCHMARKS.find((b) => b.unit === wantUnit && b.keywords.some((k) => loc.includes(k)));
+  if (!match) return null;
+  if (wantUnit !== "sqft") return match; // plot/acre benchmarks are already type-distinct
+
+  const mult = SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0;
+  if (mult === 1.0) return match;
+  return { ...match, min: Math.round(match.min * mult), max: Math.round(match.max * mult) };
 }
 
 // Corrects prices that are implausibly low for a known micro-market — e.g. an LLM/web-search
@@ -551,6 +572,12 @@ INDIA acre benchmarks:
 - Mumbai outskirts (<50km): Karjat, Khopoli: ₹50L–1.5Cr/acre` : `
 LOCALITY-SPECIFIC sq.ft benchmarks (SECONDARY — use live data above first):
 ⚠️ CRITICAL: Every locality below has a DISTINCT price — never average them together.
+⚠️ CRITICAL: The figures below are APARTMENT baseline rates for each locality. This request is for "${propertyType}" — adjust accordingly:
+- apartment: use the benchmark as-is.
+- villa: apply a 25-35% PREMIUM over the apartment benchmark (villas include a larger private land share, lower density, more exclusivity — they cost meaningfully more per sqft than apartments in the same micro-market).
+- house (independent house): apply a 10-20% premium over the apartment benchmark.
+- commercial: apply a 0-10% premium over the apartment benchmark.
+Never return the same price for villa and apartment in the same locality — they must differ.
 
 HYDERABAD (pick the exact sub-locality):
 - Jubilee Hills / Banjara Hills (ultra-prime): ₹15,000–28,000/sqft

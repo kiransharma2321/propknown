@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
 import PKLogo from "./PKLogo";
-import { useLanguage } from "@/components/ui/LanguageToggle";
 
 const footerLinks = {
   Properties: [
@@ -52,12 +51,6 @@ function LinkedInIcon() {
 }
 
 export default function Footer() {
-  const { t } = useLanguage();
-  const headingKey: Record<string, "footerProperties" | "footerServices"> = {
-    Properties: "footerProperties",
-    Services: "footerServices",
-  };
-
   return (
     <footer className="bg-black border-t border-zinc-800">
       {/* Main footer */}
@@ -99,7 +92,7 @@ export default function Footer() {
         {/* Links */}
         {Object.entries(footerLinks).map(([heading, links]) => (
           <div key={heading}>
-            <h4 className="text-white font-semibold text-sm mb-4 tracking-wider">{t(headingKey[heading])}</h4>
+            <h4 className="text-white font-semibold text-sm mb-4 tracking-wider">{heading}</h4>
             <ul className="space-y-2.5">
               {links.map((l) => (
                 <li key={l.href}>
@@ -134,11 +127,11 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-600">
-          <p>© 2026 {COMPANY.name}. {t("footerRights")}</p>
+          <p>© 2026 {COMPANY.name}. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link href="/privacy"     className="hover:text-zinc-400 transition-colors">{t("footerPrivacy")}</Link>
-            <Link href="/terms"       className="hover:text-zinc-400 transition-colors">{t("footerTerms")}</Link>
-            <Link href="/disclaimer"  className="hover:text-zinc-400 transition-colors">{t("footerDisclaimer")}</Link>
+            <Link href="/privacy"     className="hover:text-zinc-400 transition-colors">Privacy Policy</Link>
+            <Link href="/terms"       className="hover:text-zinc-400 transition-colors">Terms of Use</Link>
+            <Link href="/disclaimer"  className="hover:text-zinc-400 transition-colors">Disclaimer</Link>
           </div>
         </div>
       </div>

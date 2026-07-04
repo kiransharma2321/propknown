@@ -24,7 +24,7 @@ const GOALS = [
 ];
 
 const ADVANTAGES = [
-  { title: "Proprietary AI & Technology",          desc: "JARVIS — our in-house AI engine — analyses 50+ data points for every property valuation and investment score." },
+  { title: "Proprietary AI & Technology",          desc: "KnownAI — our in-house AI engine — analyses 50+ data points for every property valuation and investment score." },
   { title: "Data Analytics & Predictive Modeling", desc: "5-year market forecasts, rental yield projections, and investment scoring for any global location." },
   { title: "User-Friendly Platforms",               desc: "Clean, intuitive interface trusted by first-time buyers and seasoned investors alike." },
 ];

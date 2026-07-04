@@ -1,13 +1,20 @@
-// Original CSS/SVG animated "AI orb" — concentric rotating rings around a pulsing glowing
-// core, in PropKnown gold/dark brand colors. No external images/assets, no third-party IP.
+// Original CSS/SVG animated "AI orb" — a holographic-globe-style wireframe (latitude/longitude
+// grid lines) around a crisp glowing gold core, on a dark backing disc so it "floats". Pure
+// SVG strokes/gradients only — no blur filters, no external images/video, no third-party IP.
 interface AIOrbProps {
   size?: number;
   className?: string;
+  /** True while KnownAI is actively generating a reply — speeds up the rotation/shimmer.
+   *  False (default) shows the slow idle "breathing" pulse. */
+  active?: boolean;
 }
 
-export default function AIOrb({ size = 40, className = "" }: AIOrbProps) {
-  const gradId = `orbCoreGrad-${size}`;
-  const glowId = `orbGlowGrad-${size}`;
+export default function AIOrb({ size = 40, className = "", active = false }: AIOrbProps) {
+  const uid = `${size}-${active ? "a" : "i"}`;
+  const coreGrad = `orbCore-${uid}`;
+  const ringDur  = active ? "3.5s" : "10s";
+  const ringDurRev = active ? "2.6s" : "7s";
+  const pulseDur = active ? "1.1s" : "2.6s";
 
   return (
     <div
@@ -15,40 +22,49 @@ export default function AIOrb({ size = 40, className = "" }: AIOrbProps) {
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 100 100" width={size} height={size} className="overflow-visible">
+      <svg viewBox="0 0 100 100" width={size} height={size}>
         <defs>
-          <radialGradient id={gradId} cx="50%" cy="42%" r="60%">
-            <stop offset="0%"  stopColor="#f5dfa0" />
-            <stop offset="45%" stopColor="#C9A24B" />
-            <stop offset="100%" stopColor="#8a6a2e" />
-          </radialGradient>
-          <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
-            <stop offset="0%"  stopColor="#C9A24B" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#C9A24B" stopOpacity="0" />
+          <radialGradient id={coreGrad} cx="42%" cy="38%" r="65%">
+            <stop offset="0%"  stopColor="#fdf0c8" />
+            <stop offset="50%" stopColor="#C9A24B" />
+            <stop offset="100%" stopColor="#7a5d28" />
           </radialGradient>
         </defs>
 
-        {/* Soft outer glow, pulsing */}
-        <circle className="orb-glow" cx="50" cy="50" r="46" fill={`url(#${glowId})`} />
+        {/* Dark backing disc so the orb reads as a floating sphere, not a flat icon */}
+        <circle cx="50" cy="50" r="48" fill="#0a0a0a" />
 
-        {/* Outer ring — dashed, slow clockwise rotation */}
+        {/* Globe wireframe — longitude meridians (rotating group) */}
+        <g className="orb-ring-outer" style={{ animationDuration: ringDur }}>
+          {[0, 30, 60, 90, 120, 150].map((deg) => (
+            <ellipse
+              key={deg}
+              cx="50" cy="50" rx={44 * Math.abs(Math.cos((deg * Math.PI) / 180)) + 2} ry="44"
+              transform={`rotate(${deg} 50 50)`}
+              fill="none" stroke="#C9A24B" strokeWidth="0.5" opacity="0.28"
+            />
+          ))}
+        </g>
+
+        {/* Globe wireframe — latitude rings (counter-rotating group) */}
+        <g className="orb-ring-inner" style={{ animationDuration: ringDurRev }}>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#e8c97a" strokeWidth="0.6" opacity="0.4" />
+          <ellipse cx="50" cy="50" rx="44" ry="26" fill="none" stroke="#e8c97a" strokeWidth="0.5" opacity="0.3" />
+          <ellipse cx="50" cy="50" rx="44" ry="10" fill="none" stroke="#e8c97a" strokeWidth="0.5" opacity="0.25" />
+        </g>
+
+        {/* Crisp outer rim */}
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#C9A24B" strokeWidth="1" opacity="0.6" />
+
+        {/* Glowing core — brightness pulse via CSS, no blur filter */}
         <circle
-          className="orb-ring-outer"
-          cx="50" cy="50" r="42"
-          fill="none" stroke="#C9A24B" strokeWidth="2"
-          strokeDasharray="6 10" strokeLinecap="round" opacity="0.85"
+          className="orb-core"
+          cx="50" cy="50" r="19"
+          fill={`url(#${coreGrad})`}
+          style={{ animationDuration: pulseDur }}
         />
-
-        {/* Inner ring — dashed, faster counter-clockwise rotation */}
-        <circle
-          className="orb-ring-inner"
-          cx="50" cy="50" r="32"
-          fill="none" stroke="#e8c97a" strokeWidth="1.5"
-          strokeDasharray="3 7" strokeLinecap="round" opacity="0.7"
-        />
-
-        {/* Glowing core */}
-        <circle className="orb-core" cx="50" cy="50" r="20" fill={`url(#${gradId})`} />
+        {/* Thin highlight ring for a crisp edge on the core */}
+        <circle cx="50" cy="50" r="19" fill="none" stroke="#fdf0c8" strokeWidth="0.6" opacity="0.5" />
       </svg>
     </div>
   );

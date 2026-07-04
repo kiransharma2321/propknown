@@ -260,9 +260,9 @@ out body qt 30;`;
     }
   }, [form, listing]);
 
-  // Nearby pins for map — only listings with coords, within a genuinely "nearby" radius so
-  // pins actually land within the map's viewport at its property-level zoom, closest first.
-  const NEARBY_MAP_RADIUS_KM = 15;
+  // Nearby pins for map — only listings with coords, within a genuinely "nearby" radius (1-5km)
+  // so pins actually land within the map's viewport at its property-level zoom, closest first.
+  const NEARBY_MAP_RADIUS_KM = 5;
   const nearbyPins: NearbyListing[] = nearbyListings
     .filter(l => l.lat && l.lng)
     .map(l => ({

@@ -74,8 +74,9 @@ export default function KnownAIChat() {
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full text-black shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
         style={{ background: "#0a0a0a" }}
         aria-label="Open KnownAI chat"
+        title="KnownAI — PropKnown AI Real Estate Expert"
       >
-        {open ? <X size={22} className="text-white" /> : <AIOrb size={38} />}
+        {open ? <X size={22} className="text-white" /> : <AIOrb size={38} active={typing} />}
       </button>
 
       {/* Chat panel */}
@@ -86,7 +87,7 @@ export default function KnownAIChat() {
         >
           {/* Header */}
           <div className="px-4 py-3 flex items-center gap-3 border-b shrink-0" style={{ background: "#0a0a0a", borderColor: "#333" }}>
-            <AIOrb size={36} />
+            <AIOrb size={36} active={typing} />
             <div className="min-w-0">
               <p className="text-white text-sm font-semibold">KnownAI</p>
               <p className="text-gray-400 text-xs truncate">PropKnown AI Real Estate Expert</p>
@@ -126,7 +127,7 @@ export default function KnownAIChat() {
             {/* Typing indicator */}
             {typing && (
               <div className="flex items-center gap-2">
-                <AIOrb size={24} />
+                <AIOrb size={24} active />
                 <div className="px-3 py-2.5 rounded-xl rounded-bl-none flex gap-1 items-center" style={{ background: "#2a2a2a" }}>
                   {[0, 1, 2].map((i) => (
                     <span

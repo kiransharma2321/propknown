@@ -17,17 +17,17 @@ export default function AITeaser() {
                 <Bot size={20} className="text-black" />
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">JARVIS AI Intelligence</p>
+                <p className="text-white font-semibold text-sm">KnownAI Market Intelligence</p>
                 <p className="text-zinc-500 text-xs">Powered by PropKnown</p>
               </div>
             </div>
 
             <h2 className="section-heading-dark mb-6" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-              Property Valuations <span className="gold-text">Powered by AI</span>
+              Know Any Area&apos;s <span className="gold-text">True Value</span>
             </h2>
             <p className="text-zinc-400 leading-relaxed mb-8">
-              Get AI-powered market valuations, 5-year investment forecasts, rental yield estimates,
-              and investment ratings for any city, area, or neighbourhood worldwide.
+              AI-powered market valuations, 5-year forecasts, rental yield estimates, and honest
+              investment ratings — grounded in real listings, for any city or neighbourhood worldwide.
             </p>
 
             <div className="space-y-3 mb-8">
@@ -44,7 +44,7 @@ export default function AITeaser() {
             </div>
 
             <Link href="/ai-intelligence" className="btn-gold">
-              Try AI Valuation <ArrowRight size={16} />
+              Get Market Intelligence <ArrowRight size={16} />
             </Link>
           </div>
 

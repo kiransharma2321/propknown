@@ -109,21 +109,18 @@ body {
 .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
 .chat-widget { font-family: var(--font-inter); }
 
-/* KnownAI orb — concentric rotating rings + glow pulse, pure CSS/SVG */
+/* KnownAI orb — holographic-globe wireframe (rotating meridian/latitude lines) + a crisp
+   pulsing gold core. Durations are set inline per-instance (idle vs "actively thinking"). */
 @keyframes orbSpinCW  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes orbSpinCCW { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-@keyframes orbGlowPulse {
-  0%, 100% { opacity: 0.55; transform: scale(0.94); }
-  50%      { opacity: 1;    transform: scale(1.06); }
-}
 @keyframes orbCorePulse {
   0%, 100% { filter: brightness(1);    }
-  50%      { filter: brightness(1.35); }
+  50%      { filter: brightness(1.4); }
 }
-.orb-ring-outer { animation: orbSpinCW 9s linear infinite; transform-origin: 50% 50%; }
-.orb-ring-inner { animation: orbSpinCCW 6s linear infinite; transform-origin: 50% 50%; }
-.orb-glow       { animation: orbGlowPulse 2.4s ease-in-out infinite; transform-origin: 50% 50%; }
-.orb-core       { animation: orbCorePulse 2.4s ease-in-out infinite; }
+.orb-ring-outer, .orb-ring-inner { transform-box: fill-box; transform-origin: center; }
+.orb-ring-outer { animation-name: orbSpinCW;  animation-timing-function: linear; animation-iteration-count: infinite; }
+.orb-ring-inner { animation-name: orbSpinCCW; animation-timing-function: linear; animation-iteration-count: infinite; }
+.orb-core       { animation-name: orbCorePulse; animation-timing-function: ease-in-out; animation-iteration-count: infinite; transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) {
-  .orb-ring-outer, .orb-ring-inner, .orb-glow, .orb-core { animation: none; }
+  .orb-ring-outer, .orb-ring-inner, .orb-core { animation: none; }
 }

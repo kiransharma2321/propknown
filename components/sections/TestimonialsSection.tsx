@@ -27,7 +27,7 @@ const TESTIMONIALS = [
     location: "Mumbai",
     role: "Architect",
     rating: 5,
-    text: "The JARVIS AI chatbot is amazing — answered all my queries at 11pm! The team followed up next morning and closed the deal within a month.",
+    text: "The KnownAI chatbot is amazing — answered all my queries at 11pm! The team followed up next morning and closed the deal within a month.",
   },
 ];
 

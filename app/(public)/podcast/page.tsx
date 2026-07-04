@@ -34,8 +34,8 @@ export default function PodcastPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {EPISODES.map((ep) => (
-            <div key={ep.ep} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-md transition-all group cursor-pointer flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:opacity-90 transition-all" style={{ background: "rgba(201,162,75,0.1)", border: "1px solid rgba(201,162,75,0.3)" }}>
+            <div key={ep.ep} className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(201,162,75,0.1)", border: "1px solid rgba(201,162,75,0.3)" }}>
                 <PlayCircle size={20} style={{ color: "#C9A24B" }} />
               </div>
               <div className="flex-1 min-w-0">
@@ -45,7 +45,7 @@ export default function PodcastPage() {
                     <Clock size={11} /> {ep.duration}
                   </span>
                 </div>
-                <h3 className="text-gray-900 font-semibold text-sm mb-1 leading-snug group-hover:text-yellow-700 transition-colors">
+                <h3 className="text-gray-900 font-semibold text-sm mb-1 leading-snug">
                   {ep.title}
                 </h3>
                 <p className="text-gray-400 text-xs">{ep.guest}</p>
