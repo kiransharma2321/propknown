@@ -120,6 +120,7 @@ export default function PropertyDetailClient({
   const [amenities,        setAmenities]       = useState<Amenity[]>([]);
   const [amenitiesLoading, setAmenitiesLoading]= useState(false);
   const [marketData,       setMarketData]      = useState<MarketData | null>(null);
+  const [marketDataDone,   setMarketDataDone]   = useState(false);
   const [form,  setForm]  = useState({ name: "", phone: "", message: "" });
   const [fstate, setFstate] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -233,8 +234,12 @@ out body qt 30;`;
       body: JSON.stringify({ location: listing.location, propertyType: propType, unit }),
     })
       .then(r => r.json())
-      .then(d => setMarketData(d))
-      .catch(() => {});
+      // Live Gemini data is the only source shown now — the API returns
+      // { available: false } (no price fields at all) when live data couldn't be produced,
+      // so only set marketData when a real result actually came back.
+      .then(d => { if (d?.available) setMarketData(d); })
+      .catch(() => {})
+      .finally(() => setMarketDataDone(true));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lead form submit ──────────────────────────────────────────────────────
@@ -681,6 +686,10 @@ out body qt 30;`;
                       AI estimate from current listings & trends — actual prices vary. Verify with RERA and a PropKnown advisor before any decision.
                     </p>
                   </>
+                ) : marketDataDone ? (
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Live market data is temporarily unavailable for this area right now.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {[1, 2, 3].map(i => (

@@ -514,6 +514,25 @@ const SQFT_TYPE_MULTIPLIER: Record<string, number> = {
   commercial: 1.05,
 };
 
+// In peripheral/outer-corridor localities, villas serve a fundamentally different buyer
+// segment than the area's typical apartment stock -- large private-plot gated communities
+// for an affluent niche, vs. the area's often basic/affordable apartment inventory aimed at
+// commuters. That's a much bigger gap than in dense urban IT corridors (Gachibowli, Kondapur
+// etc.), where villas and apartments serve a similar buyer pool and a ~25-35% premium holds.
+// Verified against real listing data for Medchal (user-confirmed 2026-07, 99acres/
+// MagicBricks): actual villa range Rs.8,800-15,600/sqft vs our apartment benchmark of
+// Rs.3,200-5,500/sqft -- a ~2.8x ratio, not ~1.3x. Extrapolated to similarly-profiled
+// peripheral localities on the same reasoning; only Medchal has been independently verified
+// so far -- if another entry here proves off, correct it individually rather than the whole set.
+const PERIPHERAL_KEYWORDS = [
+  "medchal", "ameenpur", "shamirpet", "shamshabad", "shadnagar", "maheshwaram",
+  "nalgonda", "miryalaguda", "kompally", "bachupally", "nizampet",
+];
+const PERIPHERAL_TYPE_MULTIPLIER: Record<string, number> = {
+  villa: 2.8,
+  house: 2.3,
+};
+
 function findBenchmark(location: string, propertyType: string, unit: string): Benchmark | null {
   const loc = location.toLowerCase();
   const wantUnit = benchmarkUnitFor(propertyType, unit);
@@ -521,58 +540,35 @@ function findBenchmark(location: string, propertyType: string, unit: string): Be
   if (!match) return null;
   if (wantUnit !== "sqft") return match; // plot/acre benchmarks are already type-distinct
 
-  const mult = SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0;
+  const isPeripheral = PERIPHERAL_KEYWORDS.some((k) => loc.includes(k));
+  const mult = isPeripheral
+    ? (PERIPHERAL_TYPE_MULTIPLIER[propertyType] ?? SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0)
+    : (SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0);
   if (mult === 1.0) return match;
   return { ...match, min: Math.round(match.min * mult), max: Math.round(match.max * mult) };
 }
 
-// Corrects prices that are implausibly low for a known micro-market — e.g. an LLM/web-search
-// pipeline anchoring on a promotional "starting from ₹45L" teaser instead of the typical
-// per-unit rate. Only pulls LOW outliers up; genuinely premium listings above the benchmark
-// max are left alone (that's plausible upside, not an extraction error), aside from an
-// extreme sanity cap for runaway values.
-function clampToBenchmark(price: number, location: string, propertyType: string, unit: string): number {
-  const b = findBenchmark(location, propertyType, unit);
-  if (!b) return price;
-  if (price < b.min * 0.85) {
-    // Snap into the lower third of the real range rather than the raw min or a full
-    // recentering — keeps some signal from the (too-low) original figure's relative position.
-    const corrected = Math.round(b.min + (b.max - b.min) * 0.3);
-    console.warn(`[market-intel] Clamped too-low price for "${location}": ${price} → ${corrected} (benchmark ${b.min}-${b.max})`);
-    return corrected;
-  }
-  if (price > b.max * 2) {
-    const corrected = Math.round(b.max * 1.3);
-    console.warn(`[market-intel] Clamped too-high price for "${location}": ${price} → ${corrected} (benchmark ${b.min}-${b.max})`);
-    return corrected;
-  }
-  return price;
-}
-
-// Derives a realistic min-max price range for the richer UI display. A matched locality
-// benchmark is the most trustworthy source (real published ranges); Gemini's self-reported
-// range is used only when it's roughly consistent with the current price estimate (guards
-// against the same "starting from" lowball problem showing up in the range instead of the
-// point estimate); otherwise a modest band around the current price is synthesized.
+// Derives a realistic min-max price range for the richer UI display. Live Gemini data is now
+// the only source ever shown to users (see POST handler — a request is only priced at all
+// when Bayut/Tavily found real listing data AND Gemini successfully processed it), so this
+// only ever runs for genuinely live-grounded results. Priority: Bayut's own computed range >
+// Gemini's self-reported range (when internally consistent with its point price) > a
+// synthetic band around the point price. BENCHMARKS is intentionally not consulted here —
+// a confirmed-real answer should never be second-guessed by a static table (kept in this
+// file for other features to reference, e.g. a future plausibility-check tool, but
+// disconnected from anything shown to users as an AI Intelligence price).
 function deriveRange(
   currentPrice: number,
   raw: Record<string, unknown>,
-  location: string,
-  propertyType: string,
-  unit: string,
   bayutRange?: { min: number; max: number }
 ): { min: number; max: number } {
-  // Bayut's range is computed directly from live listings — most trustworthy source available
   if (bayutRange) return bayutRange;
-
-  const b = findBenchmark(location, propertyType, unit);
-  if (b) return { min: b.min, max: b.max };
 
   const rawMin = Number(raw.priceRangeMin);
   const rawMax = Number(raw.priceRangeMax);
-  if (rawMin > 0 && rawMax > rawMin && currentPrice >= rawMin * 0.5 && currentPrice <= rawMax * 1.5) {
-    return { min: Math.round(rawMin), max: Math.round(rawMax) };
-  }
+  const geminiRangeOk = rawMin > 0 && rawMax > rawMin && currentPrice >= rawMin * 0.5 && currentPrice <= rawMax * 1.5;
+  if (geminiRangeOk) return { min: Math.round(rawMin), max: Math.round(rawMax) };
+
   return { min: Math.round(currentPrice * 0.85), max: Math.round(currentPrice * 1.25) };
 }
 
@@ -641,10 +637,11 @@ LOCALITY-SPECIFIC sq.ft benchmarks (SECONDARY — use live data above first):
 ⚠️ CRITICAL: Every locality below has a DISTINCT price — never average them together.
 ⚠️ CRITICAL: The figures below are APARTMENT baseline rates for each locality. This request is for "${propertyType}" — adjust accordingly:
 - apartment: use the benchmark as-is.
-- villa: apply a 25-35% PREMIUM over the apartment benchmark (villas include a larger private land share, lower density, more exclusivity — they cost meaningfully more per sqft than apartments in the same micro-market).
-- house (independent house): apply a 10-20% premium over the apartment benchmark.
+- villa (core urban / IT-corridor localities, e.g. Gachibowli, Kondapur, Whitefield): apply a 25-35% PREMIUM over the apartment benchmark (villas include a larger private land share, lower density, more exclusivity — they cost meaningfully more per sqft than apartments in the same micro-market).
+- villa (peripheral / outer-ring / emerging-corridor localities, e.g. Medchal, Shamshabad, Nalgonda, and similar areas far from the core IT/business district): apply a MUCH larger premium — roughly 150-190% over the apartment benchmark (i.e. villa price ≈ 2.5-2.9x the apartment rate). Villas here serve a fundamentally different, more affluent buyer segment (large private-plot gated communities) than the area's typical apartment stock (often basic/affordable commuter housing). Verified real-world example: Medchal apartments ₹3,200-5,500/sqft vs Medchal villas ₹8,800-15,600/sqft (~2.8x) — use this as your calibration reference for any similarly peripheral locality.
+- house (independent house): apply the same tiered logic as villa above, at a slightly lower premium (10-20% core-urban, ~130-160% peripheral).
 - commercial: apply a 0-10% premium over the apartment benchmark.
-Never return the same price for villa and apartment in the same locality — they must differ.
+Never return the same price for villa and apartment in the same locality — they must differ, and the gap should be much larger in peripheral areas than in core-urban ones.
 
 HYDERABAD (pick the exact sub-locality):
 - Jubilee Hills / Banjara Hills (ultra-prime): ₹15,000–28,000/sqft
@@ -795,73 +792,19 @@ ${benchmarks}
 Return ONLY the JSON object. No other text.`;
 }
 
-// ─── Honest non-live-data messaging ───────────────────────────────────────────
-// Any time we're NOT showing a real Bayut/Tavily-grounded price, the user needs to know
-// WHY in a way that doesn't conflate two very different situations: (a) the daily Gemini
-// free-tier quota (20 requests/day, shared site-wide) is exhausted for the rest of today,
-// vs (b) we simply found no live listings for this exact search. Each is further split by
-// whether a locality-specific BENCHMARKS entry exists — a comparable-area estimate is a
-// meaningfully stronger claim than a flat country-wide guess, and the user should be told
-// which one they're looking at rather than have both look like the same generic "estimate".
-function aiOnlyMessaging(location: string, hasBenchmark: boolean, quotaHit: boolean): { label: string; summary: string } {
-  if (quotaHit) {
-    return hasBenchmark
-      ? {
-          label: "Daily AI limit reached — comparable area estimate",
-          summary: `Our AI valuation tool has reached its daily analysis limit for today (resets tomorrow). This is an estimate for ${location} based on comparable published rate data for this locality, not a fresh live analysis. WhatsApp Raghu on 97017 71333 for accurate current pricing today.`,
-        }
-      : {
-          label: "Daily AI limit reached — general estimate, not area-specific",
-          summary: `Our AI valuation tool has reached its daily analysis limit for today (resets tomorrow), and we don't have comparable data for ${location} either — so this is a general regional estimate, not specific to this exact area. WhatsApp Raghu on 97017 71333 for an accurate manual assessment.`,
-        };
-  }
-  return hasBenchmark
-    ? {
-        label: "Estimate — no live listings, using comparable area data",
-        summary: `No live listings came up for this exact search, so this is an estimate for ${location} based on comparable published rate data for this locality — not a fresh live-listing analysis.`,
-      }
-    : {
-        label: "General estimate — no specific data for this exact area",
-        summary: `We don't have specific comparable data for ${location} — this is a general regional estimate only, not tailored to this exact area. WhatsApp Raghu on 97017 71333 for a manual on-ground assessment.`,
-      };
-}
-
-// ─── Fallback ─────────────────────────────────────────────────────────────────
-
-function mkFallback(location: string, propertyType: string, unit: string, currency: CurrencyInfo, quotaHit = false) {
-  const y        = new Date().getFullYear();
-  const unitKey  = unit === "sqyard" ? "sqyard" : unit === "acres" ? "acres" : "sqft";
-  const basePrices: Record<string, Record<string, number>> = {
-    in: { sqft: 5500,    sqyard: 18000,   acres: 4000000  },
-    ae: { sqft: 1800,    sqyard: 16200,   acres: 78000000 },
-    gb: { sqft: 600,     sqyard: 5400,    acres: 2500000  },
-    us: { sqft: 350,     sqyard: 3150,    acres: 1500000  },
-    sg: { sqft: 1800,    sqyard: 16200,   acres: 80000000 },
-    ca: { sqft: 600,     sqyard: 5400,    acres: 2000000  },
-    au: { sqft: 500,     sqyard: 4500,    acres: 1800000  },
-  };
-  // Prefer a known locality's real benchmark midpoint over a flat, non-specific city/country
-  // default — the fallback path should still be area-aware whenever we can be.
-  const benchmark = findBenchmark(location, propertyType, unit);
-  const base  = benchmark
-    ? Math.round(benchmark.min + (benchmark.max - benchmark.min) * 0.5)
-    : basePrices[currency.code === "INR" ? "in" : currency.code.toLowerCase().slice(0,2)]?.[unitKey]
-      ?? basePrices.in[unitKey];
-  const scale = 1.08;
-  const hist  = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({ year: yr, value: Math.round(base / Math.pow(scale, 4 - i)) }));
-  const fore  = [1,2,3,4,5].map((n) => ({ year: y + n, value: Math.round(base * Math.pow(scale, n)) }));
-  const range = benchmark ? { min: benchmark.min, max: benchmark.max } : { min: Math.round(base * 0.85), max: Math.round(base * 1.25) };
-  const msg = aiOnlyMessaging(location, !!benchmark, quotaHit);
+// ─── Unavailable state ─────────────────────────────────────────────────────────
+// Live Gemini data (grounded in real Bayut/Tavily listings) is now the ONLY source ever
+// shown to users as a price — there is no more benchmark-table-generated fallback estimate.
+// Whenever live data can't be produced for any reason (no live listings found, Gemini
+// quota/auth/network failure, malformed response, etc.), this returns a simple, honest
+// "unavailable" result instead of a number that could be mistaken for something real. The
+// technical reason is logged server-side for debugging; the user only ever sees one plain,
+// friendly message with a retry option.
+function unavailableResponse(reason: string) {
+  console.warn(`[market-intel] unavailable: ${reason}`);
   return {
-    locationName: location, currency: currency.code, currencySymbol: currency.symbol,
-    currentPricePerSqft: base, priceRangeMin: range.min, priceRangeMax: range.max, pricePerSqftUnit: unitKey,
-    typicalListings: "General market estimate — WhatsApp Raghu on 97017 71333 for specific listing types available right now.",
-    priceHistory5yr: hist, priceForecast5yr: fore,
-    growthRate: 8.0, trend: "Stable", rentalYield: 3.5, investmentRating: 6.5,
-    bestFor: "long-term appreciation", dataSource: "ai_only" as const,
-    dataSourceLabel: msg.label,
-    summary: msg.summary,
-    keyDrivers: ["Steady residential demand", "Infrastructure improvements", "Growing employment base", "Moderate supply"],
+    available: false,
+    message: "Live market data is temporarily unavailable for this area. Please try again in a moment.",
   };
 }
 
@@ -890,33 +833,26 @@ function normalise(
   bayutPricePsf?: number,
   bayutRange?: { min: number; max: number }
 ): Record<string, unknown> {
-  const y    = new Date().getFullYear();
-  // For Bayut: lock the price to the computed median — Gemini can't override it. Trusted as
-  // real live data, so it's exempt from the benchmark clamp below.
-  const rawNow = dataSource === "bayut_data" && bayutPricePsf
+  const y = new Date().getFullYear();
+  // This only ever runs for genuinely live-grounded data now (Bayut or Tavily-backed
+  // "real_data") — the caller never invokes normalise() otherwise. Displayed exactly as
+  // returned, with no clamping or range-checking against BENCHMARKS.
+  const now = dataSource === "bayut_data" && bayutPricePsf
     ? bayutPricePsf
     : (Number(raw.currentPricePerSqft) || 5500);
-  const preClampNow = dataSource === "bayut_data"
-    ? rawNow
-    : clampToBenchmark(rawNow, location, propertyType, unit);
-  const range = deriveRange(preClampNow, raw, location, propertyType, unit, bayutRange);
-  // clampToBenchmark and deriveRange use different thresholds, so a point price could pass
-  // the "not implausible" clamp check while still landing outside the range shown right next
-  // to it (e.g. a price 6% above a benchmark's max wasn't extreme enough to re-clamp, but
-  // still didn't fit inside that same benchmark's own min-max range). Bayut is real live
-  // data (median is inherently within its own min/max by construction) so it's left alone.
-  const now = dataSource === "bayut_data"
-    ? preClampNow
-    : Math.min(Math.max(preClampNow, range.min), range.max);
-  const clampRatio = rawNow > 0 ? now / rawNow : 1;
+  const range = deriveRange(now, raw, bayutRange);
+
+  // Flag (log only) when a live-grounded price falls notably outside its historical
+  // BENCHMARKS entry, if one exists — signals that entry may be stale and worth reviewing
+  // for other features that still reference it. Never alters what's shown to the user.
+  const b = findBenchmark(location, propertyType, unit);
+  if (b && (now < b.min * 0.85 || now > b.max * 1.15)) {
+    console.warn(`[market-intel] BENCHMARK MISMATCH: live-grounded price for "${location}" (${propertyType}) is ${now}, outside BENCHMARKS range ${b.min}-${b.max} -- this table entry may need reviewing.`);
+  }
 
   const rate = (Number(raw.growthRate) || 8) / 100;
 
   let hist = raw.priceHistory5yr as { year: number; value: number }[] | undefined;
-  if (Array.isArray(hist) && hist.length >= 2 && clampRatio !== 1) {
-    // Keep history proportionally consistent with a clamped current price
-    hist = hist.map((h) => ({ year: h.year, value: Math.round(h.value * clampRatio) }));
-  }
   if (!Array.isArray(hist) || hist.length < 2) {
     hist = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({
       year: yr, value: Math.round(now / Math.pow(1 + rate, 4 - i)),
@@ -924,9 +860,6 @@ function normalise(
   }
 
   let fore = raw.priceForecast5yr as { year: number; value: number }[] | undefined;
-  if (Array.isArray(fore) && fore.length >= 2 && clampRatio !== 1) {
-    fore = fore.map((f) => ({ year: f.year, value: Math.round(f.value * clampRatio) }));
-  }
   if (!Array.isArray(fore) || fore.length < 2) {
     fore = [1,2,3,4,5].map((n) => ({
       year: y + n, value: Math.round(now * Math.pow(1 + rate, n)),
@@ -936,16 +869,8 @@ function normalise(
   const trend = ["Bullish", "Stable", "Cautious"].includes(raw.trend as string)
     ? (raw.trend as string) : "Stable";
 
-  // Gemini succeeded but no live Bayut/Tavily data was found for this exact search — be
-  // explicit that this is a comparable-area estimate (if a BENCHMARKS match exists) vs a
-  // general regional guess (if it doesn't), instead of a single generic "AI estimate" label
-  // that doesn't distinguish the two. Quota-exhaustion messaging is handled in mkFallback()
-  // since a quota error always short-circuits before reaching normalise().
-  const aiOnly = dataSource === "ai_only"
-    ? aiOnlyMessaging(location, !!findBenchmark(location, propertyType, unit), false)
-    : null;
-
   return {
+    available:           true,
     locationName:        (raw.locationName    as string) || location,
     currency:            currency.code,                   // enforced from detection
     currencySymbol:      currency.symbol,                 // enforced from detection
@@ -962,8 +887,8 @@ function normalise(
     investmentRating:    Number(raw.investmentRating) || 6.5,
     bestFor:             (raw.bestFor  as string) || "long-term investment",
     dataSource,
-    dataSourceLabel:     aiOnly?.label ?? dataSourceLabel,
-    summary:             aiOnly?.summary ?? ((raw.summary as string) || `${location} shows stable market dynamics.`),
+    dataSourceLabel,
+    summary:             (raw.summary as string) || `${location} shows stable market dynamics.`,
     keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : ["Strong demand", "Good connectivity", "Infrastructure growth", "Growing employment"],
   };
 }
@@ -1048,13 +973,13 @@ export async function POST(req: NextRequest) {
   const { countryCode, currency } = await detectCurrency(loc);
 
   if (!geminiKey) {
-    return NextResponse.json(mkFallback(loc, propType, resolvedUnit, currency));
+    return NextResponse.json(unavailableResponse("no GEMINI_API_KEY configured"));
   }
 
   // ── Step 1: Real data — Bayut (UAE) or Tavily (elsewhere) ────────────────
   let realDataBlock:   string | null = null;
   let dataSource:      DataSource    = "ai_only";
-  let dataSourceLabel: string        = "AI estimate (limited live data)";
+  let dataSourceLabel: string        = "";
   let bayutPricePsf:   number | undefined;
   let bayutRange:      { min: number; max: number } | undefined;
   let dataType:        "bayut" | "tavily" | "none" = "none";
@@ -1066,7 +991,7 @@ export async function POST(req: NextRequest) {
       if (bayutResult && bayutResult.count >= 2) {
         realDataBlock  = bayutResult.snippets;
         dataSource     = "bayut_data";
-        dataSourceLabel = `Based on ${bayutResult.count} current Bayut listings (asking prices)`;
+        dataSourceLabel = `Based on live market analysis — ${bayutResult.count} current Bayut listings`;
         bayutPricePsf  = bayutResult.pricePerSqft;
         bayutRange     = { min: bayutResult.minPrice, max: bayutResult.maxPrice };
         dataType       = "bayut";
@@ -1091,7 +1016,7 @@ export async function POST(req: NextRequest) {
       if (tavilyResult && tavilyResult.hasData) {
         realDataBlock  = tavilyResult.snippets;
         dataSource     = "real_data";
-        dataSourceLabel = "Based on current web listings";
+        dataSourceLabel = "Based on live market analysis — current web listings";
         dataType       = "tavily";
         console.log(`[Tavily] got data for "${loc}"`);
       } else {
@@ -1100,6 +1025,14 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.warn("[Tavily] fetch failed (non-fatal):", e);
     }
+  }
+
+  // Live Gemini data is the only source ever shown to users — if neither Bayut nor Tavily
+  // found real listing data, there's nothing for Gemini to ground an answer in, so there's
+  // no point spending an API call (and quota) on a result we'd discard anyway. Not cached:
+  // a moment later this same query might succeed once live data is available.
+  if (dataType === "none") {
+    return NextResponse.json(unavailableResponse(`no live listing data found for "${loc}" (${propType})`));
   }
 
   // ── Step 2: Build Gemini prompt ──────────────────────────────────────────
@@ -1112,20 +1045,15 @@ export async function POST(req: NextRequest) {
   } catch (e1) {
     console.error("Gemini attempt 1 failed:", e1);
     if (e1 instanceof GeminiQuotaError) {
-      // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly estimate.
-      // Not cached: quota resets quickly and this degraded estimate shouldn't be served to the
-      // next several users who query the same locality within the cache window.
-      console.warn("[market-intel] Quota exceeded — skipping retry");
-      return NextResponse.json(mkFallback(loc, propType, resolvedUnit, currency, true));
+      // Retrying won't help — quota is exhausted for the window.
+      return NextResponse.json(unavailableResponse(`Gemini quota exhausted for "${loc}": ${e1.message}`));
     }
     try {
       raw = parseGemini(await callGemini(geminiKey, prompt));
     } catch (e2) {
       console.error("Gemini attempt 2 failed:", e2);
-      const quotaHit = e2 instanceof GeminiQuotaError;
-      const fallback = mkFallback(loc, propType, resolvedUnit, currency, quotaHit);
-      if (!quotaHit) setCache(cacheKey, fallback);
-      return NextResponse.json(fallback);
+      const reason = e2 instanceof Error ? e2.message : String(e2);
+      return NextResponse.json(unavailableResponse(`Gemini call failed for "${loc}": ${reason}`));
     }
   }
 
@@ -1134,9 +1062,8 @@ export async function POST(req: NextRequest) {
     console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
     setCache(cacheKey, result);
     return NextResponse.json(result);
-  } catch {
-    const fallback = mkFallback(loc, propType, resolvedUnit, currency);
-    setCache(cacheKey, fallback);
-    return NextResponse.json(fallback);
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    return NextResponse.json(unavailableResponse(`failed to process AI response for "${loc}": ${reason}`));
   }
 }

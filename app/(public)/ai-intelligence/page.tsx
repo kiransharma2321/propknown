@@ -116,6 +116,7 @@ function getRegionUnits(location: string): { value: string; label: string; note:
 interface Loc { name: string; hint: string; }
 
 interface MarketIntelResult {
+  available?:         boolean;
   locationName:       string;
   currency:           string;
   currencySymbol:     string;
@@ -333,13 +334,17 @@ export default function AIIntelligencePage() {
         body: JSON.stringify({ location: loc, propertyType: propType, unit: apiUnit }),
       });
       const data = await res.json();
-      if (res.ok && !data.error) {
+      if (res.ok && !data.error && data.available) {
         setResult(data);
+      } else if (res.ok && data.available === false) {
+        // Honest "no fallback estimate" state — live data is the only source now, so a
+        // failure here means exactly that, not a stale/generic number pretending otherwise.
+        setError(data.message || "Live market data is temporarily unavailable for this area. Please try again in a moment.");
       } else {
-        setError("Could not analyze right now. Please WhatsApp us on 97017 71333.");
+        setError("Live market data is temporarily unavailable for this area. Please try again in a moment.");
       }
     } catch {
-      setError("Could not analyze right now. Please WhatsApp us on 97017 71333.");
+      setError("Live market data is temporarily unavailable for this area. Please try again in a moment.");
     } finally {
       stepTimers.forEach(clearTimeout);
       setLoading(false);
@@ -509,11 +514,19 @@ export default function AIIntelligencePage() {
                 <div className="flex items-start gap-2 text-red-600 text-sm mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
                   <AlertCircle size={14} className="shrink-0 mt-0.5" />
                   <span>{error}</span>
-                  {error.includes("WhatsApp") && (
+                  {error.includes("WhatsApp") ? (
                     <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer"
                       className="ml-auto text-green-600 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline">
                       <MessageCircle size={13} /> WhatsApp
                     </a>
+                  ) : (
+                    <button
+                      onClick={analyze}
+                      disabled={loading}
+                      className="ml-auto text-red-700 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline disabled:opacity-50"
+                    >
+                      Retry
+                    </button>
                   )}
                 </div>
               )}
@@ -546,32 +559,15 @@ export default function AIIntelligencePage() {
                       <span className="text-gray-500 text-sm capitalize">{propType}</span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
-                      {r.dataSource === "bayut_data" && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
-                          style={{ background: "rgba(6,182,212,0.08)", borderColor: "rgba(6,182,212,0.35)", color: "#0891b2" }}>
-                          <Globe size={11} /> {r.dataSourceLabel ?? "Based on current Bayut listings"}
-                        </span>
-                      )}
-                      {r.dataSource === "real_data" && (
+                      {/* Live Gemini data (grounded in real Bayut/Tavily listings) is the only
+                          source ever shown here now — a result only reaches this UI when
+                          dataSource is "bayut_data" or "real_data". */}
+                      {(r.dataSource === "bayut_data" || r.dataSource === "real_data") && (
                         <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
                           style={{ background: "rgba(34,197,94,0.08)", borderColor: "rgba(34,197,94,0.35)", color: "#16a34a" }}>
-                          <Globe size={11} /> {r.dataSourceLabel ?? "Based on current web listings"}
+                          <Globe size={11} /> {r.dataSourceLabel ?? "Based on live market analysis"}
                         </span>
                       )}
-                      {(!r.dataSource || r.dataSource === "ai_only") && (() => {
-                        // Quota-exhausted and "no live listings" are meaningfully different
-                        // situations — flag the quota case with a distinct (amber) style so
-                        // it doesn't read as just another routine "AI estimate" pill.
-                        const isQuotaHit = (r.dataSourceLabel ?? "").startsWith("Daily AI limit reached");
-                        return (
-                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
-                            style={isQuotaHit
-                              ? { background: "rgba(217,119,6,0.08)", borderColor: "rgba(217,119,6,0.35)", color: "#b45309" }
-                              : { background: "rgba(107,114,128,0.08)", borderColor: "rgba(107,114,128,0.3)", color: "#6b7280" }}>
-                            <Bot size={11} /> {r.dataSourceLabel ?? "AI estimate"}
-                          </span>
-                        );
-                      })()}
                       <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border font-semibold text-sm ${ts.bg} ${ts.border} ${ts.text}`}>
                         <span className="text-xs">{ts.icon}</span> {trend}
                       </div>
