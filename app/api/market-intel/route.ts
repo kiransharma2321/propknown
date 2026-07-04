@@ -288,18 +288,20 @@ function buildTavilyQuery(
 
   // Plot / residential land — explicit area, unit, and "current asking rate" framing so
   // results are plot-specific and don't drift toward a "starting from" teaser price.
+  // "average price range" phrasing encourages search results/snippets that state a min-max
+  // band rather than just a single figure, which we use for the richer range display.
   if (propertyType === "plot" || unit === "sqyard") {
-    return `residential plot price per sqyard in ${locQuoted} ${year} current rate gaj site rate for sale ${portals}`;
+    return `residential plot average price range per sqyard in ${locQuoted} ${year} current rate gaj site rate for sale ${portals}`;
   }
 
   // Agriculture / farm land
   if (propertyType === "agriculture" || unit === "acres") {
-    return `agriculture farm land price per acre in ${locQuoted} ${year} current rate for sale ${portals}`;
+    return `agriculture farm land average price range per acre in ${locQuoted} ${year} current rate for sale ${portals}`;
   }
 
   // Local land units (ankanam, cent, guntha) — API always prices these as sqyard
   if (["ankanam", "cent", "guntha"].includes(unit)) {
-    return `plot land price per sqyard in ${locQuoted} ${year} current rate for sale ${portals}`;
+    return `plot land average price range per sqyard in ${locQuoted} ${year} current rate for sale ${portals}`;
   }
 
   const typeLabel =
@@ -307,7 +309,7 @@ function buildTavilyQuery(
     propertyType === "house"       ? "independent house"  :
     propertyType === "commercial"  ? "commercial office"  : "apartment";
 
-  return `${typeLabel} price per sqft in ${locQuoted} ${year} current rate for sale ${portals}`;
+  return `${typeLabel} average price range per sqft in ${locQuoted} ${year} current rate for sale ${portals}`;
 }
 
 interface TavilyResult { title: string; url: string; content: string; score: number; }
@@ -400,7 +402,7 @@ const BENCHMARKS: Benchmark[] = [
   { keywords: ["shamshabad", "shadnagar", "maheshwaram"],                  unit: "sqft",   min: 2200,  max: 4000 },
   { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqft",   min: 1200,  max: 2800 },
   { keywords: ["indiranagar", "koramangala"],                              unit: "sqft",   min: 12000, max: 22000 },
-  { keywords: ["whitefield"],                                              unit: "sqft",   min: 8500,  max: 14500 },
+  { keywords: ["whitefield"],                                              unit: "sqft",   min: 10000, max: 16000 },
   { keywords: ["sarjapur"],                                                unit: "sqft",   min: 8000,  max: 13000 },
   { keywords: ["hsr layout", "bellandur"],                                 unit: "sqft",   min: 7500,  max: 12000 },
   { keywords: ["electronic city"],                                         unit: "sqft",   min: 5500,  max: 8500 },
@@ -475,6 +477,33 @@ function clampToBenchmark(price: number, location: string, propertyType: string,
   return price;
 }
 
+// Derives a realistic min-max price range for the richer UI display. A matched locality
+// benchmark is the most trustworthy source (real published ranges); Gemini's self-reported
+// range is used only when it's roughly consistent with the current price estimate (guards
+// against the same "starting from" lowball problem showing up in the range instead of the
+// point estimate); otherwise a modest band around the current price is synthesized.
+function deriveRange(
+  currentPrice: number,
+  raw: Record<string, unknown>,
+  location: string,
+  propertyType: string,
+  unit: string,
+  bayutRange?: { min: number; max: number }
+): { min: number; max: number } {
+  // Bayut's range is computed directly from live listings — most trustworthy source available
+  if (bayutRange) return bayutRange;
+
+  const b = findBenchmark(location, propertyType, unit);
+  if (b) return { min: b.min, max: b.max };
+
+  const rawMin = Number(raw.priceRangeMin);
+  const rawMax = Number(raw.priceRangeMax);
+  if (rawMin > 0 && rawMax > rawMin && currentPrice >= rawMin * 0.5 && currentPrice <= rawMax * 1.5) {
+    return { min: Math.round(rawMin), max: Math.round(rawMax) };
+  }
+  return { min: Math.round(currentPrice * 0.85), max: Math.round(currentPrice * 1.25) };
+}
+
 // ─── Gemini prompt ────────────────────────────────────────────────────────────
 
 function getPrompt(
@@ -537,7 +566,7 @@ HYDERABAD (pick the exact sub-locality):
 
 BANGALORE:
 - Indiranagar / Koramangala (prime): ₹12,000–22,000/sqft
-- Whitefield (IT premium): ₹8,500–14,500/sqft
+- Whitefield (IT premium): ₹10,000–16,000/sqft
 - Sarjapur Road (IT high): ₹8,000–13,000/sqft
 - HSR Layout / Bellandur (mid-high): ₹7,500–12,000/sqft
 - Electronic City (IT mid): ₹5,500–8,500/sqft
@@ -614,6 +643,8 @@ CRITICAL RULES:
 6. "trend" must be one of: "Bullish", "Stable", or "Cautious".
 7. "summary" must mention the SPECIFIC locality "${location}" by name, not just the city.
 8. Give the PREVAILING current asking-price rate for typical/comparable properties in this exact micro-market — never a promotional minimum, "starting from" teaser, or distressed-sale outlier. When genuinely uncertain, prefer the middle of the locality's known range over a low guess.
+9. "priceRangeMin"/"priceRangeMax" = the realistic current asking-price range for this locality (not the city, not a single teaser project) — "currentPricePerSqft" should sit roughly in the middle-to-upper part of this range, not at the very bottom.
+10. "typicalListings" = one short phrase on the kind of properties actually available here right now (e.g. "Mostly 2-3BHK gated-community apartments from mid-size and large developers, with some premium high-rises" or "Primarily HMDA/DTCP-approved open plots in developing layouts") — describe TYPES/segments found in the data, never name specific builders or projects.
 
 Return ONLY a valid JSON object — no markdown, no code fences, no explanations:
 
@@ -622,7 +653,10 @@ Return ONLY a valid JSON object — no markdown, no code fences, no explanations
   "currency": "${currency.code}",
   "currencySymbol": "${currency.symbol}",
   "currentPricePerSqft": <number — price per ${unitLabel} in ${currency.code} for "${location}" specifically>,
+  "priceRangeMin": <number — realistic low end of the current asking-price range for this locality>,
+  "priceRangeMax": <number — realistic high end of the current asking-price range for this locality>,
   "pricePerSqftUnit": "${unitKey}",
+  "typicalListings": "short phrase describing typical property types/segments available in this exact locality",
   "priceHistory5yr": [
     {"year": ${y1}, "value": <number>},
     {"year": ${y2}, "value": <number>},
@@ -675,9 +709,11 @@ function mkFallback(location: string, propertyType: string, unit: string, curren
   const scale = 1.08;
   const hist  = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({ year: yr, value: Math.round(base / Math.pow(scale, 4 - i)) }));
   const fore  = [1,2,3,4,5].map((n) => ({ year: y + n, value: Math.round(base * Math.pow(scale, n)) }));
+  const range = benchmark ? { min: benchmark.min, max: benchmark.max } : { min: Math.round(base * 0.85), max: Math.round(base * 1.25) };
   return {
     locationName: location, currency: currency.code, currencySymbol: currency.symbol,
-    currentPricePerSqft: base, pricePerSqftUnit: unitKey,
+    currentPricePerSqft: base, priceRangeMin: range.min, priceRangeMax: range.max, pricePerSqftUnit: unitKey,
+    typicalListings: "General market estimate — WhatsApp Raghu on 97017 71333 for specific listing types available right now.",
     priceHistory5yr: hist, priceForecast5yr: fore,
     growthRate: 8.0, trend: "Stable", rentalYield: 3.5, investmentRating: 6.5,
     bestFor: "long-term appreciation", dataSource: "ai_only" as const,
@@ -713,7 +749,8 @@ function normalise(
   dataSource: DataSource,
   dataSourceLabel: string,
   currency: CurrencyInfo,
-  bayutPricePsf?: number
+  bayutPricePsf?: number,
+  bayutRange?: { min: number; max: number }
 ): Record<string, unknown> {
   const y    = new Date().getFullYear();
   // For Bayut: lock the price to the computed median — Gemini can't override it. Trusted as
@@ -752,12 +789,17 @@ function normalise(
   const trend = ["Bullish", "Stable", "Cautious"].includes(raw.trend as string)
     ? (raw.trend as string) : "Stable";
 
+  const range = deriveRange(now, raw, location, propertyType, unit, bayutRange);
+
   return {
     locationName:        (raw.locationName    as string) || location,
     currency:            currency.code,                   // enforced from detection
     currencySymbol:      currency.symbol,                 // enforced from detection
     currentPricePerSqft: now,
+    priceRangeMin:       range.min,
+    priceRangeMax:       range.max,
     pricePerSqftUnit:    (raw.pricePerSqftUnit as string) || "sqft",
+    typicalListings:     (raw.typicalListings as string) || "Mix of property types typical for this micro-market — verify specifics with a PropKnown advisor.",
     priceHistory5yr:     hist,
     priceForecast5yr:    fore,
     growthRate:          Number(raw.growthRate)     || 8,
@@ -860,6 +902,7 @@ export async function POST(req: NextRequest) {
   let dataSource:      DataSource    = "ai_only";
   let dataSourceLabel: string        = "AI estimate (limited live data)";
   let bayutPricePsf:   number | undefined;
+  let bayutRange:      { min: number; max: number } | undefined;
   let dataType:        "bayut" | "tavily" | "none" = "none";
 
   if (countryCode === "ae" && rapidApiKey) {
@@ -871,6 +914,7 @@ export async function POST(req: NextRequest) {
         dataSource     = "bayut_data";
         dataSourceLabel = `Based on ${bayutResult.count} current Bayut listings (asking prices)`;
         bayutPricePsf  = bayutResult.pricePerSqft;
+        bayutRange     = { min: bayutResult.minPrice, max: bayutResult.maxPrice };
         dataType       = "bayut";
         console.log(`[Bayut] ${loc}: AED ${bayutResult.pricePerSqft}/sqft from ${bayutResult.count} listings`);
       } else {
@@ -932,7 +976,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf);
+    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange);
     console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
     setCache(cacheKey, result);
     return NextResponse.json(result);

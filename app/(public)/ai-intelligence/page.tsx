@@ -118,6 +118,9 @@ interface MarketIntelResult {
   currency:           string;
   currencySymbol:     string;
   currentPricePerSqft: number;
+  priceRangeMin?:     number;
+  priceRangeMax?:     number;
+  typicalListings?:   string;
   pricePerSqftUnit:   string;
   priceHistory5yr:    { year: number; value: number }[];
   priceForecast5yr:   { year: number; value: number }[];
@@ -564,10 +567,22 @@ export default function AIIntelligencePage() {
                         /{displayUnitLabel}
                       </span>
                     </p>
+                    {r.priceRangeMin != null && r.priceRangeMax != null && (
+                      <p className="text-gray-500 text-sm mt-1">
+                        Realistic range: <span className="font-semibold text-gray-700">
+                          {sym}{Math.round(r.priceRangeMin * unitConvFactor).toLocaleString()} – {sym}{Math.round(r.priceRangeMax * unitConvFactor).toLocaleString()}
+                        </span> / {displayUnitLabel}
+                      </p>
+                    )}
                     {areaNum > 0 && (
                       <p className="text-gray-500 text-sm mt-1">
                         Estimated value for {areaNum.toLocaleString()} {UNIT_LABELS[unit] ?? unit}:
                         <span className="font-semibold text-gray-900 ml-1">{fmtPrice(propValue, sym, curr)}</span>
+                      </p>
+                    )}
+                    {r.typicalListings && (
+                      <p className="text-gray-400 text-xs mt-2 leading-relaxed max-w-lg">
+                        <span className="font-semibold text-gray-500">Typical listings: </span>{r.typicalListings}
                       </p>
                     )}
                   </div>

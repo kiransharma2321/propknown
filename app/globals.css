@@ -108,3 +108,22 @@ body {
 
 .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
 .chat-widget { font-family: var(--font-inter); }
+
+/* KnownAI orb — concentric rotating rings + glow pulse, pure CSS/SVG */
+@keyframes orbSpinCW  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes orbSpinCCW { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+@keyframes orbGlowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.94); }
+  50%      { opacity: 1;    transform: scale(1.06); }
+}
+@keyframes orbCorePulse {
+  0%, 100% { filter: brightness(1);    }
+  50%      { filter: brightness(1.35); }
+}
+.orb-ring-outer { animation: orbSpinCW 9s linear infinite; transform-origin: 50% 50%; }
+.orb-ring-inner { animation: orbSpinCCW 6s linear infinite; transform-origin: 50% 50%; }
+.orb-glow       { animation: orbGlowPulse 2.4s ease-in-out infinite; transform-origin: 50% 50%; }
+.orb-core       { animation: orbCorePulse 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .orb-ring-outer, .orb-ring-inner, .orb-glow, .orb-core { animation: none; }
+}

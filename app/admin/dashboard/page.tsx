@@ -1035,7 +1035,7 @@ export default function AdminDashboard() {
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
               <h2 className="text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">API Status</h2>
               {[
-                { label: "Gemini AI (Jarvis)", status: true,  note: "gemini-2.5-flash-lite" },
+                { label: "Gemini AI (KnownAI)", status: true,  note: "gemini-2.5-flash-lite" },
                 { label: "Resend (Email)",     status: true,  note: "raghupinnelli@gmail.com" },
                 { label: "Database (Neon)",    status: true,  note: "PostgreSQL connected" },
                 { label: "Anthropic (AI Brain)",status:false, note: "Add ANTHROPIC_API_KEY to enable" },

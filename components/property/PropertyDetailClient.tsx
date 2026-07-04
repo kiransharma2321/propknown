@@ -37,11 +37,14 @@ interface Amenity {
 
 interface MarketData {
   currentPricePerSqft: number;
+  priceRangeMin?: number;
+  priceRangeMax?: number;
   pricePerSqftUnit: string;
-  yoyGrowth: number;
-  trend: "rising" | "stable" | "cooling";
-  outlook: string;
-  dataSource: "real_data" | "ai_only";
+  growthRate: number;
+  trend: "Bullish" | "Stable" | "Cautious";
+  summary: string;
+  typicalListings?: string;
+  dataSource: "bayut_data" | "real_data" | "ai_only";
 }
 
 interface NearbyListing {
@@ -256,13 +259,18 @@ out body qt 30;`;
     }
   }, [form, listing]);
 
-  // Nearby pins for map (only those with coords)
+  // Nearby pins for map — only listings with coords, within a genuinely "nearby" radius so
+  // pins actually land within the map's viewport at its property-level zoom, closest first.
+  const NEARBY_MAP_RADIUS_KM = 15;
   const nearbyPins: NearbyListing[] = nearbyListings
     .filter(l => l.lat && l.lng)
     .map(l => ({
       id: l.id, title: l.title, display: l.display, type: l.type,
       lat: l.lat!, lng: l.lng!, location: l.location, aiScore: l.aiScore,
-    }));
+      dist: coords ? haversineM(coords.lat, coords.lng, l.lat!, l.lng!) / 1000 : 0,
+    }))
+    .filter(l => !coords || l.dist <= NEARBY_MAP_RADIUS_KM)
+    .sort((a, b) => a.dist - b.dist);
 
   const amenityGroups = (
     ["hospital", "school", "mall", "transit", "restaurant"] as Amenity["category"][]
@@ -270,8 +278,8 @@ out body qt 30;`;
     .map(cat => ({ cat, items: amenities.filter(a => a.category === cat) }))
     .filter(g => g.items.length > 0);
 
-  const trendColor = marketData?.trend === "rising" ? "#22c55e"
-    : marketData?.trend === "cooling" ? "#ef4444" : "#C9A24B";
+  const trendColor = marketData?.trend === "Bullish" ? "#22c55e"
+    : marketData?.trend === "Cautious" ? "#ef4444" : "#C9A24B";
 
   return (
     <div className="pt-28 pb-20 bg-white min-h-screen">
@@ -633,31 +641,41 @@ out body qt 30;`;
                 </div>
                 {marketData ? (
                   <>
-                    <div className="flex items-end gap-2 mb-2">
+                    <div className="flex items-end gap-2 mb-1">
                       <p className="text-2xl font-bold" style={{ color: GOLD }}>
                         ₹{marketData.currentPricePerSqft.toLocaleString()}
                       </p>
                       <p className="text-xs text-gray-400 mb-1">/ {marketData.pricePerSqftUnit ?? "sqft"} avg</p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm mb-3">
+                    {marketData.priceRangeMin != null && marketData.priceRangeMax != null && (
+                      <p className="text-xs text-gray-400 mb-2">
+                        Range: ₹{marketData.priceRangeMin.toLocaleString()} – ₹{marketData.priceRangeMax.toLocaleString()}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 text-sm mb-3 flex-wrap">
                       <span className="font-semibold" style={{ color: trendColor }}>
-                        {marketData.trend === "rising" ? "↑" : marketData.trend === "cooling" ? "↓" : "→"} {marketData.trend}
+                        {marketData.trend === "Bullish" ? "↑" : marketData.trend === "Cautious" ? "↓" : "→"} {marketData.trend}
                       </span>
-                      {marketData.yoyGrowth > 0 && (
-                        <span className="text-gray-500">· {marketData.yoyGrowth}% YoY</span>
+                      {marketData.growthRate > 0 && (
+                        <span className="text-gray-500">· {marketData.growthRate}% p.a.</span>
                       )}
-                      {marketData.dataSource === "real_data" && (
+                      {(marketData.dataSource === "real_data" || marketData.dataSource === "bayut_data") && (
                         <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                           style={{ background: "rgba(34,197,94,0.08)", color: "#16a34a", border: "1px solid rgba(34,197,94,0.3)" }}>
                           <Globe size={9} /> Real data
                         </span>
                       )}
                     </div>
-                    {marketData.outlook && (
-                      <p className="text-xs text-gray-500 leading-relaxed">{marketData.outlook}</p>
+                    {marketData.summary && (
+                      <p className="text-xs text-gray-500 leading-relaxed">{marketData.summary}</p>
+                    )}
+                    {marketData.typicalListings && (
+                      <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                        <span className="font-semibold text-gray-500">Typical listings: </span>{marketData.typicalListings}
+                      </p>
                     )}
                     <p className="text-[10px] text-gray-400 mt-3 italic leading-relaxed">
-                      AI-estimated area average — indicative only. Verify with RERA and PropKnown agent before any decision.
+                      AI estimate from current listings & trends — actual prices vary. Verify with RERA and a PropKnown advisor before any decision.
                     </p>
                   </>
                 ) : (

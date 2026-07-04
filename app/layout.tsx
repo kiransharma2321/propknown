@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import JarvisChat from "@/components/chatbot/JarvisChat";
+import KnownAIChat from "@/components/chatbot/KnownAIChat";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -154,7 +154,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ClientProviders>
         <Footer />
         <WhatsAppButton />
-        <JarvisChat />
+        <KnownAIChat />
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>

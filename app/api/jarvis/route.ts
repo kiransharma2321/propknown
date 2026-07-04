@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies
-const GEMINI_MODEL = "gemini-2.5-flash-lite";
+// flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies.
+// flash is used as a cross-model fallback on the final retry — an "UNAVAILABLE / high demand"
+// error is often specific to one model, so switching models is a real mitigation, not just
+// a repeat of the same failure.
+const GEMINI_MODEL_PRIMARY  = "gemini-2.5-flash-lite";
+const GEMINI_MODEL_FALLBACK = "gemini-2.5-flash";
 
-const SYSTEM_PROMPT = `You are Jarvis, the AI assistant for PropKnown Infra Pvt Ltd — India's first AI-powered, fully verified real estate platform.
+function sleep(ms: number) { return new Promise((res) => setTimeout(res, ms)); }
+
+function geminiEndpoint(model: string, apiKey: string): string {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+}
+
+const SYSTEM_PROMPT = `You are KnownAI, the AI assistant for PropKnown Infra Pvt Ltd — India's first AI-powered, fully verified real estate platform.
 
 Founded by Pinnelli Raghu Kiran (ISB Alumni, IIM PG Diploma, BITS Pilani, 20+ years in Product Management and Real Estate). PropKnown provides verified listings, AI market intelligence, property management, land services, legal verification, construction services, and NRI investment support.
 
@@ -107,7 +117,7 @@ async function callGemini(
   endpoint: string,
   contents: GeminiContent[],
   temperature = 0.7
-): Promise<{ reply: string | null; blocked: boolean; reason: string; quotaExceeded?: boolean }> {
+): Promise<{ reply: string | null; blocked: boolean; reason: string; quotaExceeded?: boolean; transient?: boolean }> {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -139,8 +149,12 @@ async function callGemini(
   if (!res.ok) {
     const msg = data.error?.message ?? `Gemini HTTP ${res.status}`;
     const quotaExceeded = res.status === 429 || data.error?.status === "RESOURCE_EXHAUSTED";
-    console.error("[Jarvis] API error:", msg, data);
-    return { reply: null, blocked: false, reason: msg, quotaExceeded };
+    // 503/UNAVAILABLE ("high demand") is a transient overload on Google's side, not a real
+    // failure of our request — worth distinguishing so the caller knows a delayed retry or
+    // a different model is worth trying, rather than treating it like a hard error.
+    const transient = res.status === 503 || res.status === 500 || data.error?.status === "UNAVAILABLE";
+    console.error("[KnownAI] API error:", msg, data);
+    return { reply: null, blocked: false, reason: msg, quotaExceeded, transient };
   }
 
   // Log the full response structure for debugging
@@ -148,18 +162,18 @@ async function callGemini(
   const blockReason   = data.promptFeedback?.blockReason;
 
   if (blockReason || finishReason === "SAFETY") {
-    console.warn("[Jarvis] Safety block:", { blockReason, finishReason });
+    console.warn("[KnownAI] Safety block:", { blockReason, finishReason });
     return { reply: null, blocked: true, reason: `Safety: ${blockReason ?? finishReason}` };
   }
 
   if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
-    console.warn("[Jarvis] Unexpected finishReason:", finishReason, data);
+    console.warn("[KnownAI] Unexpected finishReason:", finishReason, data);
     return { reply: null, blocked: false, reason: `finishReason=${finishReason}` };
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
   if (!text) {
-    console.warn("[Jarvis] Empty text, full response:", JSON.stringify(data).slice(0, 500));
+    console.warn("[KnownAI] Empty text, full response:", JSON.stringify(data).slice(0, 500));
     return { reply: null, blocked: false, reason: "empty text" };
   }
 
@@ -206,49 +220,50 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const contents = buildContents(history, message.trim());
+  const retryContents: GeminiContent[] = [
+    ...contents.slice(0, -1),
+    { role: "user", parts: [{ text: `Please answer this real estate question helpfully: ${message.trim()}` }] },
+  ];
 
-  // Attempt 1 — normal temperature
-  try {
-    const r1 = await callGemini(endpoint, contents, 0.7);
-    if (r1.reply) return NextResponse.json({ reply: r1.reply });
+  // 3 attempts total (original + 2 retries), matching the "give it 2 retries before any
+  // fallback" requirement. A transient 503/UNAVAILABLE ("high demand") is Google's model
+  // being briefly overloaded, not a real failure of the request — retrying instantly against
+  // an overloaded server rarely helps, so transient failures get a short backoff delay, and
+  // the final attempt switches to a different model (flash) in case the overload is specific
+  // to flash-lite.
+  const attempts: { endpoint: string; contents: GeminiContent[]; temperature: number; delayMs: number }[] = [
+    { endpoint: geminiEndpoint(GEMINI_MODEL_PRIMARY,  apiKey), contents,      temperature: 0.7, delayMs: 0 },
+    { endpoint: geminiEndpoint(GEMINI_MODEL_PRIMARY,  apiKey), contents: retryContents, temperature: 0.4, delayMs: 700 },
+    { endpoint: geminiEndpoint(GEMINI_MODEL_FALLBACK, apiKey), contents: retryContents, temperature: 0.5, delayMs: 1200 },
+  ];
 
-    if (r1.blocked) {
-      // Safety block: return a curated helpful answer instead of generic error
-      return NextResponse.json({ reply: SAFETY_FALLBACK });
+  for (let i = 0; i < attempts.length; i++) {
+    const attempt = attempts[i];
+    if (attempt.delayMs > 0) await sleep(attempt.delayMs);
+
+    try {
+      const r = await callGemini(attempt.endpoint, attempt.contents, attempt.temperature);
+      if (r.reply) return NextResponse.json({ reply: r.reply });
+
+      if (r.blocked) {
+        // Safety block: return a curated helpful answer instead of a generic error
+        return NextResponse.json({ reply: SAFETY_FALLBACK });
+      }
+
+      if (r.quotaExceeded) {
+        // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
+        console.warn(`[KnownAI] Attempt ${i + 1}: quota exceeded — skipping remaining retries:`, r.reason);
+        return NextResponse.json({ reply: QUOTA_FALLBACK });
+      }
+
+      console.warn(`[KnownAI] Attempt ${i + 1} failed (transient=${!!r.transient}):`, r.reason);
+    } catch (e) {
+      console.error(`[KnownAI] Attempt ${i + 1} threw:`, e);
     }
-
-    if (r1.quotaExceeded) {
-      // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
-      console.warn("[Jarvis] Quota exceeded — skipping retry:", r1.reason);
-      return NextResponse.json({ reply: QUOTA_FALLBACK });
-    }
-
-    console.warn("[Jarvis] Attempt 1 failed:", r1.reason, "— retrying…");
-  } catch (e) {
-    console.error("[Jarvis] Attempt 1 threw:", e);
   }
 
-  // Attempt 2 — lower temperature, slight prompt adjustment
-  try {
-    const retryContents: GeminiContent[] = [
-      ...contents.slice(0, -1),
-      {
-        role: "user",
-        parts: [{ text: `Please answer this real estate question helpfully: ${message.trim()}` }],
-      },
-    ];
-    const r2 = await callGemini(endpoint, retryContents, 0.4);
-    if (r2.reply) return NextResponse.json({ reply: r2.reply });
-    if (r2.blocked) return NextResponse.json({ reply: SAFETY_FALLBACK });
-    if (r2.quotaExceeded) return NextResponse.json({ reply: QUOTA_FALLBACK });
-    console.error("[Jarvis] Attempt 2 also failed:", r2.reason);
-  } catch (e) {
-    console.error("[Jarvis] Attempt 2 threw:", e);
-  }
-
-  // Final fallback
+  // Final fallback — only reached after all 3 attempts (across 2 models) genuinely failed
   return NextResponse.json({
     reply: "I'm having a moment of difficulty right now. For immediate help on this question, please WhatsApp Raghu on **97017 71333** — he responds within minutes and can answer any property question directly!",
   });

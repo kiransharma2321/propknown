@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, ExternalLink } from "lucide-react";
+import { X, Send, ExternalLink } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
+import AIOrb from "./AIOrb";
 
 type Message = { role: "bot" | "user"; text: string };
 
@@ -14,15 +15,15 @@ const QUICK_REPLIES = [
   "NRI property investment",
 ];
 
-const WELCOME = "Hello! I'm Jarvis, your PropKnown AI assistant 👋\n\nAsk me anything — property investment, area analysis, RERA, EMI calculations, HMDA/DTCP plots, home loans, or anything else. How can I help you today?";
-
-export default function JarvisChat() {
+export default function KnownAIChat() {
   const [open,     setOpen]     = useState(false);
-  const [messages, setMessages] = useState<Message[]>([{ role: "bot", text: WELCOME }]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input,    setInput]    = useState("");
   const [typing,   setTyping]   = useState(false);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const inputRef   = useRef<HTMLInputElement>(null);
+
+  const isFreshChat = messages.length === 0;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -71,10 +72,10 @@ export default function JarvisChat() {
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full text-black shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-        style={{ background: goldBg }}
-        aria-label="Open Jarvis chat"
+        style={{ background: "#0a0a0a" }}
+        aria-label="Open KnownAI chat"
       >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        {open ? <X size={22} className="text-white" /> : <AIOrb size={38} />}
       </button>
 
       {/* Chat panel */}
@@ -85,12 +86,10 @@ export default function JarvisChat() {
         >
           {/* Header */}
           <div className="px-4 py-3 flex items-center gap-3 border-b shrink-0" style={{ background: "#0a0a0a", borderColor: "#333" }}>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: goldBg }}>
-              <Bot size={18} className="text-black" />
-            </div>
+            <AIOrb size={36} />
             <div className="min-w-0">
-              <p className="text-white text-sm font-semibold">JARVIS</p>
-              <p className="text-gray-400 text-xs truncate">PropKnown AI — Real Estate Expert</p>
+              <p className="text-white text-sm font-semibold">KnownAI</p>
+              <p className="text-gray-400 text-xs truncate">PropKnown AI Real Estate Expert</p>
             </div>
             <div className="ml-auto flex items-center gap-1.5 shrink-0">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -100,13 +99,19 @@ export default function JarvisChat() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+            {isFreshChat && (
+              <div className="flex flex-col items-center text-center pt-2 pb-4">
+                <AIOrb size={56} className="mb-3" />
+                <p className="text-white font-semibold text-sm">KnownAI ready to chat</p>
+                <p className="text-gray-400 text-xs mt-1.5 max-w-[220px] leading-relaxed">
+                  Ask me anything about properties, areas, RERA, investment — I&apos;m here to help!
+                </p>
+              </div>
+            )}
+
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                {msg.role === "bot" && (
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-1 shrink-0" style={{ background: goldBg }}>
-                    <Bot size={12} className="text-black" />
-                  </div>
-                )}
+                {msg.role === "bot" && <AIOrb size={24} className="mr-2 mt-1" />}
                 <div
                   className={`max-w-[82%] px-3 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-line break-words ${
                     msg.role === "user" ? "rounded-br-none text-black" : "text-gray-200 rounded-bl-none"
@@ -121,9 +126,7 @@ export default function JarvisChat() {
             {/* Typing indicator */}
             {typing && (
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: goldBg }}>
-                  <Bot size={12} className="text-black" />
-                </div>
+                <AIOrb size={24} />
                 <div className="px-3 py-2.5 rounded-xl rounded-bl-none flex gap-1 items-center" style={{ background: "#2a2a2a" }}>
                   {[0, 1, 2].map((i) => (
                     <span
@@ -182,7 +185,7 @@ export default function JarvisChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={typing}
-              placeholder="Ask Jarvis anything…"
+              placeholder="Ask KnownAI anything…"
               className="flex-1 text-white placeholder-gray-500 text-sm rounded-lg px-3 py-2 focus:outline-none disabled:opacity-60"
               style={{ background: "#2a2a2a", border: "1px solid #444" }}
             />
