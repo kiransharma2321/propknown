@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const HERO_VIDEO = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4";
+// 960x540 rendition (~2.2MB) instead of the 1920x1080 original (~7.3MB) — same Pexels clip,
+// same royalty-free license; visual difference is unnoticeable under the dark overlay + text,
+// but the smaller file loads much faster and uses far less data on desktop.
+const HERO_VIDEO = "https://videos.pexels.com/video-files/1851190/1851190-sd_960_540_25fps.mp4";
 
 const CITIES = [
   "Hyderabad", "Bangalore", "Mumbai", "Pune", "Chennai",
@@ -88,15 +91,15 @@ export default function HeroSection() {
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
           style={{ fontFamily: "var(--font-playfair, Georgia, serif)", textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
-          Know Before You
+          India&apos;s Most Trusted
           <br />
           <span style={{
             background: "linear-gradient(135deg,#C9A24B,#e8c97a,#C9A24B)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-          }}>Invest</span>
+          }}>AI Real Estate Platform</span>
         </h1>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          India&apos;s first AI-powered, RERA-verified real estate advisory. Honest pricing. Zero fake listings. Expert guidance — across India and beyond.
+          AI-Powered Intelligence. RERA-Verified Listings. Honest Pricing — Always.
         </p>
 
         {/* Search card */}
