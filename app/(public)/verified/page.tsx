@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle, Shield, Clock, FileText, AlertTriangle } from "lucide-react";
+import { CheckCircle, Shield, Clock, FileText, AlertTriangle, ArrowRight } from "lucide-react";
+import { LEGAL_CHECKLIST_ITEMS } from "@/lib/legalShield";
 
 export const metadata: Metadata = {
   title: "PropKnown Verified | Property Due Diligence & Trust Badges",
@@ -95,6 +96,42 @@ export default function VerifiedPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Legal Safety Checklist — deeper per-property layer */}
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield size={18} style={{ color: GOLD }} />
+            <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+              The Legal <span style={{ color: GOLD }}>Safety Checklist</span>
+            </h2>
+          </div>
+          <p className="text-gray-500 text-sm mb-5 max-w-xl">
+            Beyond the summary PropKnown Verified badge, every listing has a detailed, 9-point
+            Legal Safety Checklist — visible on each property page — so you can see exactly
+            which specific checks have actually been completed, not just an overall score.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3 mb-5">
+            {LEGAL_CHECKLIST_ITEMS.map((item) => (
+              <div key={item.key} className="border border-gray-200 rounded-xl p-3.5 bg-gray-50">
+                <p className="font-semibold text-gray-800 text-xs mb-1">{item.label}</p>
+                <p className="text-gray-400 text-[11px] leading-relaxed">{item.why}</p>
+              </div>
+            ))}
+          </div>
+          <div className="bg-gray-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5 justify-between">
+            <div>
+              <p className="text-white font-bold text-sm mb-1">Worried about a specific listing?</p>
+              <p className="text-gray-400 text-xs">Run it through our free Fraud &amp; Red-Flag Checker before you commit.</p>
+            </div>
+            <Link
+              href="/legal-shield"
+              className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:opacity-90 text-black whitespace-nowrap"
+              style={{ background: GOLD }}
+            >
+              Check for Red Flags <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
 
         {/* Honesty box */}
