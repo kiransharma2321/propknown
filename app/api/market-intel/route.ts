@@ -530,7 +530,7 @@ Return ONLY the JSON object. No other text.`;
 
 // ─── Fallback ─────────────────────────────────────────────────────────────────
 
-function mkFallback(location: string, unit: string, currency: CurrencyInfo) {
+function mkFallback(location: string, unit: string, currency: CurrencyInfo, quotaHit = false) {
   const y        = new Date().getFullYear();
   const unitKey  = unit === "sqyard" ? "sqyard" : unit === "acres" ? "acres" : "sqft";
   const basePrices: Record<string, Record<string, number>> = {
@@ -553,8 +553,12 @@ function mkFallback(location: string, unit: string, currency: CurrencyInfo) {
     priceHistory5yr: hist, priceForecast5yr: fore,
     growthRate: 8.0, trend: "Stable", rentalYield: 3.5, investmentRating: 6.5,
     bestFor: "long-term appreciation", dataSource: "ai_only" as const,
-    dataSourceLabel: "AI estimate (limited live data)",
-    summary: `${location} shows stable market conditions with consistent end-user demand and infrastructure growth supporting prices.`,
+    dataSourceLabel: quotaHit
+      ? "I'm busy right now, please WhatsApp Raghu on 97017 71333 — showing a general estimate for now"
+      : "AI estimate (limited live data)",
+    summary: quotaHit
+      ? `Our AI valuation service is at capacity right now, so this is a general estimate for ${location}, not a live analysis. WhatsApp Raghu on 97017 71333 for accurate current pricing.`
+      : `${location} shows stable market conditions with consistent end-user demand and infrastructure growth supporting prices.`,
     keyDrivers: ["Steady residential demand", "Infrastructure improvements", "Growing employment base", "Moderate supply"],
   };
 }
@@ -626,6 +630,8 @@ function normalise(
   };
 }
 
+class GeminiQuotaError extends Error {}
+
 async function callGemini(apiKey: string, prompt: string): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
@@ -641,7 +647,13 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
     }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message ?? `Gemini ${res.status}`);
+  if (!res.ok) {
+    const msg = data.error?.message ?? `Gemini ${res.status}`;
+    if (res.status === 429 || data.error?.status === "RESOURCE_EXHAUSTED") {
+      throw new GeminiQuotaError(msg);
+    }
+    throw new Error(msg);
+  }
   return (data.candidates?.[0]?.content?.parts?.[0]?.text as string) ?? "";
 }
 
@@ -759,11 +771,20 @@ export async function POST(req: NextRequest) {
     raw = parseGemini(await callGemini(geminiKey, prompt));
   } catch (e1) {
     console.error("Gemini attempt 1 failed:", e1);
+    if (e1 instanceof GeminiQuotaError) {
+      // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly estimate.
+      console.warn("[market-intel] Quota exceeded — skipping retry");
+      const fallback = mkFallback(loc, resolvedUnit, currency, true);
+      setCache(cacheKey, fallback);
+      return NextResponse.json(fallback);
+    }
     try {
       raw = parseGemini(await callGemini(geminiKey, prompt));
     } catch (e2) {
       console.error("Gemini attempt 2 failed:", e2);
-      return NextResponse.json(mkFallback(loc, resolvedUnit, currency));
+      const fallback = mkFallback(loc, resolvedUnit, currency, e2 instanceof GeminiQuotaError);
+      setCache(cacheKey, fallback);
+      return NextResponse.json(fallback);
     }
   }
 

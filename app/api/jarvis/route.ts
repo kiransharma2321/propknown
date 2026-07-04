@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GEMINI_MODEL = "gemini-2.5-flash";
+// flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 const SYSTEM_PROMPT = `You are Jarvis, the AI assistant for PropKnown Infra Pvt Ltd — India's first AI-powered, fully verified real estate platform.
 
@@ -106,7 +107,7 @@ async function callGemini(
   endpoint: string,
   contents: GeminiContent[],
   temperature = 0.7
-): Promise<{ reply: string | null; blocked: boolean; reason: string }> {
+): Promise<{ reply: string | null; blocked: boolean; reason: string; quotaExceeded?: boolean }> {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -116,7 +117,7 @@ async function callGemini(
       safetySettings: SAFETY_SETTINGS,
       generationConfig: {
         temperature,
-        // gemini-2.5-flash spends part of maxOutputTokens on internal "thinking" before the
+        // gemini-2.5-flash-lite spends part of maxOutputTokens on internal "thinking" before the
         // visible reply, which was silently truncating longer answers mid-sentence.
         // Disabling thinking gives the full budget to the actual response.
         maxOutputTokens: 1024,
@@ -132,13 +133,14 @@ async function callGemini(
       finishReason?: string;
     }[];
     promptFeedback?: { blockReason?: string };
-    error?: { message?: string };
+    error?: { message?: string; status?: string };
   };
 
   if (!res.ok) {
     const msg = data.error?.message ?? `Gemini HTTP ${res.status}`;
+    const quotaExceeded = res.status === 429 || data.error?.status === "RESOURCE_EXHAUSTED";
     console.error("[Jarvis] API error:", msg, data);
-    return { reply: null, blocked: false, reason: msg };
+    return { reply: null, blocked: false, reason: msg, quotaExceeded };
   }
 
   // Log the full response structure for debugging
@@ -183,6 +185,8 @@ Every buyer's "best" depends on their budget, timeline, and location preference 
 
 For specific verified recommendations tailored to your exact needs, I'd suggest a quick chat with Raghu on WhatsApp **97017 71333**. He personally visits and verifies projects before recommending them.`;
 
+const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp Raghu on 97017 71333 — he responds within minutes!";
+
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
     message?: string;
@@ -215,6 +219,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ reply: SAFETY_FALLBACK });
     }
 
+    if (r1.quotaExceeded) {
+      // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
+      console.warn("[Jarvis] Quota exceeded — skipping retry:", r1.reason);
+      return NextResponse.json({ reply: QUOTA_FALLBACK });
+    }
+
     console.warn("[Jarvis] Attempt 1 failed:", r1.reason, "— retrying…");
   } catch (e) {
     console.error("[Jarvis] Attempt 1 threw:", e);
@@ -232,6 +242,7 @@ export async function POST(req: NextRequest) {
     const r2 = await callGemini(endpoint, retryContents, 0.4);
     if (r2.reply) return NextResponse.json({ reply: r2.reply });
     if (r2.blocked) return NextResponse.json({ reply: SAFETY_FALLBACK });
+    if (r2.quotaExceeded) return NextResponse.json({ reply: QUOTA_FALLBACK });
     console.error("[Jarvis] Attempt 2 also failed:", r2.reason);
   } catch (e) {
     console.error("[Jarvis] Attempt 2 threw:", e);
