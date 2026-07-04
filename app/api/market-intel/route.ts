@@ -382,6 +382,35 @@ const BENCHMARKS: Benchmark[] = [
   { keywords: ["shamshabad", "shadnagar"],                                 unit: "sqyard", min: 4000,   max: 9000 },
   { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqyard", min: 2000,   max: 5000 },
 
+  // ── Bangalore — plot / land, per sq.yard ──
+  { keywords: ["indiranagar", "koramangala"],                              unit: "sqyard", min: 90000,  max: 180000 },
+  { keywords: ["whitefield"],                                              unit: "sqyard", min: 45000,  max: 80000 },
+  { keywords: ["sarjapur"],                                                unit: "sqyard", min: 35000,  max: 60000 },
+  { keywords: ["hsr layout", "bellandur"],                                 unit: "sqyard", min: 40000,  max: 70000 },
+  { keywords: ["electronic city"],                                         unit: "sqyard", min: 22000,  max: 40000 },
+
+  // ── Pune — plot / land, per sq.yard ──
+  { keywords: ["hinjewadi"],                                               unit: "sqyard", min: 35000,  max: 60000 },
+  { keywords: ["baner", "balewadi"],                                       unit: "sqyard", min: 42000,  max: 70000 },
+
+  // ── Chennai — plot / land, per sq.yard ──
+  { keywords: ["adyar", "besant nagar"],                                   unit: "sqyard", min: 130000, max: 240000 },
+  { keywords: ["anna nagar"],                                              unit: "sqyard", min: 85000,  max: 160000 },
+  { keywords: ["velachery"],                                               unit: "sqyard", min: 48000,  max: 80000 },
+  { keywords: ["omr", "old mahabalipuram"],                                unit: "sqyard", min: 38000,  max: 70000 },
+  { keywords: ["porur"],                                                   unit: "sqyard", min: 32000,  max: 55000 },
+  { keywords: ["tambaram"],                                                unit: "sqyard", min: 18000,  max: 35000 },
+
+  // ── Delhi NCR — plot / land, per sq.yard ──
+  { keywords: ["vasant vihar", "greater kailash", "defence colony", "south delhi"], unit: "sqyard", min: 450000, max: 850000 },
+  { keywords: ["golf course road", "dlf phase"],                           unit: "sqyard", min: 160000, max: 320000 },
+  { keywords: ["golf course extension", "sector 65", "sector 66"],         unit: "sqyard", min: 75000,  max: 140000 },
+  { keywords: ["dwarka"],                                                  unit: "sqyard", min: 65000,  max: 110000 },
+  { keywords: ["sohna road", "sohna"],                                     unit: "sqyard", min: 35000,  max: 65000 },
+  { keywords: ["noida sector 150", "noida expressway", "sector 150"],      unit: "sqyard", min: 55000,  max: 95000 },
+  { keywords: ["greater noida"],                                          unit: "sqyard", min: 28000,  max: 48000 },
+  { keywords: ["rohini"],                                                  unit: "sqyard", min: 48000,  max: 80000 },
+
   // ── India — land, per acre ──
   { keywords: ["shankarpally", "moinabad", "chevella"],                    unit: "acres",  min: 12000000, max: 30000000 },
   { keywords: ["patancheru"],                                              unit: "acres",  min: 6000000,  max: 15000000 },
@@ -389,6 +418,8 @@ const BENCHMARKS: Benchmark[] = [
   { keywords: ["suryapet"],                                                unit: "acres",  min: 800000,   max: 2500000 },
   { keywords: ["devanahalli", "nelamangala"],                              unit: "acres",  min: 8000000,  max: 20000000 },
   { keywords: ["karjat", "khopoli"],                                       unit: "acres",  min: 5000000,  max: 15000000 },
+  { keywords: ["sonipat", "karnal", "palwal"],                             unit: "acres",  min: 4000000,  max: 12000000 },
+  { keywords: ["chengalpattu", "thiruvallur"],                             unit: "acres",  min: 1500000,  max: 5000000 },
 
   // ── India — apartments/villas/houses, per sq.ft ──
   { keywords: ["jubilee hills", "banjara hills"],                          unit: "sqft",   min: 15000, max: 28000 },
@@ -411,6 +442,26 @@ const BENCHMARKS: Benchmark[] = [
   { keywords: ["thane", "navi mumbai"],                                    unit: "sqft",   min: 9000,  max: 16000 },
   { keywords: ["hinjewadi"],                                               unit: "sqft",   min: 7500,  max: 13000 },
   { keywords: ["baner", "balewadi"],                                       unit: "sqft",   min: 9000,  max: 15000 },
+
+  // ── Chennai, per sq.ft — cross-checked against live listings (99acres/nobroker):
+  // OMR average ~₹7,250-13,000/sqft, confirming the range below ──
+  { keywords: ["adyar", "besant nagar"],                                   unit: "sqft",   min: 15000, max: 26000 },
+  { keywords: ["anna nagar"],                                              unit: "sqft",   min: 9500,  max: 16000 },
+  { keywords: ["velachery"],                                               unit: "sqft",   min: 7500,  max: 12000 },
+  { keywords: ["omr", "old mahabalipuram"],                                unit: "sqft",   min: 7000,  max: 13000 },
+  { keywords: ["porur"],                                                   unit: "sqft",   min: 5500,  max: 9000 },
+  { keywords: ["tambaram"],                                                unit: "sqft",   min: 3800,  max: 6500 },
+
+  // ── Delhi NCR, per sq.ft — Golf Course Road cross-checked against live listings
+  // (99acres/nobroker): average ~₹27,000/sqft, ultra-premium up to ₹65,000+/sqft ──
+  { keywords: ["vasant vihar", "greater kailash", "defence colony", "south delhi"], unit: "sqft", min: 28000, max: 50000 },
+  { keywords: ["golf course road", "dlf phase"],                           unit: "sqft",   min: 22000, max: 42000 },
+  { keywords: ["golf course extension", "sector 65", "sector 66"],         unit: "sqft",   min: 11000, max: 18000 },
+  { keywords: ["dwarka"],                                                  unit: "sqft",   min: 9500,  max: 15000 },
+  { keywords: ["sohna road", "sohna"],                                     unit: "sqft",   min: 6500,  max: 11000 },
+  { keywords: ["noida sector 150", "noida expressway", "sector 150"],      unit: "sqft",   min: 8500,  max: 14000 },
+  { keywords: ["greater noida"],                                          unit: "sqft",   min: 4200,  max: 7500 },
+  { keywords: ["rohini"],                                                  unit: "sqft",   min: 7500,  max: 12000 },
 
   // ── Dubai, per sq.ft ──
   { keywords: ["palm jumeirah", "downtown dubai"],                         unit: "sqft",   min: 3000, max: 5500 },
@@ -562,6 +613,20 @@ INDIA PLOT sq.yard benchmarks — EACH LOCALITY IS DISTINCT. Match the EXACT are
 - Medchal / Ameenpur / Shamirpet (outer peripheral): ₹6,000–12,000/sq.yd
 - Shamshabad / Shadnagar (outer south): ₹4,000–9,000/sq.yd
 - Nalgonda / Miryalaguda (rural): ₹2,000–5,000/sq.yd
+- Whitefield / Sarjapur Road (Bangalore IT corridor): ₹35,000–80,000/sq.yd
+- Indiranagar / Koramangala (Bangalore prime): ₹90,000–1,80,000/sq.yd
+- HSR Layout / Bellandur / Electronic City (Bangalore mid): ₹22,000–70,000/sq.yd
+- Hinjewadi / Baner / Balewadi (Pune IT hub): ₹35,000–70,000/sq.yd
+- Adyar / Besant Nagar (Chennai ultra-prime coastal): ₹1,30,000–2,40,000/sq.yd
+- Anna Nagar (Chennai established prime): ₹85,000–1,60,000/sq.yd
+- OMR / Velachery (Chennai IT corridor): ₹38,000–80,000/sq.yd
+- Porur / Tambaram (Chennai mid-affordable): ₹18,000–55,000/sq.yd
+- Vasant Vihar / GK / Defence Colony (South Delhi ultra-prime): ₹4,50,000–8,50,000/sq.yd
+- Golf Course Road / DLF Phases (Gurgaon ultra-prime): ₹1,60,000–3,20,000/sq.yd
+- Golf Course Extension / Sohna Road (Gurgaon mid-prime): ₹35,000–1,40,000/sq.yd
+- Dwarka / Rohini (Delhi mid): ₹48,000–1,10,000/sq.yd
+- Noida Expressway / Sector 150 (premium): ₹55,000–95,000/sq.yd
+- Greater Noida (affordable): ₹28,000–48,000/sq.yd
 ⚠️ CRITICAL: "${location}" must get its OWN price from the exact match above. Never give the same price for different localities.` : unit === "acres" ? `
 INDIA acre benchmarks:
 - Near Hyderabad (<30km): Shankarpally, Moinabad, Chevella: ₹1.2Cr–3Cr/acre
@@ -569,7 +634,9 @@ INDIA acre benchmarks:
 - Outer ring Hyderabad (60–100km): Shadnagar, Vikarabad, Bibinagar: ₹25L–70L/acre
 - Distant Telangana (100km+): Miryalaguda, Nalgonda, Suryapet: ₹8L–25L/acre
 - Bangalore outskirts (<40km): Devanahalli, Nelamangala: ₹80L–2Cr/acre
-- Mumbai outskirts (<50km): Karjat, Khopoli: ₹50L–1.5Cr/acre` : `
+- Mumbai outskirts (<50km): Karjat, Khopoli: ₹50L–1.5Cr/acre
+- Delhi NCR outskirts (Sonipat, Karnal, Palwal): ₹40L–1.2Cr/acre
+- Chennai outskirts (Chengalpattu, Thiruvallur): ₹15L–50L/acre` : `
 LOCALITY-SPECIFIC sq.ft benchmarks (SECONDARY — use live data above first):
 ⚠️ CRITICAL: Every locality below has a DISTINCT price — never average them together.
 ⚠️ CRITICAL: The figures below are APARTMENT baseline rates for each locality. This request is for "${propertyType}" — adjust accordingly:
@@ -604,6 +671,22 @@ MUMBAI / PUNE:
 - Thane / Navi Mumbai (affordable): ₹9,000–16,000/sqft
 - Hinjewadi Pune (IT hub): ₹7,500–13,000/sqft
 - Baner / Balewadi Pune (mid): ₹9,000–15,000/sqft
+
+CHENNAI (pick the exact sub-locality) — cross-checked against live OMR listing data (~₹7,250–13,000/sqft):
+- Adyar / Besant Nagar (ultra-prime coastal): ₹15,000–26,000/sqft
+- Anna Nagar (established prime): ₹9,500–16,000/sqft
+- OMR / Velachery (IT corridor): ₹7,000–13,000/sqft
+- Porur (mid): ₹5,500–9,000/sqft
+- Tambaram (affordable/outer): ₹3,800–6,500/sqft
+
+DELHI NCR (pick the exact sub-locality) — Golf Course Road cross-checked against live listing data (~₹27,000/sqft avg, up to ₹65,000+/sqft ultra-premium):
+- Vasant Vihar / Greater Kailash / Defence Colony (South Delhi ultra-prime): ₹28,000–50,000/sqft
+- Golf Course Road / DLF Phases, Gurgaon (ultra-prime): ₹22,000–42,000/sqft
+- Golf Course Extension Road, Gurgaon (prime): ₹11,000–18,000/sqft
+- Noida Sector 150 / Expressway (premium): ₹8,500–14,000/sqft
+- Dwarka / Rohini, Delhi (mid): ₹7,500–15,000/sqft
+- Sohna Road, Gurgaon (mid): ₹6,500–11,000/sqft
+- Greater Noida (affordable): ₹4,200–7,500/sqft
 
 UAE DUBAI (pick the exact community):
 - Palm Jumeirah / Downtown Dubai: AED 3,000–5,500/sqft
@@ -712,6 +795,37 @@ ${benchmarks}
 Return ONLY the JSON object. No other text.`;
 }
 
+// ─── Honest non-live-data messaging ───────────────────────────────────────────
+// Any time we're NOT showing a real Bayut/Tavily-grounded price, the user needs to know
+// WHY in a way that doesn't conflate two very different situations: (a) the daily Gemini
+// free-tier quota (20 requests/day, shared site-wide) is exhausted for the rest of today,
+// vs (b) we simply found no live listings for this exact search. Each is further split by
+// whether a locality-specific BENCHMARKS entry exists — a comparable-area estimate is a
+// meaningfully stronger claim than a flat country-wide guess, and the user should be told
+// which one they're looking at rather than have both look like the same generic "estimate".
+function aiOnlyMessaging(location: string, hasBenchmark: boolean, quotaHit: boolean): { label: string; summary: string } {
+  if (quotaHit) {
+    return hasBenchmark
+      ? {
+          label: "Daily AI limit reached — comparable area estimate",
+          summary: `Our AI valuation tool has reached its daily analysis limit for today (resets tomorrow). This is an estimate for ${location} based on comparable published rate data for this locality, not a fresh live analysis. WhatsApp Raghu on 97017 71333 for accurate current pricing today.`,
+        }
+      : {
+          label: "Daily AI limit reached — general estimate, not area-specific",
+          summary: `Our AI valuation tool has reached its daily analysis limit for today (resets tomorrow), and we don't have comparable data for ${location} either — so this is a general regional estimate, not specific to this exact area. WhatsApp Raghu on 97017 71333 for an accurate manual assessment.`,
+        };
+  }
+  return hasBenchmark
+    ? {
+        label: "Estimate — no live listings, using comparable area data",
+        summary: `No live listings came up for this exact search, so this is an estimate for ${location} based on comparable published rate data for this locality — not a fresh live-listing analysis.`,
+      }
+    : {
+        label: "General estimate — no specific data for this exact area",
+        summary: `We don't have specific comparable data for ${location} — this is a general regional estimate only, not tailored to this exact area. WhatsApp Raghu on 97017 71333 for a manual on-ground assessment.`,
+      };
+}
+
 // ─── Fallback ─────────────────────────────────────────────────────────────────
 
 function mkFallback(location: string, propertyType: string, unit: string, currency: CurrencyInfo, quotaHit = false) {
@@ -737,6 +851,7 @@ function mkFallback(location: string, propertyType: string, unit: string, curren
   const hist  = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({ year: yr, value: Math.round(base / Math.pow(scale, 4 - i)) }));
   const fore  = [1,2,3,4,5].map((n) => ({ year: y + n, value: Math.round(base * Math.pow(scale, n)) }));
   const range = benchmark ? { min: benchmark.min, max: benchmark.max } : { min: Math.round(base * 0.85), max: Math.round(base * 1.25) };
+  const msg = aiOnlyMessaging(location, !!benchmark, quotaHit);
   return {
     locationName: location, currency: currency.code, currencySymbol: currency.symbol,
     currentPricePerSqft: base, priceRangeMin: range.min, priceRangeMax: range.max, pricePerSqftUnit: unitKey,
@@ -744,12 +859,8 @@ function mkFallback(location: string, propertyType: string, unit: string, curren
     priceHistory5yr: hist, priceForecast5yr: fore,
     growthRate: 8.0, trend: "Stable", rentalYield: 3.5, investmentRating: 6.5,
     bestFor: "long-term appreciation", dataSource: "ai_only" as const,
-    dataSourceLabel: quotaHit
-      ? "I'm busy right now, please WhatsApp Raghu on 97017 71333 — showing a general estimate for now"
-      : "AI estimate (limited live data)",
-    summary: quotaHit
-      ? `Our AI valuation service is at capacity right now, so this is a general estimate for ${location}, not a live analysis. WhatsApp Raghu on 97017 71333 for accurate current pricing.`
-      : `${location} shows stable market conditions with consistent end-user demand and infrastructure growth supporting prices.`,
+    dataSourceLabel: msg.label,
+    summary: msg.summary,
     keyDrivers: ["Steady residential demand", "Infrastructure improvements", "Growing employment base", "Moderate supply"],
   };
 }
@@ -785,9 +896,18 @@ function normalise(
   const rawNow = dataSource === "bayut_data" && bayutPricePsf
     ? bayutPricePsf
     : (Number(raw.currentPricePerSqft) || 5500);
-  const now = dataSource === "bayut_data"
+  const preClampNow = dataSource === "bayut_data"
     ? rawNow
     : clampToBenchmark(rawNow, location, propertyType, unit);
+  const range = deriveRange(preClampNow, raw, location, propertyType, unit, bayutRange);
+  // clampToBenchmark and deriveRange use different thresholds, so a point price could pass
+  // the "not implausible" clamp check while still landing outside the range shown right next
+  // to it (e.g. a price 6% above a benchmark's max wasn't extreme enough to re-clamp, but
+  // still didn't fit inside that same benchmark's own min-max range). Bayut is real live
+  // data (median is inherently within its own min/max by construction) so it's left alone.
+  const now = dataSource === "bayut_data"
+    ? preClampNow
+    : Math.min(Math.max(preClampNow, range.min), range.max);
   const clampRatio = rawNow > 0 ? now / rawNow : 1;
 
   const rate = (Number(raw.growthRate) || 8) / 100;
@@ -816,7 +936,14 @@ function normalise(
   const trend = ["Bullish", "Stable", "Cautious"].includes(raw.trend as string)
     ? (raw.trend as string) : "Stable";
 
-  const range = deriveRange(now, raw, location, propertyType, unit, bayutRange);
+  // Gemini succeeded but no live Bayut/Tavily data was found for this exact search — be
+  // explicit that this is a comparable-area estimate (if a BENCHMARKS match exists) vs a
+  // general regional guess (if it doesn't), instead of a single generic "AI estimate" label
+  // that doesn't distinguish the two. Quota-exhaustion messaging is handled in mkFallback()
+  // since a quota error always short-circuits before reaching normalise().
+  const aiOnly = dataSource === "ai_only"
+    ? aiOnlyMessaging(location, !!findBenchmark(location, propertyType, unit), false)
+    : null;
 
   return {
     locationName:        (raw.locationName    as string) || location,
@@ -835,8 +962,8 @@ function normalise(
     investmentRating:    Number(raw.investmentRating) || 6.5,
     bestFor:             (raw.bestFor  as string) || "long-term investment",
     dataSource,
-    dataSourceLabel,
-    summary:             (raw.summary  as string) || `${location} shows stable market dynamics.`,
+    dataSourceLabel:     aiOnly?.label ?? dataSourceLabel,
+    summary:             aiOnly?.summary ?? ((raw.summary as string) || `${location} shows stable market dynamics.`),
     keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : ["Strong demand", "Good connectivity", "Infrastructure growth", "Growing employment"],
   };
 }

@@ -558,12 +558,20 @@ export default function AIIntelligencePage() {
                           <Globe size={11} /> {r.dataSourceLabel ?? "Based on current web listings"}
                         </span>
                       )}
-                      {(!r.dataSource || r.dataSource === "ai_only") && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
-                          style={{ background: "rgba(107,114,128,0.08)", borderColor: "rgba(107,114,128,0.3)", color: "#6b7280" }}>
-                          <Bot size={11} /> AI estimate
-                        </span>
-                      )}
+                      {(!r.dataSource || r.dataSource === "ai_only") && (() => {
+                        // Quota-exhausted and "no live listings" are meaningfully different
+                        // situations — flag the quota case with a distinct (amber) style so
+                        // it doesn't read as just another routine "AI estimate" pill.
+                        const isQuotaHit = (r.dataSourceLabel ?? "").startsWith("Daily AI limit reached");
+                        return (
+                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
+                            style={isQuotaHit
+                              ? { background: "rgba(217,119,6,0.08)", borderColor: "rgba(217,119,6,0.35)", color: "#b45309" }
+                              : { background: "rgba(107,114,128,0.08)", borderColor: "rgba(107,114,128,0.3)", color: "#6b7280" }}>
+                            <Bot size={11} /> {r.dataSourceLabel ?? "AI estimate"}
+                          </span>
+                        );
+                      })()}
                       <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border font-semibold text-sm ${ts.bg} ${ts.border} ${ts.text}`}>
                         <span className="text-xs">{ts.icon}</span> {trend}
                       </div>
