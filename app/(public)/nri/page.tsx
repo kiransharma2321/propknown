@@ -27,6 +27,40 @@ const FEMA_POINTS = [
   "Double Taxation Avoidance Agreements (DTAA) may apply to reduce tax burden.",
 ];
 
+const CONCIERGE_STEPS = [
+  {
+    title: "Shortlist",
+    desc: "Browse verified listings on PropKnown and save your favorites. We'll help you narrow down to 2-3 serious options based on budget, location, and goals.",
+    cta: { label: "Browse Verified Properties", href: "/buy" },
+  },
+  {
+    title: "Virtual Tour",
+    desc: "Request a live video walkthrough of any shortlisted property — no need to fly in. Raghu or our team walks you through it in real time over video call.",
+    cta: { label: "Request a Video Tour", href: "/buy" },
+  },
+  {
+    title: "Legal Verification",
+    desc: "Before committing, run the property through PropKnown's Legal Shield — check the 9-point Legal Safety Checklist and use the free Fraud & Red-Flag Checker.",
+    cta: { label: "Open Legal Shield", href: "/legal-shield" },
+  },
+  {
+    title: "POA / Documentation",
+    desc: "Set up a consulate-attested Power of Attorney for a trusted person in India to sign on your behalf, and gather the documents listed below (passport, PAN, NRE/NRO details).",
+  },
+  {
+    title: "Payment / FEMA Compliance",
+    desc: "Route payment through your NRE/NRO/FCNR account per FEMA rules — never cash. Our team coordinates with your bank on TDS deductions and payment milestones.",
+  },
+  {
+    title: "Registration",
+    desc: "The sale deed is registered with the Sub-Registrar, typically by your PoA holder in India, with the property mutated into your name.",
+  },
+  {
+    title: "Handover",
+    desc: "Receive scanned + couriered copies of all registered documents. We can also help set up rental management if you won't be occupying the property yourself.",
+  },
+];
+
 const PROCESS_STEPS = [
   {
     step: "01",
@@ -113,6 +147,51 @@ export default function NRIPage() {
               style={{ borderColor: `${GOLD}80`, color: GOLD }}>
               Browse Verified Properties <ArrowRight size={15} />
             </Link>
+          </div>
+        </div>
+
+        {/* Remote Buying Concierge — signature step-by-step tracker */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+              Your Remote Buying <span style={{ color: GOLD }}>Concierge</span>
+            </h2>
+            <p className="text-gray-500 text-sm max-w-xl mx-auto">
+              A guided, honest walkthrough of every stage of buying property in India from abroad —
+              with PropKnown supporting you at each step.
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto space-y-0">
+            {CONCIERGE_STEPS.map((s, i) => (
+              <div key={s.title} className="flex gap-4">
+                <div className="flex flex-col items-center shrink-0">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: GOLD }}>
+                    {i + 1}
+                  </span>
+                  {i < CONCIERGE_STEPS.length - 1 && <span className="w-px flex-1 bg-gray-200 my-1" />}
+                </div>
+                <div className="pb-7 min-w-0">
+                  <p className="font-bold text-gray-900 text-sm mb-1">{s.title}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed mb-2">{s.desc}</p>
+                  {s.cta && (
+                    <Link href={s.cta.href} className="inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: GOLD }}>
+                      {s.cta.label} <ArrowRight size={12} />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="max-w-2xl mx-auto mt-2">
+            <a href={`${WA}?text=${encodeURIComponent("Hi Raghu, I'm an NRI going through the remote buying process and have a question about one of the steps.")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90"
+              style={{ background: "#25D366" }}>
+              <Phone size={15} /> Ask Raghu About Any Step
+            </a>
+            <p className="text-[10px] text-gray-400 text-center mt-3 leading-relaxed">
+              This is general guidance to help you plan, not legal or tax advice — always confirm specifics with a qualified CA/advocate and your bank&apos;s NRI desk.
+            </p>
           </div>
         </div>
 

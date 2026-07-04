@@ -7,6 +7,7 @@ import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as I
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
 import ConstructionProgress from "@/components/ui/ConstructionProgress";
+import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 import type { LegalChecklist } from "@/lib/legalShield";
 import type { ConstructionMilestone } from "@/lib/constructionProgress";
 
@@ -203,6 +204,7 @@ export default function SubmissionDetailPage() {
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-gray-700 text-sm border border-gray-200 hover:border-gray-400 transition-all">
                   <Phone size={15} /> {sub.ownerPhone}
                 </a>
+                <RequestVideoTourButton propertyId={sub.id} title={sub.title} />
               </div>
 
               <p className="text-gray-400 text-[11px] mt-4 text-center">

@@ -10,8 +10,29 @@ export async function POST(req: NextRequest) {
     if (!name || !phone) {
       return NextResponse.json({ error: "Name and phone are required" }, { status: 400 });
     }
+
+    // Lead.propertyId is a real foreign key into the Property table, but most listings on
+    // the site are static demo data or PropertySubmission records (different ID space) --
+    // passing one of those IDs straight through causes a foreign-key violation and a 500.
+    // Only attach propertyId when it actually resolves to a Property row; otherwise fold the
+    // reference into the message so admins still see which listing the enquiry was about.
+    let validPropertyId: string | null = null;
+    let finalMessage = message ?? null;
+    if (propertyId) {
+      try {
+        const exists = await prisma.property.findUnique({ where: { id: propertyId }, select: { id: true } });
+        if (exists) {
+          validPropertyId = propertyId;
+        } else {
+          finalMessage = finalMessage ? `${finalMessage} [Listing ref: ${propertyId}]` : `[Listing ref: ${propertyId}]`;
+        }
+      } catch {
+        finalMessage = finalMessage ? `${finalMessage} [Listing ref: ${propertyId}]` : `[Listing ref: ${propertyId}]`;
+      }
+    }
+
     const lead = await prisma.lead.create({
-      data: { name, phone, email, message, source: source ?? "website", propertyId: propertyId ?? null },
+      data: { name, phone, email, message: finalMessage, source: source ?? "website", propertyId: validPropertyId },
     });
 
     const src = source ?? "website";

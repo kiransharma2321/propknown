@@ -14,6 +14,7 @@ import CostCalculator from "@/components/ui/CostCalculator";
 import VerificationBadge from "@/components/ui/VerificationBadge";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
+import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
@@ -577,6 +578,8 @@ out body qt 30;`;
               >
                 <Phone size={16} /> Call {COMPANY.phone}
               </a>
+
+              <RequestVideoTourButton propertyId={listing.id} title={listing.title} />
 
               {/* Lead form */}
               <div className="border border-gray-200 rounded-2xl p-5">
