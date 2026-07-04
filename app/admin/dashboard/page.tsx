@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import type { VerificationFlags } from "@/components/ui/VerificationBadge";
 import { LEGAL_CHECKLIST_ITEMS, type LegalChecklist, type ChecklistStatus } from "@/lib/legalShield";
+import { PRESET_MILESTONES, type ConstructionMilestone } from "@/lib/constructionProgress";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -409,6 +410,9 @@ interface SubDetail extends SubListItem {
   verificationFlags?: VerificationFlags;
   legalChecklist?: LegalChecklist;
   legalNotes?: string;
+  constructionMilestones?: ConstructionMilestone[];
+  constructionPct?: number;
+  expectedCompletion?: string;
 }
 
 function SubmissionsTab() {
@@ -427,6 +431,12 @@ function SubmissionsTab() {
   const [legal,      setLegal]      = useState<LegalChecklist>({});
   const [legalNotesDraft, setLegalNotesDraft] = useState("");
   const [savingLegal, setSavingLegal] = useState(false);
+  const [milestones, setMilestones] = useState<ConstructionMilestone[]>([]);
+  const [pctDraft,   setPctDraft]   = useState("");
+  const [completionDraft, setCompletionDraft] = useState("");
+  const [newMilestone, setNewMilestone] = useState({ title: PRESET_MILESTONES[0], customTitle: "", date: "", note: "" });
+  const [milestonePhoto, setMilestonePhoto] = useState<File | null>(null);
+  const [savingConstruction, setSavingConstruction] = useState(false);
 
   const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
 
@@ -458,6 +468,11 @@ function SubmissionsTab() {
       setVFlags(d.verificationFlags ?? {});
       setLegal(d.legalChecklist ?? {});
       setLegalNotesDraft(d.legalNotes ?? "");
+      setMilestones(Array.isArray(d.constructionMilestones) ? d.constructionMilestones : []);
+      setPctDraft(d.constructionPct != null ? String(d.constructionPct) : "");
+      setCompletionDraft(d.expectedCompletion ?? "");
+      setNewMilestone({ title: PRESET_MILESTONES[0], customTitle: "", date: "", note: "" });
+      setMilestonePhoto(null);
     } catch { alert("Failed to load submission."); }
     finally { setLoadDetail(false); }
   };
@@ -490,6 +505,70 @@ function SubmissionsTab() {
     } finally {
       setSavingLegal(false);
     }
+  };
+
+  const saveConstruction = async (updatedMilestones = milestones) => {
+    if (!reviewing) return;
+    setSavingConstruction(true);
+    try {
+      const pct = pctDraft.trim() ? Math.max(0, Math.min(100, Number(pctDraft))) : null;
+      await fetch(`/api/admin/submissions/${reviewing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          constructionMilestones: updatedMilestones,
+          constructionPct: pct,
+          expectedCompletion: completionDraft.trim() || null,
+        }),
+      });
+      setMilestones(updatedMilestones);
+      setReviewing(r => r ? { ...r, constructionMilestones: updatedMilestones, constructionPct: pct ?? undefined, expectedCompletion: completionDraft.trim() } : r);
+    } catch {
+      alert("Failed to save construction progress.");
+    } finally {
+      setSavingConstruction(false);
+    }
+  };
+
+  const addMilestone = async () => {
+    if (!reviewing) return;
+    const title = newMilestone.title === "Custom" ? newMilestone.customTitle.trim() : newMilestone.title;
+    if (!title || !newMilestone.date) { alert("Please choose a milestone stage and date."); return; }
+
+    setSavingConstruction(true);
+    try {
+      let photoUrl: string | undefined;
+      if (milestonePhoto) {
+        try {
+          const fd = new FormData();
+          fd.append("file", milestonePhoto);
+          const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && uploadData.id) photoUrl = `/api/files/${uploadData.id}`;
+        } catch {
+          // Photo upload failure shouldn't block saving the milestone itself
+        }
+      }
+
+      const milestone: ConstructionMilestone = {
+        id: `m-${Date.now()}`,
+        title,
+        date: newMilestone.date,
+        note: newMilestone.note.trim() || undefined,
+        photoUrl,
+      };
+      const updated = [...milestones, milestone];
+      await saveConstruction(updated);
+      setNewMilestone({ title: PRESET_MILESTONES[0], customTitle: "", date: "", note: "" });
+      setMilestonePhoto(null);
+    } finally {
+      setSavingConstruction(false);
+    }
+  };
+
+  const removeMilestone = (id: string) => {
+    const updated = milestones.filter(m => m.id !== id);
+    saveConstruction(updated);
   };
 
   const doAction = async (action: "approve" | "reject") => {
@@ -855,6 +934,86 @@ function SubmissionsTab() {
                       >
                         {savingLegal ? "Saving…" : "Save Legal Checklist"}
                       </button>
+                    </div>
+
+                    {/* Construction Progress — only appears on the property page once at
+                        least one milestone exists here; there's no separate on/off flag. */}
+                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                        <Home size={12} /> Construction Progress
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-zinc-500 block mb-1">Overall % complete</label>
+                          <input type="number" min={0} max={100} value={pctDraft}
+                            onChange={e => setPctDraft(e.target.value)} placeholder="e.g. 45"
+                            className={`${inpCls} text-xs py-1.5`} />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-zinc-500 block mb-1">Expected completion</label>
+                          <input type="date" value={completionDraft}
+                            onChange={e => setCompletionDraft(e.target.value)}
+                            className={`${inpCls} text-xs py-1.5`} />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => saveConstruction()}
+                        disabled={savingConstruction}
+                        className="w-full py-1.5 rounded-lg text-[11px] font-semibold border transition-all disabled:opacity-50"
+                        style={{ borderColor: "rgba(201,162,75,0.4)", color: "#C9A24B" }}
+                      >
+                        Save % / Date
+                      </button>
+
+                      {milestones.length > 0 && (
+                        <div className="space-y-1.5 border-t border-zinc-700 pt-2">
+                          {milestones.map(m => (
+                            <div key={m.id} className="flex items-center justify-between gap-2 text-[11px] text-zinc-300">
+                              <span className="truncate">{m.title} — {m.date}{m.photoUrl ? " 📷" : ""}</span>
+                              <button onClick={() => removeMilestone(m.id)} className="text-red-400 hover:text-red-300 shrink-0">
+                                <Trash2 size={11} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="border-t border-zinc-700 pt-2.5 space-y-2">
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Add Milestone</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <select
+                            value={newMilestone.title}
+                            onChange={e => setNewMilestone(nm => ({ ...nm, title: e.target.value }))}
+                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-yellow-600"
+                          >
+                            {PRESET_MILESTONES.map(p => <option key={p} value={p}>{p}</option>)}
+                            <option value="Custom">Custom…</option>
+                          </select>
+                          <input type="date" value={newMilestone.date}
+                            onChange={e => setNewMilestone(nm => ({ ...nm, date: e.target.value }))}
+                            className={`${inpCls} text-[11px] py-1.5`} />
+                        </div>
+                        {newMilestone.title === "Custom" && (
+                          <input value={newMilestone.customTitle}
+                            onChange={e => setNewMilestone(nm => ({ ...nm, customTitle: e.target.value }))}
+                            placeholder="Custom stage name" className={`${inpCls} text-xs py-1.5`} />
+                        )}
+                        <input value={newMilestone.note}
+                          onChange={e => setNewMilestone(nm => ({ ...nm, note: e.target.value }))}
+                          placeholder="Note (optional)" className={`${inpCls} text-xs py-1.5`} />
+                        <input type="file" accept="image/*"
+                          onChange={e => setMilestonePhoto(e.target.files?.[0] ?? null)}
+                          className="text-[10px] text-zinc-400 w-full" />
+                        <button
+                          onClick={addMilestone}
+                          disabled={savingConstruction}
+                          className="w-full py-2 rounded-lg text-xs font-semibold text-black transition-all disabled:opacity-50"
+                          style={{ background: "#C9A24B" }}
+                        >
+                          {savingConstruction ? "Saving…" : "Add Milestone"}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Approve / Reject */}

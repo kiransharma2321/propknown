@@ -33,6 +33,7 @@ interface Submission {
   city: string; area: string; reraNumber?: string;
   photoIds: string[]; videoIds: string[]; videoUrls: string[];
   verificationFlags?: import("@/components/ui/VerificationBadge").VerificationFlags;
+  constructionPct?: number;
   createdAt: string;
 }
 
@@ -92,8 +93,13 @@ function SubmissionCard({ s }: { s: Submission }) {
           {s.size && <span>{s.size} {s.sizeUnit}</span>}
           <span className="text-gray-400">{s.propType}</span>
         </div>
-        <div className="mb-2">
+        <div className="mb-2 flex items-center gap-2 flex-wrap">
           <VerificationBadge compact flags={s.verificationFlags ?? {}} />
+          {s.constructionPct != null && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
+              🏗 {s.constructionPct}% built
+            </span>
+          )}
         </div>
         <button
           onClick={() => added ? remove(`sub-${s.id}`) : add(compareItem)}

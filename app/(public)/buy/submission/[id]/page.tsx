@@ -6,7 +6,9 @@ import Link from "next/link";
 import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as ImageIcon } from "lucide-react";
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
+import ConstructionProgress from "@/components/ui/ConstructionProgress";
 import type { LegalChecklist } from "@/lib/legalShield";
+import type { ConstructionMilestone } from "@/lib/constructionProgress";
 
 interface SubDetail {
   id: string; title: string; propType: string; bhk?: string;
@@ -17,6 +19,9 @@ interface SubDetail {
   verificationFlags?: VerificationFlags;
   legalChecklist?: LegalChecklist;
   legalNotes?: string;
+  constructionMilestones?: ConstructionMilestone[];
+  constructionPct?: number;
+  expectedCompletion?: string;
   createdAt: string;
 }
 
@@ -134,6 +139,16 @@ export default function SubmissionDetailPage() {
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-6">
                 <h3 className="text-gray-900 font-bold mb-3">Key Features</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{sub.features}</p>
+              </div>
+            )}
+
+            {sub.constructionMilestones && sub.constructionMilestones.length > 0 && (
+              <div className="mb-6">
+                <ConstructionProgress
+                  milestones={sub.constructionMilestones}
+                  pctComplete={sub.constructionPct}
+                  expectedCompletion={sub.expectedCompletion}
+                />
               </div>
             )}
 
