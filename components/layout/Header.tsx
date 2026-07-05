@@ -14,9 +14,11 @@ const navLinks = [
   { label: "Sell",         href: "/sell" },
   { label: "Services",     href: "/services" },
   { label: "AI Intel",     href: "/ai-intelligence" },
+  { label: "Price Check",  href: "/price-check" },
   { label: "Invest",       href: "/invest" },
   { label: "For Builders", href: "/builders" },
   { label: "NRI",          href: "/nri" },
+  { label: "Legal Shield", href: "/legal-shield" },
   { label: "About",        href: "/about" },
   { label: "Contact",      href: "/contact" },
 ];
@@ -59,7 +61,7 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <PKLogo />
 
-        <ul className="hidden xl:flex items-center gap-6">
+        <ul className="hidden xl:flex items-center gap-4">
           {navLinks.map((l) => (
             <li key={l.href}>
               <Link href={l.href} className="nav-link text-[13px]">{l.label}</Link>
