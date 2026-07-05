@@ -180,3 +180,15 @@ model PropertySubmission {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// Server-side counter for the anonymous "3 free AI checks" limit (AI Intelligence, Price
+// Reality Check). Keyed by a random ID stored in an httpOnly cookie -- a real database
+// counter rather than in-memory, since in-memory state isn't reliably shared across
+// serverless invocations and would make the limit meaningless in production. Logged-in
+// buyers never touch this table at all (see lib/usageLimit.ts).
+model AnonymousUsage {
+  id        String   @id
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

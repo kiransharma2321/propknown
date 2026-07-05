@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
 
 const GOLD = "#C9A24B";
@@ -27,6 +27,19 @@ interface RedFlagResult {
   summary: string;
 }
 
+interface ReraScanResult {
+  status:  "verified" | "flagged" | "not_found";
+  message: string;
+  propertyTitle?: string;
+  propertyLocation?: string;
+}
+
+const RERA_STATUS_STYLE: Record<string, { label: string; color: string; bg: string; border: string; Icon: typeof CheckCircle2 }> = {
+  verified:  { label: "Verified",  color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
+  flagged:   { label: "Flagged",   color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
+  not_found: { label: "Not Found", color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
+};
+
 export default function LegalShieldPage() {
   const [form, setForm] = useState({
     location: "", propertyType: "Apartment", unit: "sqft",
@@ -35,6 +48,35 @@ export default function LegalShieldPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RedFlagResult | null>(null);
   const [error, setError] = useState("");
+
+  const [reraInput,   setReraInput]   = useState("");
+  const [reraLoading, setReraLoading] = useState(false);
+  const [reraResult,  setReraResult]  = useState<ReraScanResult | null>(null);
+  const [reraError,   setReraError]   = useState("");
+
+  const scanRera = async () => {
+    if (!reraInput.trim()) { setReraError("Please enter a RERA number to scan."); return; }
+    setReraLoading(true); setReraError(""); setReraResult(null);
+    try {
+      const res = await fetch("/api/rera-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reraNumber: reraInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && !data.error) {
+        // Small delay so the "scanning" animation is visible even on a fast response
+        await new Promise(r => setTimeout(r, 500));
+        setReraResult(data);
+      } else {
+        setReraError(data.error || "Could not scan this number right now. Please try again.");
+      }
+    } catch {
+      setReraError("Could not scan this number right now. Please try again.");
+    } finally {
+      setReraLoading(false);
+    }
+  };
 
   const check = async () => {
     if (!form.location.trim()) { setError("Please enter the property's location/area."); return; }
@@ -89,6 +131,51 @@ export default function LegalShieldPage() {
             Enter what you know about a listing and get an honest, plain-language check for common
             Indian real estate scam signals — powered by KnownAI.
           </p>
+        </div>
+
+        {/* RERA Instant Verification Scanner */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-10">
+          <div className="flex items-center gap-2 mb-1">
+            <ScanSearch size={16} style={{ color: GOLD }} />
+            <h2 className="text-gray-900 font-bold text-base">RERA Instant Verification Scanner</h2>
+          </div>
+          <p className="text-gray-500 text-xs mb-4 leading-relaxed">
+            Checks against PropKnown&apos;s own admin-verified property records — not a live government
+            RERA portal lookup. A &quot;Not Found&quot; result doesn&apos;t mean a number is fake, just that
+            we haven&apos;t independently verified it ourselves.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              value={reraInput}
+              onChange={e => { setReraInput(e.target.value); setReraResult(null); setReraError(""); }}
+              onKeyDown={e => { if (e.key === "Enter") scanRera(); }}
+              placeholder="e.g. P02400012345"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400"
+            />
+            <button
+              onClick={scanRera}
+              disabled={reraLoading}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-black text-sm transition-all hover:opacity-90 disabled:opacity-60 whitespace-nowrap"
+              style={{ background: GOLD }}
+            >
+              {reraLoading ? <><Loader2 size={15} className="animate-spin" /> Scanning…</> : <><ScanSearch size={15} /> Scan Number</>}
+            </button>
+          </div>
+
+          {reraError && <p className="text-red-600 text-xs mt-3">{reraError}</p>}
+
+          {reraResult && (() => {
+            const rs = RERA_STATUS_STYLE[reraResult.status];
+            return (
+              <div className={`mt-4 border rounded-xl p-4 flex items-start gap-3 animate-fade-in ${rs.bg} ${rs.border}`}>
+                <rs.Icon size={20} style={{ color: rs.color }} className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-sm mb-1" style={{ color: rs.color }}>{rs.label}</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">{reraResult.message}</p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">

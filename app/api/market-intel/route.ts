@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUsageStatus, checkAndConsume } from "@/lib/usageLimit";
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
@@ -947,12 +948,30 @@ function setCache(key: string, data: Record<string, unknown>) {
 // ─── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const { location, propertyType, unit } =
-    await req.json() as { location?: string; propertyType?: string; unit?: string };
+  const { location, propertyType, unit, countUsage } =
+    await req.json() as { location?: string; propertyType?: string; unit?: string; countUsage?: boolean };
 
   if (!location?.trim()) {
     return NextResponse.json({ error: "Location is required" }, { status: 400 });
   }
+
+  // Only the AI Intelligence page's own deliberate "Get Market Intelligence" action counts
+  // against the anonymous free-check limit -- it sends countUsage:true. The passive "Area
+  // Price Insight" fetch on property detail pages (and Price Reality Check's own internal
+  // call, which already consumed a check at its own route) never send this flag, so simply
+  // browsing listings can't silently burn a visitor's free checks.
+  //
+  // Gate check is read-only here -- a visitor shouldn't be charged one of their 3 free
+  // checks for an attempt that ends up "unavailable" (no live data, Gemini failure, etc.);
+  // the counter only actually increments right before a genuine success is returned, below.
+  let usage = countUsage ? await getUsageStatus() : null;
+  if (usage && !usage.allowed) {
+    return NextResponse.json({ error: "usage_limit", ...usage }, { status: 403 });
+  }
+  // Attaches the honest "X of 3 free checks used" status to every response on this request
+  // (success or unavailable) so the frontend can show it without a second round-trip.
+  const respond = (body: Record<string, unknown>, status = 200) =>
+    NextResponse.json(usage ? { ...body, usage } : body, { status });
 
   const loc          = location.trim();
   const resolvedUnit = unit ?? "sqft";
@@ -966,14 +985,14 @@ export async function POST(req: NextRequest) {
   const cached = getCached(cacheKey);
   if (cached) {
     console.log(`[market-intel] Cache HIT for "${cacheKey}"`);
-    return NextResponse.json(cached);
+    return respond(cached);
   }
 
   // ── Step 0: Detect country + currency ────────────────────────────────────
   const { countryCode, currency } = await detectCurrency(loc);
 
   if (!geminiKey) {
-    return NextResponse.json(unavailableResponse("no GEMINI_API_KEY configured"));
+    return respond(unavailableResponse("no GEMINI_API_KEY configured"));
   }
 
   // ── Step 1: Real data — Bayut (UAE) or Tavily (elsewhere) ────────────────
@@ -1032,7 +1051,7 @@ export async function POST(req: NextRequest) {
   // no point spending an API call (and quota) on a result we'd discard anyway. Not cached:
   // a moment later this same query might succeed once live data is available.
   if (dataType === "none") {
-    return NextResponse.json(unavailableResponse(`no live listing data found for "${loc}" (${propType})`));
+    return respond(unavailableResponse(`no live listing data found for "${loc}" (${propType})`));
   }
 
   // ── Step 2: Build Gemini prompt ──────────────────────────────────────────
@@ -1046,14 +1065,14 @@ export async function POST(req: NextRequest) {
     console.error("Gemini attempt 1 failed:", e1);
     if (e1 instanceof GeminiQuotaError) {
       // Retrying won't help — quota is exhausted for the window.
-      return NextResponse.json(unavailableResponse(`Gemini quota exhausted for "${loc}": ${e1.message}`));
+      return respond(unavailableResponse(`Gemini quota exhausted for "${loc}": ${e1.message}`));
     }
     try {
       raw = parseGemini(await callGemini(geminiKey, prompt));
     } catch (e2) {
       console.error("Gemini attempt 2 failed:", e2);
       const reason = e2 instanceof Error ? e2.message : String(e2);
-      return NextResponse.json(unavailableResponse(`Gemini call failed for "${loc}": ${reason}`));
+      return respond(unavailableResponse(`Gemini call failed for "${loc}": ${reason}`));
     }
   }
 
@@ -1061,9 +1080,12 @@ export async function POST(req: NextRequest) {
     const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange);
     console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
     setCache(cacheKey, result);
-    return NextResponse.json(result);
+    // Only now, on a confirmed genuine success, actually consume one of the visitor's free
+    // checks -- everything above this point was read-only.
+    if (countUsage) usage = await checkAndConsume();
+    return respond(result);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
-    return NextResponse.json(unavailableResponse(`failed to process AI response for "${loc}": ${reason}`));
+    return respond(unavailableResponse(`failed to process AI response for "${loc}": ${reason}`));
   }
 }

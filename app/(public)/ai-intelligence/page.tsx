@@ -10,6 +10,7 @@ import LeadForm from "@/components/ui/LeadForm";
 import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/currency";
+import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const HOT_MARKETS = [
@@ -256,6 +257,8 @@ export default function AIIntelligencePage() {
   const [result,      setResult]      = useState<MarketIntelResult | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState("");
+  const [usage,       setUsage]       = useState<{ used: number; limit: number; remaining: number; loggedIn: boolean } | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
 
   const [downPct,    setDownPct]    = useState(20);
   const [intRate,    setIntRate]    = useState(8.75);
@@ -315,7 +318,7 @@ export default function AIIntelligencePage() {
   const analyze = async () => {
     const loc = (selected || query.split("·")[0]).trim();
     if (!loc) { setError("Please enter a location to analyze."); return; }
-    setLoading(true); setError(""); setResult(null); setShowEMI(false); setLoadStep(0);
+    setLoading(true); setError(""); setResult(null); setShowEMI(false); setLoadStep(0); setLimitReached(false);
 
     // Progressive loading messages
     const stepTimers = [
@@ -331,15 +334,20 @@ export default function AIIntelligencePage() {
       const res  = await fetch("/api/market-intel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: loc, propertyType: propType, unit: apiUnit }),
+        body: JSON.stringify({ location: loc, propertyType: propType, unit: apiUnit, countUsage: true }),
       });
       const data = await res.json();
-      if (res.ok && !data.error && data.available) {
+      if (res.status === 403 && data.error === "usage_limit") {
+        setLimitReached(true);
+        setUsage(data);
+      } else if (res.ok && !data.error && data.available) {
         setResult(data);
+        if (data.usage) setUsage(data.usage);
       } else if (res.ok && data.available === false) {
         // Honest "no fallback estimate" state — live data is the only source now, so a
         // failure here means exactly that, not a stale/generic number pretending otherwise.
         setError(data.message || "Live market data is temporarily unavailable for this area. Please try again in a moment.");
+        if (data.usage) setUsage(data.usage);
       } else {
         setError("Live market data is temporarily unavailable for this area. Please try again in a moment.");
       }
@@ -510,37 +518,50 @@ export default function AIIntelligencePage() {
                 </div>
               </div>
 
-              {error && (
-                <div className="flex items-start gap-2 text-red-600 text-sm mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
-                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                  {error.includes("WhatsApp") ? (
-                    <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer"
-                      className="ml-auto text-green-600 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline">
-                      <MessageCircle size={13} /> WhatsApp
-                    </a>
-                  ) : (
-                    <button
-                      onClick={analyze}
-                      disabled={loading}
-                      className="ml-auto text-red-700 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline disabled:opacity-50"
-                    >
-                      Retry
-                    </button>
-                  )}
+              {limitReached ? (
+                <div className="mt-4">
+                  <UsageLimitPrompt returnTo="/ai-intelligence" />
                 </div>
+              ) : (
+                <>
+                  {error && (
+                    <div className="flex items-start gap-2 text-red-600 text-sm mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+                      <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                      <span>{error}</span>
+                      {error.includes("WhatsApp") ? (
+                        <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer"
+                          className="ml-auto text-green-600 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline">
+                          <MessageCircle size={13} /> WhatsApp
+                        </a>
+                      ) : (
+                        <button
+                          onClick={analyze}
+                          disabled={loading}
+                          className="ml-auto text-red-700 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline disabled:opacity-50"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <button onClick={analyze} disabled={loading}
+                    className="btn-gold w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
+                    {loading
+                      ? <><Loader2 size={16} className="animate-spin" />{LOADING_STEPS[loadStep]}</>
+                      : <><Bot size={16} />Get Market Intelligence</>}
+                  </button>
+
+                  <p className="text-center text-gray-400 text-xs mt-3">
+                    Works for any city or area worldwide · Powered by Gemini AI · Takes 5–10 seconds
+                  </p>
+                  {usage && !usage.loggedIn && (
+                    <p className="text-center text-gray-400 text-[11px] mt-1">
+                      {usage.used} of {usage.limit} free AI checks used
+                    </p>
+                  )}
+                </>
               )}
-
-              <button onClick={analyze} disabled={loading}
-                className="btn-gold w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
-                {loading
-                  ? <><Loader2 size={16} className="animate-spin" />{LOADING_STEPS[loadStep]}</>
-                  : <><Bot size={16} />Get Market Intelligence</>}
-              </button>
-
-              <p className="text-center text-gray-400 text-xs mt-3">
-                Works for any city or area worldwide · Powered by Gemini AI · Takes 5–10 seconds
-              </p>
             </div>
 
             {/* ── Results ──────────────────────────────────────────────────── */}

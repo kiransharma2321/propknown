@@ -15,6 +15,7 @@ import VerificationBadge from "@/components/ui/VerificationBadge";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
+import InvestmentScoreGauge from "@/components/ui/InvestmentScoreGauge";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
@@ -46,6 +47,8 @@ interface MarketData {
   summary: string;
   typicalListings?: string;
   dataSource: "bayut_data" | "real_data" | "ai_only";
+  investmentRating?: number;
+  rentalYield?: number;
 }
 
 interface NearbyListing {
@@ -674,8 +677,17 @@ out body qt 30;`;
                         </span>
                       )}
                     </div>
+                    {marketData.investmentRating != null && (
+                      <div className="border-t border-gray-100 mt-3 pt-3">
+                        <InvestmentScoreGauge
+                          score={marketData.investmentRating}
+                          rentalYield={marketData.rentalYield}
+                          growthRate={marketData.growthRate}
+                        />
+                      </div>
+                    )}
                     {marketData.summary && (
-                      <p className="text-xs text-gray-500 leading-relaxed">{marketData.summary}</p>
+                      <p className="text-xs text-gray-500 leading-relaxed mt-3">{marketData.summary}</p>
                     )}
                     {marketData.typicalListings && (
                       <p className="text-xs text-gray-400 mt-2 leading-relaxed">
