@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, Globe, FileText, CheckCircle, Phone, AlertCircle, ArrowRight } from "lucide-react";
+import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 
 export const metadata: Metadata = {
   title: "NRI Property Investment India | PropKnown — UAE, US, UK, Singapore",
@@ -36,7 +37,6 @@ const CONCIERGE_STEPS = [
   {
     title: "Virtual Tour",
     desc: "Request a live video walkthrough of any shortlisted property — no need to fly in. Raghu or our team walks you through it in real time over video call.",
-    cta: { label: "Request a Video Tour", href: "/buy" },
   },
   {
     title: "Legal Verification",
@@ -173,7 +173,11 @@ export default function NRIPage() {
                 <div className="pb-7 min-w-0">
                   <p className="font-bold text-gray-900 text-sm mb-1">{s.title}</p>
                   <p className="text-gray-500 text-xs leading-relaxed mb-2">{s.desc}</p>
-                  {s.cta && (
+                  {s.title === "Virtual Tour" ? (
+                    <div className="max-w-xs">
+                      <RequestVideoTourButton title="a shortlisted property" />
+                    </div>
+                  ) : s.cta && (
                     <Link href={s.cta.href} className="inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: GOLD }}>
                       {s.cta.label} <ArrowRight size={12} />
                     </Link>

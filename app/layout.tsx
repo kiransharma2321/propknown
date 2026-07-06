@@ -148,13 +148,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header />
         <ClientProviders>
+          <Header />
           <main>{children}</main>
+          <Footer />
+          <WhatsAppButton />
+          <KnownAIChat />
         </ClientProviders>
-        <Footer />
-        <WhatsAppButton />
-        <KnownAIChat />
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>

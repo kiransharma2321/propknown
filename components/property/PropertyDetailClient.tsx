@@ -16,6 +16,8 @@ import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 import InvestmentScoreGauge from "@/components/ui/InvestmentScoreGauge";
+import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
+import ConstructionProgress from "@/components/ui/ConstructionProgress";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 
 // Leaflet map — no SSR
@@ -417,6 +419,20 @@ out body qt 30;`;
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* ── LEGAL SAFETY CHECKLIST ── */}
+            {listing.legalChecklist && (
+              <LegalChecklistBadge checklist={listing.legalChecklist} notes={listing.legalChecklistNotes} />
+            )}
+
+            {/* ── CONSTRUCTION PROGRESS ── */}
+            {listing.constructionMilestones && listing.constructionMilestones.length > 0 && (
+              <ConstructionProgress
+                milestones={listing.constructionMilestones}
+                pctComplete={listing.constructionPctComplete}
+                expectedCompletion={listing.constructionExpectedCompletion}
+              />
             )}
 
             {/* ── TRUE COST CALCULATOR ── */}

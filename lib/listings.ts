@@ -1,3 +1,6 @@
+import type { LegalChecklist } from "./legalShield";
+import type { ConstructionMilestone } from "./constructionProgress";
+
 export interface Listing {
   id: string;
   title: string;
@@ -22,6 +25,11 @@ export interface Listing {
   lat?: number;
   lng?: number;
   features?: string[];
+  legalChecklist?: LegalChecklist;
+  legalChecklistNotes?: string;
+  constructionMilestones?: ConstructionMilestone[];
+  constructionPctComplete?: number;
+  constructionExpectedCompletion?: string;
 }
 
 // Pre-defined coordinates for known areas (avoids geocoding for all static listings)
@@ -79,6 +87,11 @@ export const ALL_LISTINGS: Listing[] = [
     images: ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80"],
     description: "Spacious 3BHK apartment in the heart of Gachibowli IT hub. Premium finishes, modular kitchen, branded fittings. 24×7 security, power backup, covered parking. Walking distance to tech parks and malls.",
     features: ["Modular Kitchen", "Covered Parking", "24×7 Security", "Power Backup", "Gym", "Swimming Pool", "Children's Play Area"],
+    legalChecklist: {
+      rera: "verified", title: "verified", encumbrance: "verified", layout: "verified",
+      permissions: "verified", taxReceipts: "verified", occupancy: "verified",
+      saleDeedChain: "verified", litigation: "verified",
+    },
   }),
   withCoords({
     id: "prop-2",
@@ -177,6 +190,19 @@ export const ALL_LISTINGS: Listing[] = [
     images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"],
     description: "Prestige's signature 2BHK community in Gachibowli. Under construction with possession in Q3 2026. Excellent entry-price opportunity in IT hub. Projected 20-25% appreciation on possession.",
     features: ["Under Construction", "RERA Registered", "Swimming Pool", "Gymnasium", "Clubhouse", "Covered Parking"],
+    legalChecklist: {
+      rera: "verified", title: "verified", encumbrance: "verified", layout: "verified",
+      permissions: "verified", taxReceipts: "na", occupancy: "pending",
+      saleDeedChain: "verified", litigation: "verified",
+    },
+    constructionMilestones: [
+      { id: "m1", title: "Foundation",              date: "2024-11-15", note: "Foundation and podium levels completed." },
+      { id: "m2", title: "Structure",                date: "2025-06-20", note: "RCC structure completed up to 12th floor." },
+      { id: "m3", title: "Brickwork",                 date: "2025-12-10", note: "Brickwork completed for towers A and B." },
+      { id: "m4", title: "Plumbing & Electrical",     date: "2026-04-05", note: "MEP works in progress across all towers." },
+    ],
+    constructionPctComplete: 65,
+    constructionExpectedCompletion: "2026-09-30",
   }),
   withCoords({
     id: "hmda-plot",
