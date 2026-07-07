@@ -205,3 +205,17 @@ model AiIntelUsage {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
+// IP-keyed fallback counter, checked alongside AiIntelUsage's cookie-keyed one -- a visitor
+// is only let through if BOTH are under budget (or either is registered). Cookie-only tracking
+// resets for free the moment someone clears cookies or opens a private window; this closes
+// that specific gap without pretending to be a hard, unbeatable wall (a shared office/NAT IP,
+// VPN, or mobile carrier CGNAT can still legitimately share one IP across many real visitors --
+// same honesty-over-security-theater tradeoff already used elsewhere in this file).
+model AiIntelUsageByIp {
+  ip         String   @id
+  count      Int      @default(0)
+  registered Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
