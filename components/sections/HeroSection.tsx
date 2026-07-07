@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// 960x540 rendition (~2.2MB) instead of the 1920x1080 original (~7.3MB) — same Pexels clip,
-// same royalty-free license; visual difference is unnoticeable under the dark overlay + text,
-// but the smaller file loads much faster and uses far less data on desktop.
-const HERO_VIDEO = "https://videos.pexels.com/video-files/1851190/1851190-sd_960_540_25fps.mp4";
+// Self-hosted from public/videos/hero.mp4 -- see that folder's own note for the expected
+// filename/format. If the file isn't there yet (dev environment, or before it's been added),
+// the <video> tag's onError handler below falls back to the static poster image automatically
+// -- nothing breaks either way.
+const HERO_VIDEO = "/videos/hero.mp4";
 
 const CITIES = [
   "Hyderabad", "Bangalore", "Mumbai", "Pune", "Chennai",
@@ -51,11 +52,13 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Video background – desktop only. Falls back to a static image seamlessly if the
-          video ever fails to load, so the hero can never break. */}
+      {/* Video background — desktop and mobile. `poster` shows instantly on slow connections
+          while the video buffers; if the video fails to load at all (missing file, unsupported
+          format, etc.) onError swaps to the plain static fallback image below so the hero can
+          never break. */}
       {!videoFailed && (
         <video
-          className="absolute inset-0 w-full h-full object-cover hidden md:block"
+          className="absolute inset-0 w-full h-full object-cover"
           autoPlay loop muted playsInline
           poster={HERO_POSTER}
           onError={() => setVideoFailed(true)}
@@ -64,11 +67,13 @@ export default function HeroSection() {
         </video>
       )}
 
-      {/* Fallback background image — shown on mobile always, and on desktop if the video fails */}
-      <div
-        className={`absolute inset-0 bg-cover bg-center ${videoFailed ? "" : "md:hidden"}`}
-        style={{ backgroundImage: `url('${HERO_POSTER}')` }}
-      />
+      {/* Fallback background image — only shown if the video itself fails to load */}
+      {videoFailed && (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('${HERO_POSTER}')` }}
+        />
+      )}
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60" />
