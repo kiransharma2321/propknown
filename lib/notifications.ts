@@ -18,7 +18,7 @@ export async function notifyNewSubmission(sub: { id: string; title: string; owne
     type: "new_submission",
     title: `New submission: ${sub.title}`,
     body: `From ${sub.ownerName} in ${sub.city}`,
-    link: `/admin/submissions`,
+    link: `/admin/dashboard?tab=submissions`,
   });
 }
 
@@ -27,6 +27,6 @@ export async function notifyNewLead(lead: { id: string; name: string; source: st
     type: "new_lead",
     title: `New lead: ${lead.name}`,
     body: `Via ${lead.source} — ${lead.phone}`,
-    link: `/admin/leads`,
+    link: `/admin/dashboard?tab=leads`,
   });
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toIndianWaNumber } from "@/lib/phone";
 
 type LeadStatus = "new" | "contacted" | "visit_booked" | "negotiation" | "won" | "lost";
 
@@ -509,7 +510,7 @@ export default function CRMDashboard() {
 
             {/* Quick actions */}
             <div className="grid grid-cols-2 gap-2">
-              <a href={`https://wa.me/${selectedLead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${selectedLead.name}, this is Raghu from PropKnown. How can I help you?`)}`}
+              <a href={`https://wa.me/${toIndianWaNumber(selectedLead.phone)}?text=${encodeURIComponent(`Hi ${selectedLead.name}, this is Raghu from PropKnown. How can I help you?`)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium text-white"
                 style={{ backgroundColor: "#25D366" }}>

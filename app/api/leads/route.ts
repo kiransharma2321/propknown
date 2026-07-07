@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendAdminEmail, buildLeadHtml } from "@/lib/email";
+import { sendAdminEmail, buildLeadHtml, buildRaghuNotifyWhatsAppLink } from "@/lib/email";
 import { notifyNewLead } from "@/lib/notifications";
+import { toIndianWaNumber } from "@/lib/phone";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, phone, email, message, source, propertyId } = body;
+    console.log(`[leads] Incoming submission — name:"${name}" phone:"${phone}" source:"${source ?? "website"}"`);
     if (!name || !phone) {
+      console.warn("[leads] Rejected — missing name or phone");
       return NextResponse.json({ error: "Name and phone are required" }, { status: 400 });
     }
 
@@ -34,22 +37,32 @@ export async function POST(req: NextRequest) {
     const lead = await prisma.lead.create({
       data: { name, phone, email, message: finalMessage, source: source ?? "website", propertyId: validPropertyId },
     });
+    console.log(`[leads] Lead created — id:${lead.id}`);
 
     const src = source ?? "website";
 
-    // Email admin — logs message ID on success, logs error on failure, never throws
+    // Step 1: admin email — sendAdminEmail logs per-recipient success/failure itself, never throws
+    console.log(`[leads] Step 1/2: sending admin email for lead ${lead.id}...`);
     sendAdminEmail({
       subject: `New Lead: ${name} via ${src}`,
       html: buildLeadHtml({ name, phone, email, message, source: src }),
-    }).catch(() => null);
+    }).catch((e) => console.error(`[leads] Admin email step threw for lead ${lead.id}:`, e));
 
-    // Bell notification
-    notifyNewLead({ id: lead.id, name, source: src, phone }).catch(() => null);
+    // Step 2: in-admin bell notification
+    console.log(`[leads] Step 2/2: creating bell notification for lead ${lead.id}...`);
+    notifyNewLead({ id: lead.id, name, source: src, phone })
+      .then(() => console.log(`[leads] Bell notification created for lead ${lead.id}`))
+      .catch((e) => console.error(`[leads] Bell notification FAILED for lead ${lead.id}:`, e));
 
-    const waLink = `https://wa.me/91${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${name}, thank you for your enquiry on PropKnown. How can we help you today?`)}`;
-    return NextResponse.json({ success: true, id: lead.id, whatsappLink: waLink }, { status: 201 });
+    // wa.me links — one to message the lead directly, one to notify Raghu with the full
+    // lead summary pre-filled (his own number, for logging/forwarding to whoever follows up)
+    const waLink = `https://wa.me/${toIndianWaNumber(phone)}?text=${encodeURIComponent(`Hi ${name}, thank you for your enquiry on PropKnown. How can we help you today?`)}`;
+    const notifyWaLink = buildRaghuNotifyWhatsAppLink({ name, phone, email, message, source: src });
+    console.log(`[leads] Generated WhatsApp links for lead ${lead.id} (lead + Raghu-notify)`);
+
+    return NextResponse.json({ success: true, id: lead.id, whatsappLink: waLink, notifyWhatsappLink: notifyWaLink }, { status: 201 });
   } catch (err) {
-    console.error("Lead API error:", err);
+    console.error("[leads] Lead API error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

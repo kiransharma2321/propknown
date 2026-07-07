@@ -1,7 +1,14 @@
 import { Resend } from "resend";
+import { toIndianWaNumber } from "@/lib/phone";
 
-// Canonical notification recipients — all admin alerts go to both
-const ADMIN_EMAILS = ["kiranpropservices@gmail.com", "raghupinnelli@gmail.com"];
+// Canonical notification recipients — all admin alerts go to all three.
+// NOTE: the Resend account has no verified sending domain yet (still on the shared
+// onboarding@resend.dev sandbox address), which only allows delivery to the account
+// owner's own verified email (raghupinnelli@gmail.com). kiranpinnelli@propknown.com and
+// kiranpropservices@gmail.com will fail until a domain is verified at resend.com/domains
+// and FROM_ADDRESS below is switched to use it. sendAdminEmail sends to each recipient
+// independently (see below) so that failure doesn't block the one address that does work.
+const ADMIN_EMAILS = ["kiranpinnelli@propknown.com", "raghupinnelli@gmail.com", "kiranpropservices@gmail.com"];
 
 const FROM_ADDRESS = "PropKnown <onboarding@resend.dev>";
 
@@ -32,24 +39,60 @@ interface SendOptions {
   from?: string;
 }
 
+// Sends to each recipient as its own independent Resend API call. Deliberately NOT a single
+// multi-recipient call: Resend's sandbox mode (no verified domain) rejects the ENTIRE send if
+// ANY recipient isn't the account owner's own verified address -- a single failing recipient
+// would silently take down delivery to every other recipient too. Sending independently means
+// one address failing (e.g. not yet verified) never blocks the others from receiving it.
 export async function sendAdminEmail(opts: SendOptions): Promise<void> {
   const client = getResend();
-  if (!client) return;
-  try {
-    const result = await client.emails.send({
-      from: opts.from ?? FROM_ADDRESS,
-      to:   opts.to ?? ADMIN_EMAILS,
-      subject: opts.subject,
-      html: opts.html,
-    });
-    if (result.error) {
-      console.error("[email] Resend error:", result.error);
-    } else {
-      console.log(`[email] Sent OK — id: ${result.data?.id} subject: "${opts.subject}"`);
-    }
-  } catch (err) {
-    console.error("[email] Failed to send:", opts.subject, err);
+  if (!client) {
+    console.warn(`[email] Skipped "${opts.subject}" — Resend client unavailable (no/invalid API key)`);
+    return;
   }
+
+  const recipients = opts.to
+    ? (Array.isArray(opts.to) ? opts.to : [opts.to])
+    : ADMIN_EMAILS;
+
+  console.log(`[email] Sending "${opts.subject}" to ${recipients.length} recipient(s): ${recipients.join(", ")}`);
+
+  await Promise.all(recipients.map(async (to) => {
+    try {
+      const result = await client.emails.send({
+        from: opts.from ?? FROM_ADDRESS,
+        to,
+        subject: opts.subject,
+        html: opts.html,
+      });
+      if (result.error) {
+        console.error(`[email] FAILED → ${to} — "${opts.subject}":`, result.error);
+      } else {
+        console.log(`[email] SENT OK → ${to} — id: ${result.data?.id} — "${opts.subject}"`);
+      }
+    } catch (err) {
+      console.error(`[email] THREW → ${to} — "${opts.subject}":`, err);
+    }
+  }));
+}
+
+// Admin's own WhatsApp number (matches the site-wide contact number, +91 97017 71333) --
+// generates a wa.me link pre-addressed to Raghu himself with the lead's details already
+// filled in, so opening it (from the admin panel or this email) drops a ready-to-send
+// summary into his own WhatsApp for logging/forwarding to whoever's handling follow-up.
+// Deliberately separate from the lead's own WhatsApp link below (which messages the LEAD).
+export function buildRaghuNotifyWhatsAppLink(lead: {
+  name: string; phone: string; email?: string; message?: string; source: string;
+}): string {
+  const lines = [
+    `New PropKnown lead:`,
+    `Name: ${lead.name}`,
+    `Phone: ${lead.phone}`,
+    lead.email ? `Email: ${lead.email}` : null,
+    `Source: ${lead.source}`,
+    lead.message ? `Enquiry: ${lead.message}` : null,
+  ].filter(Boolean);
+  return `https://wa.me/919701771333?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
 export function buildLeadHtml(lead: {
@@ -62,7 +105,8 @@ export function buildLeadHtml(lead: {
     message: lead.message ? escapeHtml(lead.message) : undefined,
     source: escapeHtml(lead.source),
   };
-  const waLink = `https://wa.me/91${lead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${lead.name}, this is Raghu from PropKnown. How can I help you?`)}`;
+  const waLink = `https://wa.me/${toIndianWaNumber(lead.phone)}?text=${encodeURIComponent(`Hi ${lead.name}, this is Raghu from PropKnown. How can I help you?`)}`;
+  const notifyWaLink = buildRaghuNotifyWhatsAppLink(lead);
   return `
     <div style="font-family:sans-serif;max-width:560px;background:#fff;border-radius:12px;border:1px solid #e5e5e5;overflow:hidden">
       <div style="background:#0a0a0a;padding:20px 24px">
@@ -81,7 +125,8 @@ export function buildLeadHtml(lead: {
         </table>
         <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
           <a href="${waLink}" style="display:inline-block;background:#25d366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">WhatsApp ${safe.name}</a>
-          <a href="https://www.propknown.com/admin/dashboard" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Open CRM →</a>
+          <a href="${notifyWaLink}" style="display:inline-block;background:#128C7E;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Notify Raghu (WhatsApp)</a>
+          <a href="https://www.propknown.com/admin/dashboard?tab=leads" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Open CRM →</a>
         </div>
         <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333</p>
       </div>
@@ -118,7 +163,7 @@ export function buildSubmissionHtml(s: {
           <tr style="background:#f8f8f8"><td style="padding:8px 12px;font-weight:600;color:#555;border:1px solid #e5e5e5">Files</td><td style="padding:8px 12px;border:1px solid #e5e5e5">${s.photoCount} photo(s), ${s.docCount} doc(s)</td></tr>
         </table>
         <div style="margin-top:20px">
-          <a href="https://www.propknown.com/admin/dashboard" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Review in Admin Dashboard →</a>
+          <a href="https://www.propknown.com/admin/dashboard?tab=submissions" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Review in Admin Dashboard →</a>
         </div>
         <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333</p>
       </div>

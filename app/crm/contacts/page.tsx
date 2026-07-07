@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search, Phone, Mail, MessageSquare, User, ArrowLeft, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { toIndianWaNumber } from "@/lib/phone";
 
 interface Lead {
   id: string;
@@ -106,7 +107,7 @@ export default function ContactsPage() {
                       <div className="flex items-center gap-2">
                         <a href={`tel:${lead.phone}`} className="text-zinc-500 hover:text-white transition-colors" title="Call"><Phone size={14} /></a>
                         {lead.email && <a href={`mailto:${lead.email}`} className="text-zinc-500 hover:text-white transition-colors" title="Email"><Mail size={14} /></a>}
-                        <a href={`https://wa.me/${lead.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-green-400 transition-colors" title="WhatsApp"><MessageSquare size={14} /></a>
+                        <a href={`https://wa.me/${toIndianWaNumber(lead.phone)}`} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-green-400 transition-colors" title="WhatsApp"><MessageSquare size={14} /></a>
                         <Link href={`/crm/dashboard`} className="text-zinc-500 hover:text-yellow-400 transition-colors" title="Open in pipeline"><TrendingUp size={14} /></Link>
                       </div>
                     </td>

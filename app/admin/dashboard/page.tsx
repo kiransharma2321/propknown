@@ -1,13 +1,14 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download } from "lucide-react";
 import NotificationBell from "@/components/admin/NotificationBell";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import type { VerificationFlags } from "@/components/ui/VerificationBadge";
 import { LEGAL_CHECKLIST_ITEMS, type LegalChecklist, type ChecklistStatus } from "@/lib/legalShield";
 import { PRESET_MILESTONES, type ConstructionMilestone } from "@/lib/constructionProgress";
+import { toIndianWaNumber } from "@/lib/phone";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -1074,16 +1075,23 @@ function SubmissionsTab() {
   );
 }
 
-export default function AdminDashboard() {
+const ADMIN_TAB_KEYS = ["aiBrain", "quickAdd", "properties", "leads", "settings", "submissions"] as const;
+type AdminTabKey = (typeof ADMIN_TAB_KEYS)[number];
+
+function AdminDashboardInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = ADMIN_TAB_KEYS.includes(searchParams.get("tab") as AdminTabKey)
+    ? (searchParams.get("tab") as AdminTabKey)
+    : "aiBrain";
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading]       = useState(true);
   const [showForm, setShowForm]     = useState(false);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [saving, setSaving]         = useState(false);
   const [propTab, setPropTab]       = useState<"pending" | "approved">("pending");
-  const [adminTab, setAdminTab]     = useState<"aiBrain" | "quickAdd" | "properties" | "leads" | "settings" | "submissions">("aiBrain");
-  const [adminLeads, setAdminLeads] = useState<{ id:string; name:string; phone:string; email?:string; source:string; status:string; createdAt:string }[]>([]);
+  const [adminTab, setAdminTab]     = useState<AdminTabKey>(initialTab);
+  const [adminLeads, setAdminLeads] = useState<{ id:string; name:string; phone:string; email?:string; message?:string; source:string; status:string; createdAt:string }[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [docFiles, setDocFiles]         = useState<DocFile[]>([]);
   const [docDragging, setDocDragging]   = useState(false);
@@ -1274,17 +1282,23 @@ export default function AdminDashboard() {
                 <table className="w-full text-sm">
                   <thead className="bg-zinc-800/50 border-b border-zinc-800">
                     <tr>
-                      {["Name","Phone","Email","Source","Status","Date"].map(h => (
+                      {["Name","Phone","Email","Source","Status","Date","WhatsApp"].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800">
                     {leadsLoading ? (
-                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500"><Loader2 size={20} className="mx-auto animate-spin" /></td></tr>
+                      <tr><td colSpan={7} className="text-center py-10 text-zinc-500"><Loader2 size={20} className="mx-auto animate-spin" /></td></tr>
                     ) : adminLeads.length === 0 ? (
-                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500">No leads yet. Leads from all forms appear here.</td></tr>
-                    ) : adminLeads.map(l => (
+                      <tr><td colSpan={7} className="text-center py-10 text-zinc-500">No leads yet. Leads from all forms appear here.</td></tr>
+                    ) : adminLeads.map(l => {
+                      const leadWaLink = `https://wa.me/${toIndianWaNumber(l.phone)}?text=${encodeURIComponent(`Hi ${l.name}, this is Raghu from PropKnown. How can I help you?`)}`;
+                      const notifyWaLink = `https://wa.me/919701771333?text=${encodeURIComponent(
+                        [`New PropKnown lead:`, `Name: ${l.name}`, `Phone: ${l.phone}`, l.email ? `Email: ${l.email}` : null, `Source: ${l.source}`, l.message ? `Enquiry: ${l.message}` : null]
+                          .filter(Boolean).join("\n")
+                      )}`;
+                      return (
                       <tr key={l.id} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{l.name}</td>
                         <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-yellow-400 hover:text-yellow-300">{l.phone}</a></td>
@@ -1292,8 +1306,13 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3"><span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
                         <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-zinc-800 text-zinc-300"}`}>{l.status}</span></td>
                         <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(l.createdAt).toLocaleDateString("en-IN")}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <a href={leadWaLink} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 text-xs font-medium mr-3">Message Lead</a>
+                          <a href={notifyWaLink} target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-400 text-xs font-medium">Notify Raghu</a>
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1584,5 +1603,13 @@ export default function AdminDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+      <AdminDashboardInner />
+    </Suspense>
   );
 }
