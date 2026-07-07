@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUsageStatus, checkAndConsume } from "@/lib/usageLimit";
+import { getGateStatus, consumeSearch } from "@/lib/aiIntelGate";
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
@@ -964,7 +964,7 @@ export async function POST(req: NextRequest) {
   // Gate check is read-only here -- a visitor shouldn't be charged one of their 3 free
   // checks for an attempt that ends up "unavailable" (no live data, Gemini failure, etc.);
   // the counter only actually increments right before a genuine success is returned, below.
-  let usage = countUsage ? await getUsageStatus() : null;
+  let usage = countUsage ? await getGateStatus() : null;
   if (usage && !usage.allowed) {
     return NextResponse.json({ error: "usage_limit", ...usage }, { status: 403 });
   }
@@ -1082,7 +1082,7 @@ export async function POST(req: NextRequest) {
     setCache(cacheKey, result);
     // Only now, on a confirmed genuine success, actually consume one of the visitor's free
     // checks -- everything above this point was read-only.
-    if (countUsage) usage = await checkAndConsume();
+    if (countUsage) usage = await consumeSearch();
     return respond(result);
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);

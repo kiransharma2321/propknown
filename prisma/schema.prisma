@@ -192,3 +192,16 @@ model AnonymousUsage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Dedicated free-search counter + lead-gate flag for the AI Intelligence page only --
+// deliberately separate from AnonymousUsage (shared by Price Reality Check) so a visitor's
+// AI Intelligence budget isn't silently eaten by using a different tool. Keyed the same way:
+// a random ID in an httpOnly cookie. Once `registered` is true (visitor submitted the
+// lead-capture gate), they get unlimited searches from then on -- see lib/aiIntelGate.ts.
+model AiIntelUsage {
+  id         String   @id
+  count      Int      @default(0)
+  registered Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

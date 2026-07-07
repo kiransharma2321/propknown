@@ -10,7 +10,7 @@ import LeadForm from "@/components/ui/LeadForm";
 import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/currency";
-import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
+import AiIntelRegisterGate from "@/components/ui/AiIntelRegisterGate";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const HOT_MARKETS = [
@@ -257,7 +257,7 @@ export default function AIIntelligencePage() {
   const [result,      setResult]      = useState<MarketIntelResult | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState("");
-  const [usage,       setUsage]       = useState<{ used: number; limit: number; remaining: number; loggedIn: boolean } | null>(null);
+  const [usage,       setUsage]       = useState<{ used: number; limit: number; remaining: number; loggedIn: boolean; registered?: boolean } | null>(null);
   const [limitReached, setLimitReached] = useState(false);
 
   const [downPct,    setDownPct]    = useState(20);
@@ -520,7 +520,10 @@ export default function AIIntelligencePage() {
 
               {limitReached ? (
                 <div className="mt-4">
-                  <UsageLimitPrompt returnTo="/ai-intelligence" />
+                  <AiIntelRegisterGate
+                    searchContext={`${(selected || query).trim()} (${PROPERTY_TYPES.find(t => t.value === propType)?.label ?? propType})`}
+                    onUnlocked={() => { setLimitReached(false); analyze(); }}
+                  />
                 </div>
               ) : (
                 <>
@@ -557,7 +560,7 @@ export default function AIIntelligencePage() {
                   </p>
                   {usage && !usage.loggedIn && (
                     <p className="text-center text-gray-400 text-[11px] mt-1">
-                      {usage.used} of {usage.limit} free AI checks used
+                      {usage.registered ? "Unlimited searches unlocked" : `${usage.used} of ${usage.limit} free AI checks used`}
                     </p>
                   )}
                 </>
