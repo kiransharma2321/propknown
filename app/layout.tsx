@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import KnownAIChat from "@/components/chatbot/KnownAIChat";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -149,11 +145,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <ClientProviders>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <WhatsAppButton />
-          <KnownAIChat />
+          {children}
         </ClientProviders>
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (

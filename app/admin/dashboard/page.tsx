@@ -122,7 +122,7 @@ function AiBrainTab() {
           <div className="flex flex-col items-center justify-center h-full py-8">
             <Brain size={36} className="mb-3 text-zinc-700" />
             <p className="text-zinc-500 text-sm mb-1">Ask AI Brain anything</p>
-            <p className="text-zinc-700 text-xs mb-6">Add listings Â· manage leads Â· generate content Â· search data</p>
+            <p className="text-zinc-700 text-xs mb-6">Add listings · manage leads · generate content · search data</p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
               {HINTS.map(h => (
                 <button key={h} onClick={() => setInput(h)}

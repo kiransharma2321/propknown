@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { sendAdminEmail, buildLeadHtml, buildRaghuNotifyWhatsAppLink } from "@/lib/email";
 import { notifyNewLead } from "@/lib/notifications";
 import { toIndianWaNumber } from "@/lib/phone";
+import { getAdminSession } from "@/lib/rbac";
 
 export async function POST(req: NextRequest) {
   try {
@@ -67,7 +68,15 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Lead data (names, phones, emails, enquiry messages) is real customer PII -- admin/CRM
+// staff only. POST above stays unauthenticated on purpose (it's the public enquiry-form
+// submission endpoint); GET is the one that must never be reachable without a session.
 export async function GET(req: NextRequest) {
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   try {

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getAdminSession } from "@/lib/rbac";
 
+// Notification bodies quote lead names/phones -- admin/CRM staff only, same as /api/leads.
 export async function GET() {
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const notifications = await prisma.notification.findMany({
       orderBy: { createdAt: "desc" },
@@ -16,6 +21,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const { ids, markAllRead } = await req.json() as { ids?: string[]; markAllRead?: boolean };
     if (markAllRead) {

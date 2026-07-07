@@ -1,14 +1,15 @@
 export const metadata = { title: "PropKnown Admin" };
 
+// Nested layouts must NOT render their own <html>/<head>/<body> -- only the root layout
+// (app/layout.tsx) may. This used to do exactly that, which produced two nested <html> roots
+// and broke React hydration on every /admin page. The Playfair Display + Inter fonts it was
+// trying to load are already loaded globally by the root layout (same family, same weights),
+// so nothing is lost by dropping the duplicate <link> -- this div just carries the same dark
+// theme the old <body> applied.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-      </head>
-      <body className="bg-black text-white" style={{ fontFamily: "Inter, sans-serif" }}>
-        {children}
-      </body>
-    </html>
+    <div className="bg-black text-white min-h-screen" style={{ fontFamily: "Inter, sans-serif" }}>
+      {children}
+    </div>
   );
 }
