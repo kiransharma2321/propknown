@@ -2,15 +2,15 @@ import { Resend } from "resend";
 import { toIndianWaNumber } from "@/lib/phone";
 
 // Canonical notification recipients — all admin alerts go to all three.
-// NOTE: the Resend account has no verified sending domain yet (still on the shared
-// onboarding@resend.dev sandbox address), which only allows delivery to the account
-// owner's own verified email (raghupinnelli@gmail.com). kiranpinnelli@propknown.com and
-// kiranpropservices@gmail.com will fail until a domain is verified at resend.com/domains
-// and FROM_ADDRESS below is switched to use it. sendAdminEmail sends to each recipient
-// independently (see below) so that failure doesn't block the one address that does work.
 const ADMIN_EMAILS = ["kiranpinnelli@propknown.com", "raghupinnelli@gmail.com", "kiranpropservices@gmail.com"];
 
-const FROM_ADDRESS = "PropKnown <onboarding@resend.dev>";
+// propknown.com is verified in Resend (sending enabled) as of 2026-07-07 -- confirmed this is
+// the correct FROM domain via the Resend API itself (domains.get returns "name": "propknown.com",
+// "status": "verified"; send.propknown.com is NOT independently verified -- Resend rejects it
+// outright as a sender, it's only where Resend's own SPF/bounce-handling DNS records happen to
+// live, used internally via the envelope-from, not the visible From: address). DKIM signs as
+// d=propknown.com, which is what DMARC alignment actually checks against the From: header.
+const FROM_ADDRESS = "PropKnown <notifications@propknown.com>";
 
 // User-supplied strings (lead names, messages, buyer names, etc.) are interpolated into these
 // HTML email templates — escape them so a crafted value can't break the layout or spoof content.

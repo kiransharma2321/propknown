@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await resend.emails.send({
-      from: fromOverride ?? "PropKnown <onboarding@resend.dev>",
+      from: fromOverride ?? "PropKnown <notifications@propknown.com>",
       to: to ?? NOTIFY_TO,
       subject,
       html,
