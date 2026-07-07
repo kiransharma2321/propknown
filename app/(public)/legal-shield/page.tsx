@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle, Clock, ExternalLink } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
 
 const GOLD = "#C9A24B";
@@ -28,17 +28,22 @@ interface RedFlagResult {
 }
 
 interface ReraScanResult {
-  status:  "verified" | "flagged" | "not_found";
+  status:  "verified" | "pending" | "flagged" | "not_found";
   message: string;
   propertyTitle?: string;
   propertyLocation?: string;
 }
 
 const RERA_STATUS_STYLE: Record<string, { label: string; color: string; bg: string; border: string; Icon: typeof CheckCircle2 }> = {
-  verified:  { label: "Verified",  color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
-  flagged:   { label: "Flagged",   color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
-  not_found: { label: "Not Found", color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
+  verified:  { label: "Verified",             color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
+  pending:   { label: "Verification Pending", color: "#b45309", bg: "bg-amber-50",  border: "border-amber-200",  Icon: Clock        },
+  flagged:   { label: "Flagged",              color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
+  not_found: { label: "Not Found",            color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
 };
+
+// Only exposed as the honest, disclosed fallback when PropKnown can't confirm a number
+// itself (never scraped/faked) -- the buyer verifies directly with the real authority.
+const STATE_RERA_PORTAL = { name: "Telangana RERA (TS-RERA)", url: "https://rera.telangana.gov.in/" };
 
 export default function LegalShieldPage() {
   const [form, setForm] = useState({
@@ -172,6 +177,12 @@ export default function LegalShieldPage() {
                 <div>
                   <p className="font-bold text-sm mb-1" style={{ color: rs.color }}>{rs.label}</p>
                   <p className="text-xs text-gray-600 leading-relaxed">{reraResult.message}</p>
+                  {reraResult.status !== "verified" && (
+                    <a href={STATE_RERA_PORTAL.url} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold mt-2 hover:underline" style={{ color: GOLD }}>
+                      Search on {STATE_RERA_PORTAL.name} <ExternalLink size={11} />
+                    </a>
+                  )}
                 </div>
               </div>
             );

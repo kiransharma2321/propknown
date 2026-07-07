@@ -43,6 +43,19 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // A record exists (it's on file, tied to a real listing) but hasn't been through admin
+  // verification yet -- this is NOT the same as "we've never heard of this number", and must
+  // never be shown as if it were. Saying "pending" here is the honest middle ground: neither
+  // a false "verified" nor a false "not found" for a number that's genuinely on our books.
+  if (match) {
+    return NextResponse.json({
+      status:  "pending",
+      message: `This RERA number is on file for "${match.title}" (${match.location}), but PropKnown hasn't independently verified it yet. Verification pending — please confirm it directly on your state's official RERA portal in the meantime.`,
+      propertyTitle: match.title,
+      propertyLocation: match.location,
+    });
+  }
+
   if (!RERA_FORMAT.test(num)) {
     return NextResponse.json({
       status:  "flagged",
@@ -52,6 +65,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     status:  "not_found",
-    message: "We don't have an admin-verified record for this RERA number in PropKnown's database. That doesn't necessarily mean it's invalid — please confirm it directly on your state's official RERA portal (e.g. rera.telangana.gov.in).",
+    message: "We don't have any record of this RERA number in PropKnown's database. That doesn't necessarily mean it's invalid — please confirm it directly on your state's official RERA portal before relying on it.",
   });
 }
