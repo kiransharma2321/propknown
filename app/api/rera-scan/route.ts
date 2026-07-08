@@ -17,17 +17,24 @@ const GEMINI_MODEL = "gemini-2.5-flash";
 interface TavilyResult { title: string; url: string; content: string; }
 interface TavilyResponse { answer?: string; results?: TavilyResult[]; }
 
-async function fetchTavilyContext(reraNumber: string, stateName: string, apiKey: string): Promise<{ snippets: string; hasData: boolean }> {
-  // Tested directly against a real, known RERA number before settling on this: padding the
-  // query with extra generic words ("project registration developer builder") diluted
-  // relevance badly enough that Tavily's own "answer" field degraded into a generic non-answer
-  // ("is a registered project... confirm on the official portal") that happened to contain the
-  // number but zero real facts. A bare number with no context did find the right page first,
-  // but ranked totally unrelated results (patent-number databases) below it. Quoting the exact
-  // number plus just "RERA" and the state name, on "advanced" search depth, hit real facts
-  // (project name, promoter, location) on every result in testing -- this is the query that's
-  // actually deployed, not a guess.
-  const query = `"${reraNumber}" RERA ${stateName}`;
+async function fetchTavilyContext(reraNumber: string, apiKey: string): Promise<{ snippets: string; hasData: boolean }> {
+  // Tuned against two real, independently-verified RERA numbers before settling on this --
+  // NOT the state-suffixed version this used to be. Padding with generic words ("project
+  // registration developer builder") diluted the results into a generic non-answer. A bare
+  // number with no context surfaced the right page but ranked unrelated junk (patent-number
+  // databases) alongside it. Quoting the number plus "RERA" (no state name) scored the correct
+  // project page at ~0.89 relevance for BOTH a Maharashtra number (Lodha Park, P51900001339)
+  // and a Telangana number (Amerispace, P02400007888).
+  //
+  // Appending the state name was tried and reverted: for the Maharashtra case it made no
+  // measurable difference (0.887 vs 0.897), but for the Telangana case it was actively harmful
+  // -- "Telangana" as a query term pulled the whole result set toward the state RERA
+  // authority's own generic pages (homepage, FAQ, "how to check" blog posts, aggregator
+  // project-list dumps mentioning dozens of OTHER RERA numbers) at scores of 0.35-0.59,
+  // pushing the actual project page (Housing.com/99acres/NoBroker/ghar.tv, score 0.89 without
+  // the state name) out of the top results entirely. Confirmed via direct side-by-side Tavily
+  // calls, not assumed.
+  const query = `"${reraNumber}" RERA`;
   const res = await fetch("https://api.tavily.com/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -46,10 +53,18 @@ async function fetchTavilyContext(reraNumber: string, stateName: string, apiKey:
   const parts: string[] = [];
   if (data.answer?.trim()) parts.push(`SUMMARY:\n${data.answer.trim()}`);
   if (Array.isArray(data.results)) {
+    // 1200 chars/result, top 4 only -- found by inspecting a real result directly: the
+    // concrete facts (builder name, exact price range, precise locality) on real-estate
+    // listing-aggregator pages consistently show up in a structured FAQ/spec block AFTER an
+    // introductory marketing paragraph, not before it. This route's original 400-char cutoff
+    // was truncating every result mid-intro-paragraph, discarding the builder/price/location
+    // data that was actually present in the same snippet just past that cutoff (confirmed by
+    // reading result[0]'s full, untruncated content for the Amerispace test case -- "By:
+    // Amerispace Private Limited" and "21.24 L - 52.99 L" both appeared at ~750-900 chars in).
     const snippets = data.results
-      .slice(0, 5)
+      .slice(0, 4)
       .filter(r => r.content?.trim())
-      .map((r, i) => `[${i + 1}] ${r.title}\n${r.content.slice(0, 400).trim()}\nSource: ${r.url}`)
+      .map((r, i) => `[${i + 1}] ${r.title}\n${r.content.slice(0, 1200).trim()}\nSource: ${r.url}`)
       .join("\n\n");
     if (snippets) parts.push(`SEARCH RESULTS:\n${snippets}`);
   }
@@ -196,7 +211,7 @@ export async function POST(req: NextRequest) {
 
   if (stateInfo && tavilyKey && geminiKey) {
     try {
-      const { snippets, hasData } = await fetchTavilyContext(num, stateInfo.name, tavilyKey);
+      const { snippets, hasData } = await fetchTavilyContext(num, tavilyKey);
       if (hasData) {
         const extracted = await extractReraInfo(num, stateInfo.name, snippets, geminiKey);
         if (extracted.found) {
