@@ -12,13 +12,11 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
       <Link href="/" aria-label="PropKnown Home" className="shrink-0 inline-flex items-center gap-3">
         <span style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: "44px", height: "44px", borderRadius: "50%",
-          background: "linear-gradient(135deg, #C9A24B, #e8c97a, #C9A24B)",
-          fontFamily: "var(--font-playfair, Georgia, serif)",
-          fontWeight: "800", fontSize: "15px", color: "#000",
-          letterSpacing: "0.04em", flexShrink: 0,
+          width: "44px", height: "44px", borderRadius: "10px",
+          background: "#ffffff", flexShrink: 0, overflow: "hidden",
         }}>
-          PK
+          <Image src="/logo.png" alt="" width={0} height={0} sizes="36px"
+            style={{ height: "36px", width: "36px", objectFit: "contain" }} />
         </span>
         <span style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
           <span style={{

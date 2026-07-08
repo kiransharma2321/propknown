@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 const BASE_URL = "https://www.propknown.com";
 
 const OG_IMAGE = {
-  url: `${BASE_URL}/logo.png`,
+  url: `${BASE_URL}/og-image.png`,
   width: 1200,
   height: 630,
   alt: "PropKnown Infra Pvt Ltd — AI-Verified Real Estate",
@@ -50,13 +50,16 @@ export const metadata: Metadata = {
     title: "PropKnown | AI-Verified Real Estate",
     description:
       "RERA-verified properties, AI valuations & market intelligence across Hyderabad, Bangalore, Dubai. Know. Invest. Grow.",
-    images: [`${BASE_URL}/logo.png`],
+    images: [`${BASE_URL}/og-image.png`],
   },
 
   icons: {
-    icon:    [{ url: "/logo.png", type: "image/png" }],
-    shortcut: "/logo.png",
-    apple:   "/logo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 
   robots: {
@@ -81,7 +84,7 @@ const jsonLd = {
     "India's AI-powered, fully verified real estate platform. RERA-registered properties, AI market intelligence, HMDA plots, NRI investment support.",
   url: BASE_URL,
   logo: `${BASE_URL}/logo.png`,
-  image: `${BASE_URL}/logo.png`,
+  image: `${BASE_URL}/og-image.png`,
   telephone: "+919701771333",
   email: "kiranpropservices@gmail.com",
   address: {
