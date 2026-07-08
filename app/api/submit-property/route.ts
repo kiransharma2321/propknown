@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     // Bell notification
     notifyNewSubmission({ id: submission.id, title, ownerName, city }).catch(() => null);
 
-    // Email admin — to both kiranpropservices@gmail.com and raghupinnelli@gmail.com, logs message ID
+    // Email admin (ADMIN_EMAILS in lib/email.ts), logs message ID
     sendAdminEmail({
       subject: `New Property Submission: ${title}`,
       html: buildSubmissionHtml({

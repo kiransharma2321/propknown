@@ -1,8 +1,12 @@
 import { Resend } from "resend";
 import { toIndianWaNumber } from "@/lib/phone";
 
-// Canonical notification recipients — all admin alerts go to all three.
-const ADMIN_EMAILS = ["kiranpinnelli@propknown.com", "raghupinnelli@gmail.com", "kiranpropservices@gmail.com"];
+// Canonical notification recipient — all admin alerts (lead alerts, enquiry notifications,
+// submission approvals) go here. kiranpinnelli@propknown.com and kiranpropservices@gmail.com
+// were removed 2026-07-08: both hard-bounce and get re-suppressed by Resend on every send
+// attempt (propknown.com has no DMARC record and no sending history yet), while this address
+// has confirmed, repeated actual delivery. Re-add the other two once their bounce is resolved.
+const ADMIN_EMAILS = ["raghupinnelli@gmail.com"];
 
 // propknown.com is verified in Resend (sending enabled) as of 2026-07-07 -- confirmed this is
 // the correct FROM domain via the Resend API itself (domains.get returns "name": "propknown.com",
