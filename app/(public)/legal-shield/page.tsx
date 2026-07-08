@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle, Clock, ExternalLink } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ExternalLink } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
 import { RERA_STATES } from "@/lib/reraStates";
 
@@ -28,27 +28,6 @@ interface RedFlagResult {
   summary: string;
 }
 
-interface ReraScanResult {
-  status:  "verified" | "pending" | "flagged" | "not_found";
-  message: string;
-  propertyTitle?: string;
-  propertyLocation?: string;
-  // A plain Google search link for the exact number, and the correct state RERA portal --
-  // PropKnown never fetches or displays third-party listing-site content itself; the user
-  // does their own lookup on the real sources via these links.
-  googleSearchUrl?: string;
-  stateName?: string;
-  stateAuthority?: string;
-  statePortalUrl?: string;
-}
-
-const RERA_STATUS_STYLE: Record<string, { label: string; color: string; bg: string; border: string; Icon: typeof CheckCircle2 }> = {
-  verified:  { label: "Verified",             color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
-  pending:   { label: "Verification Pending", color: "#b45309", bg: "bg-amber-50",  border: "border-amber-200",  Icon: Clock        },
-  flagged:   { label: "Flagged",              color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
-  not_found: { label: "Not Found",            color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
-};
-
 export default function LegalShieldPage() {
   const [form, setForm] = useState({
     location: "", propertyType: "Apartment", unit: "sqft",
@@ -57,36 +36,6 @@ export default function LegalShieldPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RedFlagResult | null>(null);
   const [error, setError] = useState("");
-
-  const [reraInput,   setReraInput]   = useState("");
-  const [reraState,   setReraState]   = useState("TG");
-  const [reraLoading, setReraLoading] = useState(false);
-  const [reraResult,  setReraResult]  = useState<ReraScanResult | null>(null);
-  const [reraError,   setReraError]   = useState("");
-
-  const scanRera = async () => {
-    if (!reraInput.trim()) { setReraError("Please enter a RERA number to scan."); return; }
-    setReraLoading(true); setReraError(""); setReraResult(null);
-    try {
-      const res = await fetch("/api/rera-scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reraNumber: reraInput.trim(), state: reraState }),
-      });
-      const data = await res.json();
-      if (res.ok && !data.error) {
-        // Small delay so the "scanning" animation is visible even on a fast response
-        await new Promise(r => setTimeout(r, 500));
-        setReraResult(data);
-      } else {
-        setReraError(data.error || "Could not scan this number right now. Please try again.");
-      }
-    } catch {
-      setReraError("Could not scan this number right now. Please try again.");
-    } finally {
-      setReraLoading(false);
-    }
-  };
 
   const check = async () => {
     if (!form.location.trim()) { setError("Please enter the property's location/area."); return; }
@@ -143,74 +92,29 @@ export default function LegalShieldPage() {
           </p>
         </div>
 
-        {/* RERA Instant Verification Scanner */}
+        {/* RERA Verification — informational only. No interactive lookup: PropKnown doesn't
+            run a live government check, and (per an earlier version of this feature) won't
+            fetch/re-display listing data from third-party real-estate sites either. The
+            honest, safe answer is to send the user to check the number themselves, directly
+            on the source -- Google, or their state's official RERA authority below. */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-10">
           <div className="flex items-center gap-2 mb-1">
-            <ScanSearch size={16} style={{ color: GOLD }} />
-            <h2 className="text-gray-900 font-bold text-base">RERA Instant Verification Scanner</h2>
+            <Shield size={16} style={{ color: GOLD }} />
+            <h2 className="text-gray-900 font-bold text-base">RERA Verification</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4 leading-relaxed">
-            Checks against PropKnown&apos;s own admin-verified property records only. This is
-            not a live government RERA portal lookup — if we don&apos;t have it on file, we&apos;ll
-            hand you direct links to search it yourself on Google and your state&apos;s official RERA portal.
+            PropKnown doesn&apos;t run a live check against government RERA records. The safest way
+            to verify any RERA registration number is directly on the source — paste it into
+            Google, or go straight to your state&apos;s official RERA portal below.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <select
-              value={reraState}
-              onChange={e => { setReraState(e.target.value); setReraResult(null); setReraError(""); }}
-              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 bg-white sm:w-48"
-            >
-              {RERA_STATES.map(s => (
-                <option key={s.code} value={s.code}>{s.name}</option>
-              ))}
-            </select>
-            <input
-              value={reraInput}
-              onChange={e => { setReraInput(e.target.value); setReraResult(null); setReraError(""); }}
-              onKeyDown={e => { if (e.key === "Enter") scanRera(); }}
-              placeholder="e.g. P02400012345"
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400"
-            />
-            <button
-              onClick={scanRera}
-              disabled={reraLoading}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-black text-sm transition-all hover:opacity-90 disabled:opacity-60 whitespace-nowrap"
-              style={{ background: GOLD }}
-            >
-              {reraLoading ? <><Loader2 size={15} className="animate-spin" /> Scanning…</> : <><ScanSearch size={15} /> Scan Number</>}
-            </button>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {RERA_STATES.map(s => (
+              <a key={s.code} href={s.portalUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-between gap-2 text-xs font-medium border border-gray-200 rounded-lg px-3 py-2 hover:border-yellow-400 hover:bg-yellow-50 transition-colors text-gray-700">
+                {s.name} <ExternalLink size={11} className="shrink-0" style={{ color: GOLD }} />
+              </a>
+            ))}
           </div>
-
-          {reraError && <p className="text-red-600 text-xs mt-3">{reraError}</p>}
-
-          {reraResult && (() => {
-            const rs = RERA_STATUS_STYLE[reraResult.status];
-            return (
-              <div className={`mt-4 border rounded-xl p-4 flex items-start gap-3 animate-fade-in ${rs.bg} ${rs.border}`}>
-                <rs.Icon size={20} style={{ color: rs.color }} className="shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm mb-1" style={{ color: rs.color }}>{rs.label}</p>
-                  <p className="text-xs text-gray-600 leading-relaxed">{reraResult.message}</p>
-                  {reraResult.status !== "verified" && (reraResult.googleSearchUrl || reraResult.statePortalUrl) && (
-                    <div className="flex flex-wrap gap-3 mt-2.5">
-                      {reraResult.googleSearchUrl && (
-                        <a href={reraResult.googleSearchUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: GOLD }}>
-                          Search on Google <ExternalLink size={11} />
-                        </a>
-                      )}
-                      {reraResult.statePortalUrl && (
-                        <a href={reraResult.statePortalUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: GOLD }}>
-                          Search on {reraResult.stateAuthority ?? reraResult.stateName} <ExternalLink size={11} />
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
