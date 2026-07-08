@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle, Clock, ExternalLink } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ScanSearch, XCircle, HelpCircle, Clock, ExternalLink, Search } from "lucide-react";
 import { COMPANY } from "@/lib/utils";
+import { RERA_STATES } from "@/lib/reraStates";
 
 const GOLD = "#C9A24B";
 
@@ -28,22 +29,30 @@ interface RedFlagResult {
 }
 
 interface ReraScanResult {
-  status:  "verified" | "pending" | "flagged" | "not_found";
+  status:  "verified" | "pending" | "found_public" | "flagged" | "not_found";
   message: string;
   propertyTitle?: string;
   propertyLocation?: string;
+  // Present when status === "found_public" -- publicly indexed info, never a government
+  // verification. Any field may be absent if the search didn't surface it.
+  projectName?: string;
+  builder?: string;
+  location?: string;
+  priceRange?: string;
+  startDate?: string;
+  // Echoed back for whichever state was selected, so the result card can link to the right portal.
+  stateName?: string;
+  stateAuthority?: string;
+  statePortalUrl?: string;
 }
 
 const RERA_STATUS_STYLE: Record<string, { label: string; color: string; bg: string; border: string; Icon: typeof CheckCircle2 }> = {
-  verified:  { label: "Verified",             color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
-  pending:   { label: "Verification Pending", color: "#b45309", bg: "bg-amber-50",  border: "border-amber-200",  Icon: Clock        },
-  flagged:   { label: "Flagged",              color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
-  not_found: { label: "Not Found",            color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
+  verified:     { label: "Verified",                      color: "#16a34a", bg: "bg-green-50",  border: "border-green-200",  Icon: CheckCircle2 },
+  pending:      { label: "Verification Pending",           color: "#b45309", bg: "bg-amber-50",  border: "border-amber-200",  Icon: Clock        },
+  found_public: { label: "Public Info Found",               color: "#2563eb", bg: "bg-blue-50",   border: "border-blue-200",   Icon: Search       },
+  flagged:      { label: "Flagged",                         color: "#dc2626", bg: "bg-red-50",    border: "border-red-200",    Icon: XCircle      },
+  not_found:    { label: "Not Found",                       color: "#6b7280", bg: "bg-gray-50",   border: "border-gray-200",   Icon: HelpCircle   },
 };
-
-// Only exposed as the honest, disclosed fallback when PropKnown can't confirm a number
-// itself (never scraped/faked) -- the buyer verifies directly with the real authority.
-const STATE_RERA_PORTAL = { name: "Telangana RERA (TS-RERA)", url: "https://rera.telangana.gov.in/" };
 
 export default function LegalShieldPage() {
   const [form, setForm] = useState({
@@ -55,6 +64,7 @@ export default function LegalShieldPage() {
   const [error, setError] = useState("");
 
   const [reraInput,   setReraInput]   = useState("");
+  const [reraState,   setReraState]   = useState("TG");
   const [reraLoading, setReraLoading] = useState(false);
   const [reraResult,  setReraResult]  = useState<ReraScanResult | null>(null);
   const [reraError,   setReraError]   = useState("");
@@ -66,7 +76,7 @@ export default function LegalShieldPage() {
       const res = await fetch("/api/rera-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reraNumber: reraInput.trim() }),
+        body: JSON.stringify({ reraNumber: reraInput.trim(), state: reraState }),
       });
       const data = await res.json();
       if (res.ok && !data.error) {
@@ -145,11 +155,20 @@ export default function LegalShieldPage() {
             <h2 className="text-gray-900 font-bold text-base">RERA Instant Verification Scanner</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4 leading-relaxed">
-            Checks against PropKnown&apos;s own admin-verified property records — not a live government
-            RERA portal lookup. A &quot;Not Found&quot; result doesn&apos;t mean a number is fake, just that
-            we haven&apos;t independently verified it ourselves.
+            Checks against PropKnown&apos;s own admin-verified property records first, then searches
+            publicly available web results if we don&apos;t have it on file. Neither is a live government
+            RERA portal lookup — always confirm on the official state portal linked below.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
+            <select
+              value={reraState}
+              onChange={e => { setReraState(e.target.value); setReraResult(null); setReraError(""); }}
+              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 bg-white sm:w-48"
+            >
+              {RERA_STATES.map(s => (
+                <option key={s.code} value={s.code}>{s.name}</option>
+              ))}
+            </select>
             <input
               value={reraInput}
               onChange={e => { setReraInput(e.target.value); setReraResult(null); setReraError(""); }}
@@ -171,16 +190,33 @@ export default function LegalShieldPage() {
 
           {reraResult && (() => {
             const rs = RERA_STATUS_STYLE[reraResult.status];
+            const fields: { label: string; value?: string }[] = [
+              { label: "Project",  value: reraResult.projectName },
+              { label: "Builder",  value: reraResult.builder },
+              { label: "Location", value: reraResult.location },
+              { label: "Price",    value: reraResult.priceRange },
+              { label: "Start date", value: reraResult.startDate },
+            ].filter(f => f.value);
             return (
               <div className={`mt-4 border rounded-xl p-4 flex items-start gap-3 animate-fade-in ${rs.bg} ${rs.border}`}>
                 <rs.Icon size={20} style={{ color: rs.color }} className="shrink-0 mt-0.5" />
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm mb-1" style={{ color: rs.color }}>{rs.label}</p>
                   <p className="text-xs text-gray-600 leading-relaxed">{reraResult.message}</p>
-                  {reraResult.status !== "verified" && (
-                    <a href={STATE_RERA_PORTAL.url} target="_blank" rel="noopener noreferrer"
+                  {fields.length > 0 && (
+                    <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1 bg-white/60 rounded-lg p-2.5">
+                      {fields.map(f => (
+                        <div key={f.label}>
+                          <span className="text-[10px] text-gray-400 uppercase tracking-wide block">{f.label}</span>
+                          <span className="text-xs text-gray-800 font-medium">{f.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {reraResult.status !== "verified" && reraResult.statePortalUrl && (
+                    <a href={reraResult.statePortalUrl} target="_blank" rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-semibold mt-2 hover:underline" style={{ color: GOLD }}>
-                      Search on {STATE_RERA_PORTAL.name} <ExternalLink size={11} />
+                      Search on {reraResult.stateAuthority ?? reraResult.stateName} <ExternalLink size={11} />
                     </a>
                   )}
                 </div>
