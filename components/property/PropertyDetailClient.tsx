@@ -711,7 +711,7 @@ out body qt 30;`;
                       </p>
                     )}
                     <p className="text-[10px] text-gray-400 mt-3 italic leading-relaxed">
-                      AI estimate from current listings & trends — actual prices vary. Verify with RERA and a PropKnown advisor before any decision.
+                      AI-generated estimate based on live web search, not individual listing quotes — actual prices vary. Verify with RERA and a PropKnown advisor before any decision.
                     </p>
                   </>
                 ) : marketDataDone ? (

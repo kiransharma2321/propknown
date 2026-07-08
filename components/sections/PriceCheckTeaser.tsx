@@ -40,7 +40,7 @@ export default function PriceCheckTeaser() {
                 <TrendingDown size={16} /> Underpriced
               </div>
               <p className="text-gray-400 text-xs mt-3 leading-relaxed">
-                Backed by the same live market analysis behind PropKnown AI Intelligence — never a guess.
+                Backed by the same live web search behind PropKnown AI Intelligence — AI-analyzed, not a blind guess.
               </p>
             </div>
           </div>

@@ -21,7 +21,7 @@ const SERVICES = [
   {
     icon: Bot,
     title: "AI Intelligence",
-    desc: "Real-time valuations, 5-year forecasts, and buy/hold/sell signals for 8+ global cities.",
+    desc: "AI-analyzed valuations from live web search, 5-year forecasts, and buy/hold/sell signals for 8+ global cities.",
     href: "/ai-intelligence",
     iconBg: "bg-yellow-50",
     iconColor: "#C9A24B",

@@ -356,7 +356,14 @@ async function fetchTavilyContext(
   }
 
   const combined = parts.join("\n\n");
-  return { snippets: combined, hasData: combined.length > 60 };
+  // A bare length check let through content that says NOTHING about price (e.g. a locality's
+  // general description, connectivity, or amenities) as long as it happened to be over 60
+  // characters -- at which point Gemini had nothing real to extract and fell back on its own
+  // internal benchmark table, while the UI still labeled the result "live market analysis."
+  // Requiring an actual price-shaped token (currency symbol, "Cr"/"Lakh"/"L", or "/sqft" etc.
+  // next to digits) means "hasData" only fires when there's something genuinely extractable.
+  const hasPriceSignal = /(?:[₹$£€]|Rs\.?|AED|SGD|CAD|A\$|C\$)\s?[\d,]+|[\d,]+\s?(?:\/\s?sq\.?\s?ft|\/\s?sqft|\/\s?sq\.?\s?yd|per\s?sq|Cr\b|Lakh|lac\b)/i;
+  return { snippets: combined, hasData: combined.length > 60 && hasPriceSignal.test(combined) };
 }
 
 // ─── Structured locality benchmarks (code-level, not just prompt text) ───────
@@ -1012,7 +1019,7 @@ export async function POST(req: NextRequest) {
       if (bayutResult && bayutResult.count >= 2) {
         realDataBlock  = bayutResult.snippets;
         dataSource     = "bayut_data";
-        dataSourceLabel = `Based on live market analysis — ${bayutResult.count} current Bayut listings`;
+        dataSourceLabel = `AI-analyzed from ${bayutResult.count} live Bayut listings`;
         bayutPricePsf  = bayutResult.pricePerSqft;
         bayutRange     = { min: bayutResult.minPrice, max: bayutResult.maxPrice };
         dataType       = "bayut";
@@ -1037,7 +1044,14 @@ export async function POST(req: NextRequest) {
       if (tavilyResult && tavilyResult.hasData) {
         realDataBlock  = tavilyResult.snippets;
         dataSource     = "real_data";
-        dataSourceLabel = "Based on live market analysis — current web listings";
+        // Not "current web listings" -- what's actually found here is usually SEO/aggregator
+        // locality-estimate pages (99acres/MagicBricks/Housing.com "average price in X" style
+        // content), not individual live-for-sale listings, and Gemini SYNTHESIZES a typical
+        // figure from that content rather than quoting one specific listing. "AI estimate
+        // based on live web search" is accurate to both halves of that: genuinely grounded in
+        // a live search (not fabricated from training data alone), but an AI-derived estimate,
+        // not a literal current listing price.
+        dataSourceLabel = "AI estimate based on live web search";
         dataType       = "tavily";
         console.log(`[Tavily] got data for "${loc}"`);
       } else {

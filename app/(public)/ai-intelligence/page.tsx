@@ -36,7 +36,7 @@ const PROPERTY_TYPES = [
 ];
 
 const LOADING_STEPS = [
-  "Searching current listings…",
+  "Searching live web data…",
   "Analysing area trends…",
   "Calculating market estimate…",
 ];
@@ -589,7 +589,7 @@ export default function AIIntelligencePage() {
                       {(r.dataSource === "bayut_data" || r.dataSource === "real_data") && (
                         <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
                           style={{ background: "rgba(34,197,94,0.08)", borderColor: "rgba(34,197,94,0.35)", color: "#16a34a" }}>
-                          <Globe size={11} /> {r.dataSourceLabel ?? "Based on live market analysis"}
+                          <Globe size={11} /> {r.dataSourceLabel ?? "AI estimate based on live web search"}
                         </span>
                       )}
                       <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border font-semibold text-sm ${ts.bg} ${ts.border} ${ts.text}`}>
@@ -801,9 +801,9 @@ export default function AIIntelligencePage() {
                   <AlertCircle size={14} className="text-yellow-600 shrink-0 mt-0.5" />
                   <p className="text-gray-500 text-xs leading-relaxed">
                     <span className="text-yellow-700 font-semibold">Disclaimer: </span>
-                    AI estimate from current listings & trends
-                    {r.dataSource === "bayut_data" ? " (Bayut.com)" : r.dataSource === "real_data" ? " (web search)" : ""}{" "}
-                    — actual prices vary. Asking prices typically run above final registered/closing prices.
+                    AI-generated estimate based on
+                    {r.dataSource === "bayut_data" ? " live Bayut.com listings" : r.dataSource === "real_data" ? " live web search" : " market trends"}{" "}
+                    — not individual listing quotes, and actual prices vary. Asking prices typically run above final registered/closing prices.
                     {" "}Verify with a PropKnown advisor and RERA / DLD / relevant authority before making any investment decision.
                   </p>
                 </div>
