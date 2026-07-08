@@ -5,7 +5,11 @@ import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, Exte
 import { COMPANY } from "@/lib/utils";
 import { RERA_STATES } from "@/lib/reraStates";
 
-const GOLD = "#C9A24B";
+// #8a6a2e, not the brand's usual #C9A24B -- this page's background is white, and the
+// standard gold measures 2.40:1 contrast against white (WCAG AA requires 4.5:1 for text).
+// This darker shade measures 5.02:1, already precedented elsewhere in the codebase
+// (VerificationBadge.tsx's light-background variant) for exactly this situation.
+const GOLD = "#8a6a2e";
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "House", "Plot", "Commercial"];
 const UNITS = [{ value: "sqft", label: "per sq.ft" }, { value: "sqyard", label: "per sq.yard" }];

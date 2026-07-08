@@ -3,7 +3,7 @@ import { CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pricing | PropKnown — Simple, Fair Real Estate Fees",
+  title: "Pricing — Simple, Fair Real Estate Fees",
   description: "PropKnown pricing: Free for buyers, 1-2% commission for sellers on success only. Custom plans for investors. No hidden charges.",
 };
 
@@ -66,7 +66,7 @@ export default function PricingPage() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Transparent Pricing</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Transparent Pricing</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             Simple, <span className="gold-text">Fair Pricing</span>
           </h1>
@@ -97,7 +97,7 @@ export default function PricingPage() {
               <ul className="space-y-3 flex-1 mb-7">
                 {p.features.map((f) => (
                   <li key={f} className={`flex items-start gap-2.5 text-sm ${p.highlight ? "text-black" : "text-gray-700"}`}>
-                    <CheckCircle size={15} className="shrink-0 mt-0.5" style={{ color: p.highlight ? "#000" : "#C9A24B" }} />
+                    <CheckCircle size={15} className="shrink-0 mt-0.5" style={{ color: p.highlight ? "#000" : "#8a6a2e" }} />
                     {f}
                   </li>
                 ))}

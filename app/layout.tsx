@@ -1,11 +1,30 @@
 import type { Metadata } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
 
+// Self-hosted via next/font -- replaces the render-blocking third-party
+// fonts.googleapis.com <link>/@import this site used to make on every single page. Variable
+// names match exactly what globals.css/tailwind.config.ts already reference everywhere
+// (var(--font-playfair), var(--font-inter)), so no other file needs to change.
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 const BASE_URL = "https://www.propknown.com";
 
-const OG_IMAGE = {
+export const OG_IMAGE = {
   url: `${BASE_URL}/og-image.png`,
   width: 1200,
   height: 630,
@@ -133,15 +152,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <body className="bg-brand-black text-brand-white antialiased">
         <script
           type="application/ld+json"

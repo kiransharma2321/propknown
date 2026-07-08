@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Buy RERA-Verified Properties",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     title: "Buy RERA-Verified Properties in Hyderabad | PropKnown",
     description:
       "AI-scored, RERA-verified properties — apartments, villas, HMDA plots, farmland. WhatsApp enquiry, transparent pricing, zero surprises.",
+    images: [OG_IMAGE],
   },
 };
 

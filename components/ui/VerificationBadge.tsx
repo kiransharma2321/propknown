@@ -67,7 +67,7 @@ export default function VerificationBadge({ flags, compact = false, dark = false
         <Link
           href={detailLinkHref}
           className="text-[10px] flex items-center gap-1 hover:underline"
-          style={{ color: "#C9A24B" }}
+          style={{ color: "#8a6a2e" }}
         >
           What this means <ExternalLink size={9} />
         </Link>

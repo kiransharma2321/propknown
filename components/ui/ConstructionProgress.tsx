@@ -26,7 +26,7 @@ export default function ConstructionProgress({ milestones, pctComplete, expected
     <div className="border border-gray-200 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <HardHat size={18} style={{ color: "#C9A24B" }} />
+          <HardHat size={18} style={{ color: "#8a6a2e" }} />
           <h3 className="text-gray-900 font-bold text-base">Construction Progress</h3>
         </div>
         {lastUpdated && (
@@ -40,10 +40,10 @@ export default function ConstructionProgress({ milestones, pctComplete, expected
         <div className="mb-5">
           <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
             <span>Overall progress</span>
-            <span className="font-bold" style={{ color: "#C9A24B" }}>{pct}% complete</span>
+            <span className="font-bold" style={{ color: "#8a6a2e" }}>{pct}% complete</span>
           </div>
           <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#C9A24B" }} />
+            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#8a6a2e" }} />
           </div>
         </div>
       )}
@@ -58,7 +58,7 @@ export default function ConstructionProgress({ milestones, pctComplete, expected
         {sorted.map((m, i) => (
           <div key={m.id} className="flex gap-3">
             <div className="flex flex-col items-center shrink-0">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#C9A24B" }} />
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#8a6a2e" }} />
               {i < sorted.length - 1 && <span className="w-px flex-1 bg-gray-200 mt-1" />}
             </div>
             <div className="pb-4 min-w-0">

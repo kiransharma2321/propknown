@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "About PropKnown",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "About PropKnown — Founded by ISB Alumni Raghu Kiran",
     description:
       "20+ years of real estate expertise. ISB, IIM, BITS Pilani pedigree. AI-powered, RERA-verified, fully transparent. Know. Invest. Grow.",
+    images: [OG_IMAGE],
   },
 };
 

@@ -4,7 +4,7 @@ import LeadForm from "@/components/ui/LeadForm";
 import { COMPANY } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Contact PropKnown | Hyderabad Real Estate Experts",
+  title: "Contact Us | Hyderabad Real Estate Experts",
   description: "Contact PropKnown Infra Pvt Ltd. Office: Nizampet Road, Hyderabad. Phone: +91 97017 71333. Email: kiranpropservices@gmail.com. Mon–Sat 9am–7pm.",
 };
 
@@ -13,7 +13,7 @@ export default function ContactPage() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Reach Us</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Reach Us</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             Talk to a <span className="gold-text">PropKnown Expert</span>
           </h1>
@@ -33,7 +33,7 @@ export default function ContactPage() {
                 { icon: MapPin,  label: "Office",            value: COMPANY.address, href: null },
               ].map(({ icon: Icon, label, value, href }) => (
                 <div key={label} className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:border-yellow-500 transition-colors shadow-sm">
-                  <Icon size={20} className="mb-2" style={{ color: "#C9A24B" }} />
+                  <Icon size={20} className="mb-2" style={{ color: "#8a6a2e" }} />
                   <p className="text-gray-500 text-xs mb-1">{label}</p>
                   {href ? (
                     <a href={href} className="text-gray-900 text-sm font-medium hover:text-yellow-700 transition-colors">
@@ -64,7 +64,7 @@ export default function ContactPage() {
                   href="https://maps.google.com/?q=Nizampet+Road+Hyderabad+500090"
                   target="_blank" rel="noopener noreferrer"
                   className="text-xs font-medium whitespace-nowrap ml-4 hover:underline"
-                  style={{ color: "#C9A24B" }}
+                  style={{ color: "#8a6a2e" }}
                 >
                   Open Maps →
                 </a>

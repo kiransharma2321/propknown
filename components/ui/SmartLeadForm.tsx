@@ -81,7 +81,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <CheckCircle size={48} style={{ color: "#C9A24B" }} className="mb-4" />
+        <CheckCircle size={48} style={{ color: "#8a6a2e" }} className="mb-4" />
         <h3 className="font-semibold text-xl text-gray-900 mb-2">Enquiry Received!</h3>
         <p className="text-gray-500 text-sm max-w-xs">Our team will reach out within 2 hours. You can also WhatsApp us directly.</p>
         <a
@@ -236,7 +236,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
             <p className="text-center text-gray-500 text-xs">
               Or WhatsApp directly:{" "}
-              <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "#C9A24B" }}>
+              <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "#8a6a2e" }}>
                 +91 97017 71333
               </a>
             </p>

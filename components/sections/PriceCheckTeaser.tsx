@@ -7,7 +7,7 @@ export default function PriceCheckTeaser() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Free Tool</p>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Free Tool</p>
             <h2 className="section-heading mb-4">
               Seen a Property Price? <span className="gold-text">Check If It&apos;s Fair.</span>
             </h2>
@@ -23,7 +23,7 @@ export default function PriceCheckTeaser() {
 
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md">
             <div className="flex items-center gap-2 mb-5">
-              <Scale size={16} style={{ color: "#C9A24B" }} />
+              <Scale size={16} style={{ color: "#8a6a2e" }} />
               <span className="text-gray-900 font-semibold text-sm">Price Reality Check</span>
             </div>
             <div className="space-y-3">

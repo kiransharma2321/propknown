@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Bed, Bath, Maximize, Star, Shield } from "lucide-react";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
@@ -41,10 +42,12 @@ export default function PropertyCard({
     <Link href={`/buy/${id}`} className="card-dark group block">
       {/* Image */}
       <div className="relative overflow-hidden aspect-[4/3]">
-        <img
+        <Image
           src={img}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          alt={`${title} — ${propertyType} in ${location}, ${city}`}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2 flex-wrap">

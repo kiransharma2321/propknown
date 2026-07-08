@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import {
   MapPin, Bed, Bath, Maximize, Star, CheckCircle,
   ChevronLeft, ChevronRight, MessageCircle, Phone, Send,
@@ -108,7 +109,9 @@ function fmtDist(m: number) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 }
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of the brand's #C9A24B (2.40:1) -- this page's
+// background is white and WCAG AA requires 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function PropertyDetailClient({
@@ -290,7 +293,7 @@ out body qt 30;`;
     .filter(g => g.items.length > 0);
 
   const trendColor = marketData?.trend === "Bullish" ? "#22c55e"
-    : marketData?.trend === "Cautious" ? "#ef4444" : "#C9A24B";
+    : marketData?.trend === "Cautious" ? "#ef4444" : "#8a6a2e";
 
   return (
     <div className="pt-28 pb-20 bg-white min-h-screen">
@@ -312,11 +315,13 @@ out body qt 30;`;
 
             {/* Photo gallery */}
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 shadow-md">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={imgs[imgIdx]}
-                alt={listing.title}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                alt={`${listing.title} — photo ${imgIdx + 1} of ${imgs.length}, ${listing.location}, ${listing.city}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                priority
+                className="object-cover transition-opacity duration-300"
               />
               {imgs.length > 1 && (
                 <>
@@ -380,7 +385,7 @@ out body qt 30;`;
                 <span>{listing.location}, {listing.city}</span>
               </div>
               <p className="text-3xl font-bold mb-5" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                <CurrencyPrice priceINR={listing.price} sourceCurrency={listing.currency} className="text-3xl font-bold text-[#C9A24B]" />
+                <CurrencyPrice priceINR={listing.price} sourceCurrency={listing.currency} className="text-3xl font-bold text-[#8a6a2e]" />
               </p>
 
               {/* Key stats */}
@@ -527,12 +532,13 @@ out body qt 30;`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {nearbyListings.map(p => (
                     <div key={p.id} className="border border-gray-200 rounded-xl overflow-hidden hover:border-yellow-400 hover:shadow-md transition-all group">
-                      <div className="aspect-[16/9] overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative aspect-[16/9] overflow-hidden">
+                        <Image
                           src={p.images[0]}
-                          alt={p.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          alt={`${p.title} — ${p.location}, ${p.city}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                       <div className="p-4">

@@ -53,7 +53,7 @@ export default function SubmissionDetailPage() {
     return (
       <div className="pt-32 pb-20 min-h-screen text-center">
         <p className="text-gray-500 text-lg">Property not found or not yet approved.</p>
-        <Link href="/buy" className="mt-4 inline-block text-sm font-semibold" style={{ color: "#C9A24B" }}>← Back to Buy</Link>
+        <Link href="/buy" className="mt-4 inline-block text-sm font-semibold" style={{ color: "#8a6a2e" }}>← Back to Buy</Link>
       </div>
     );
   }
@@ -107,7 +107,7 @@ export default function SubmissionDetailPage() {
             {(sub.videoIds.length > 0 || sub.videoUrls.length > 0) && (
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <Video size={16} style={{ color: "#C9A24B" }} />
+                  <Video size={16} style={{ color: "#8a6a2e" }} />
                   <h3 className="text-gray-900 font-semibold">Videos</h3>
                 </div>
                 <div className="space-y-4">
@@ -168,7 +168,7 @@ export default function SubmissionDetailPage() {
                 <MapPin size={13} />{sub.area}, {sub.city}
               </div>
 
-              <p className="text-3xl font-bold mb-4" style={{ color: "#C9A24B", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+              <p className="text-3xl font-bold mb-4" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
                 {sub.priceDisplay}
               </p>
 

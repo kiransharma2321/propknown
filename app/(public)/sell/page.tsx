@@ -4,7 +4,7 @@ import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import SubmissionForm from "@/components/property/SubmissionForm";
 
 export const metadata: Metadata = {
-  title: "Sell Property | PropKnown Infra Pvt Ltd — Get Maximum Value",
+  title: "Sell Property — Get Maximum Value",
   description: "Sell your property with PropKnown. Upload photos, videos & documents for direct listing, or get free valuation + professional support. RERA-compliant.",
 };
 
@@ -22,7 +22,7 @@ export default function SellPage() {
 
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <div className="text-center mb-12">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>
             Sell With Confidence
           </p>
           <h1 className="section-heading mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
@@ -58,7 +58,7 @@ export default function SellPage() {
             { icon: CheckCircle, val: "20+",     label: "Years of expertise"      },
           ].map(({ icon: Icon, val, label }) => (
             <div key={label} className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center hover:border-yellow-400 transition-colors shadow-sm">
-              <Icon size={24} className="mx-auto mb-3" style={{ color: "#C9A24B" }} />
+              <Icon size={24} className="mx-auto mb-3" style={{ color: "#8a6a2e" }} />
               <p className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>{val}</p>
               <p className="text-gray-500 text-xs">{label}</p>
             </div>
@@ -110,7 +110,7 @@ export default function SellPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div id="quick-enquiry" className="scroll-mt-28 grid lg:grid-cols-2 gap-12 items-start mb-20">
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>
               Agent-Assisted Sale
             </p>
             <h2 className="text-gray-900 text-2xl font-bold mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
@@ -128,7 +128,7 @@ export default function SellPage() {
                 "Transparent commission only on success",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-gray-700 text-sm">
-                  <CheckCircle size={16} className="shrink-0" style={{ color: "#C9A24B" }} />
+                  <CheckCircle size={16} className="shrink-0" style={{ color: "#8a6a2e" }} />
                   {item}
                 </li>
               ))}

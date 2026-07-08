@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Sell Your Property",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "Sell Your Property — Free AI Valuation | PropKnown",
     description:
       "List with PropKnown and reach 10,000+ verified buyers. Free AI valuation, RERA support, legal verification. Sell faster at the right price.",
+    images: [OG_IMAGE],
   },
 };
 

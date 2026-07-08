@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "AI Real Estate Market Intelligence",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     title: "AI Real Estate Market Intelligence | PropKnown",
     description:
       "Instant AI-powered price estimates for any India location. Powered by Gemini 2.5 + live Tavily web data. RERA-indicative only.",
+    images: [OG_IMAGE],
   },
 };
 

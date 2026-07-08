@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useComparison } from "./ComparisonContext";
 import { formatPrice } from "@/lib/utils";
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 function quickTrueCost(price: number, status?: string): number {
   const isUC = status?.toLowerCase().includes("construction");

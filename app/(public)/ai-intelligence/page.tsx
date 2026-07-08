@@ -187,7 +187,10 @@ function LineChart({
   const cH = H - PT - PB;
   const toX = (i: number) => PL + (i / (points.length - 1)) * cW;
   const toY = (v: number) => PT + ((hi - v) / range) * cH;
-  const GOLD = "#C9A24B";
+  // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- this chart's data-point label
+  // (fontSize=9 text below) needs WCAG AA's 4.5:1 minimum; the line/gradient don't strictly,
+  // but share this constant for one consistent chart color.
+  const GOLD = "#8a6a2e";
 
   const poly = points.map((p, i) => `${toX(i).toFixed(1)},${toY(p.value).toFixed(1)}`).join(" ");
   const area =
@@ -407,7 +410,7 @@ export default function AIIntelligencePage() {
         {/* ── Page Header ──────────────────────────────────────────────────── */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 border text-xs tracking-widest px-4 py-2 rounded-full mb-4 uppercase font-semibold"
-            style={{ borderColor: "rgba(201,162,75,0.4)", color: "#C9A24B", background: "rgba(201,162,75,0.08)" }}>
+            style={{ borderColor: "rgba(201,162,75,0.4)", color: "#8a6a2e", background: "rgba(201,162,75,0.08)" }}>
             <Bot size={13} /> AI Market Intelligence
           </div>
           <h1 className="section-heading mb-3" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
@@ -430,7 +433,7 @@ export default function AIIntelligencePage() {
 
                 {/* Location — 5 cols (was 6; 1 col given to Unit so it can show "sq.yard" fully) */}
                 <div className="sm:col-span-5 relative" ref={dropRef}>
-                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "#C9A24B" }} />Location</label>
+                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "#8a6a2e" }} />Location</label>
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
@@ -577,7 +580,7 @@ export default function AIIntelligencePage() {
                   {/* Top row: location + badges */}
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-5 border-b border-gray-200">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <MapPin size={14} style={{ color: "#C9A24B" }} />
+                      <MapPin size={14} style={{ color: "#8a6a2e" }} />
                       <span className="text-gray-700 font-semibold">{r.locationName}</span>
                       <span className="text-gray-400 text-sm">·</span>
                       <span className="text-gray-500 text-sm capitalize">{propType}</span>
@@ -655,7 +658,7 @@ export default function AIIntelligencePage() {
                       <Activity size={13} className="text-gray-400" />
                       5-Year Price History
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
-                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#C9A24B" strokeWidth="2.5" /></svg>
+                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" /></svg>
                         AI Estimated
                       </span>
                     </p>
@@ -664,10 +667,10 @@ export default function AIIntelligencePage() {
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                     <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <ArrowUpRight size={13} style={{ color: "#C9A24B" }} />
+                      <ArrowUpRight size={13} style={{ color: "#8a6a2e" }} />
                       5-Year Forecast
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
-                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#C9A24B" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
+                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
                         Projected
                       </span>
                     </p>
@@ -687,18 +690,18 @@ export default function AIIntelligencePage() {
                 {/* AI Analysis */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
-                    <Bot size={16} style={{ color: "#C9A24B" }} />
+                    <Bot size={16} style={{ color: "#8a6a2e" }} />
                     <p className="text-gray-900 font-semibold text-sm">AI Market Analysis</p>
                     <span className="ml-auto text-[10px] text-gray-400 border border-gray-200 rounded px-2 py-0.5">Gemini AI</span>
                   </div>
                   <p className="text-gray-600 leading-relaxed text-sm mb-5">{r.summary}</p>
                   <div className="space-y-2.5">
                     <p className="text-gray-900 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <TrendingUp size={12} style={{ color: "#C9A24B" }} /> Key Market Drivers
+                      <TrendingUp size={12} style={{ color: "#8a6a2e" }} /> Key Market Drivers
                     </p>
                     {r.keyDrivers.map((d, i) => (
                       <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle size={14} style={{ color: "#C9A24B" }} className="shrink-0 mt-0.5" />
+                        <CheckCircle size={14} style={{ color: "#8a6a2e" }} className="shrink-0 mt-0.5" />
                         <span className="text-gray-600 text-sm">{d}</span>
                       </div>
                     ))}
@@ -712,7 +715,7 @@ export default function AIIntelligencePage() {
                     className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
                   >
                     <span className="text-gray-900 font-semibold flex items-center gap-2 text-sm">
-                      <Calculator size={16} style={{ color: "#C9A24B" }} /> EMI Calculator
+                      <Calculator size={16} style={{ color: "#8a6a2e" }} /> EMI Calculator
                       {areaNum > 0 && (
                         <span className="text-gray-400 text-xs font-normal">
                           — based on {fmtPrice(propValue, sym, dispCurr)} estimate
@@ -758,7 +761,7 @@ export default function AIIntelligencePage() {
                           <div className="rounded-xl p-4 text-center border"
                             style={{ background: "rgba(201,162,75,0.08)", borderColor: "rgba(201,162,75,0.3)" }}>
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Monthly EMI</p>
-                            <p className="font-bold text-xl" style={{ color: "#C9A24B", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                            <p className="font-bold text-xl" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
                               {fmtPrice(Math.round(monthlyEMI), sym, dispCurr)}
                             </p>
                           </div>
@@ -817,7 +820,7 @@ export default function AIIntelligencePage() {
             {/* Hot markets */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
-                <Star size={13} fill="#C9A24B" style={{ color: "#C9A24B" }} /> Popular Markets
+                <Star size={13} fill="#8a6a2e" style={{ color: "#8a6a2e" }} /> Popular Markets
               </p>
               <div className="flex flex-wrap gap-2">
                 {HOT_MARKETS.map((loc) => (
@@ -830,8 +833,8 @@ export default function AIIntelligencePage() {
                       : { borderColor: "#d1d5db", color: "#6b7280" }}
                     onMouseEnter={(e) => {
                       if (selected !== loc) {
-                        (e.currentTarget as HTMLElement).style.borderColor = "#C9A24B";
-                        (e.currentTarget as HTMLElement).style.color = "#C9A24B";
+                        (e.currentTarget as HTMLElement).style.borderColor = "#8a6a2e";
+                        (e.currentTarget as HTMLElement).style.color = "#8a6a2e";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -850,7 +853,7 @@ export default function AIIntelligencePage() {
             {/* How it works */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
-                <Bot size={14} style={{ color: "#C9A24B" }} /> How It Works
+                <Bot size={14} style={{ color: "#8a6a2e" }} /> How It Works
               </p>
               <div className="space-y-3">
                 {[
@@ -877,7 +880,7 @@ export default function AIIntelligencePage() {
             {/* Coverage stats */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-4 flex items-center gap-2">
-                <Activity size={14} style={{ color: "#C9A24B" }} /> Coverage
+                <Activity size={14} style={{ color: "#8a6a2e" }} /> Coverage
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -887,7 +890,7 @@ export default function AIIntelligencePage() {
                   { v: "~10s",   l: "Per Analysis" },
                 ].map((s) => (
                   <div key={s.l} className="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
-                    <p className="font-bold text-lg" style={{ color: "#C9A24B", fontFamily: "var(--font-playfair,Georgia,serif)" }}>{s.v}</p>
+                    <p className="font-bold text-lg" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>{s.v}</p>
                     <p className="text-gray-400 text-[10px] mt-0.5">{s.l}</p>
                   </div>
                 ))}

@@ -24,7 +24,7 @@ const SERVICES = [
     desc: "AI-analyzed valuations from live web search, 5-year forecasts, and buy/hold/sell signals for 8+ global cities.",
     href: "/ai-intelligence",
     iconBg: "bg-yellow-50",
-    iconColor: "#C9A24B",
+    iconColor: "#8a6a2e",
   },
   {
     icon: Globe,
@@ -57,7 +57,7 @@ export default function ServicesSection() {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>What We Offer</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>What We Offer</p>
           <h2 className="section-heading">
             Complete Real Estate <span className="gold-text">Services</span>
           </h2>
@@ -76,7 +76,7 @@ export default function ServicesSection() {
                 {s.title}
               </h3>
               <p className="text-gray-500 text-sm leading-relaxed mb-4">{s.desc}</p>
-              <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#C9A24B" }}>
+              <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#8a6a2e" }}>
                 Learn more <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>

@@ -13,7 +13,7 @@ export default function UsageLimitPrompt({ returnTo }: Props) {
   return (
     <div className="border rounded-2xl p-6 text-center" style={{ borderColor: "rgba(201,162,75,0.4)", background: "rgba(201,162,75,0.05)" }}>
       <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "rgba(201,162,75,0.15)" }}>
-        <Sparkles size={20} style={{ color: "#C9A24B" }} />
+        <Sparkles size={20} style={{ color: "#8a6a2e" }} />
       </div>
       <p className="text-gray-900 font-bold mb-1">You&apos;ve used your 3 free AI checks</p>
       <p className="text-gray-500 text-sm mb-5 leading-relaxed">

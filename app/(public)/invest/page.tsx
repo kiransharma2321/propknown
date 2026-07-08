@@ -4,7 +4,7 @@ import { TrendingUp, Globe, Shield, BarChart3, ArrowRight } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 
 export const metadata: Metadata = {
-  title: "Invest | PropKnown — Real Estate Investment Advisory",
+  title: "Invest — Real Estate Investment Advisory",
   description: "Curated real estate investment in India and globally. AI-scored. RERA-verified. NRI-friendly. Hyderabad, Bangalore, Dubai, Singapore.",
 };
 
@@ -20,7 +20,7 @@ export default function InvestPage() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Grow Your Wealth</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Grow Your Wealth</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             Invest With <span className="gold-text">Insight, Not Guesswork</span>
           </h1>
@@ -39,7 +39,7 @@ export default function InvestPage() {
             { icon: BarChart3,  title: "Portfolio Tracking", desc: "Monitor your investments across markets in one place." },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center hover:border-yellow-400 hover:shadow-md transition-colors shadow-sm">
-              <Icon size={28} className="mx-auto mb-3" style={{ color: "#C9A24B" }} />
+              <Icon size={28} className="mx-auto mb-3" style={{ color: "#8a6a2e" }} />
               <h3 className="text-gray-900 font-semibold mb-2 text-base">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
             </div>
@@ -56,7 +56,7 @@ export default function InvestPage() {
               <div key={m.city} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-md transition-all group shadow-sm">
                 <div className="text-3xl mb-3">{m.flag}</div>
                 <h3 className="text-gray-900 font-semibold mb-1 group-hover:text-yellow-700 transition-colors text-base">{m.city}</h3>
-                <p className="font-bold text-sm mb-2" style={{ color: "#C9A24B" }}>{m.roi}</p>
+                <p className="font-bold text-sm mb-2" style={{ color: "#8a6a2e" }}>{m.roi}</p>
                 <p className="text-gray-500 text-sm">{m.type}</p>
               </div>
             ))}

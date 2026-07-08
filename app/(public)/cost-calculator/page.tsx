@@ -4,11 +4,12 @@ import Link from "next/link";
 import { Calculator, Info } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "True Cost Calculator | PropKnown — India Property Purchase Cost",
+  title: "True Cost Calculator — India Property Purchase Cost",
   description: "Calculate the true all-in cost of buying property in India. Stamp duty, registration, GST, legal fees, brokerage, EMI — accurate state-wise estimates.",
 };
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 const FAQ = [
   {

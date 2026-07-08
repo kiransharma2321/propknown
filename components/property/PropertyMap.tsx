@@ -85,7 +85,7 @@ export default function PropertyMap({ lat, lng, title, display, nearbyListings, 
 
       L.marker([lat, lng], { icon: mainIcon })
         .addTo(map)
-        .bindPopup(`<strong style="font-size:13px">${title}</strong><br/><span style="color:#C9A24B;font-weight:bold">${display}</span>`, { maxWidth: 220 })
+        .bindPopup(`<strong style="font-size:13px">${title}</strong><br/><span style="color:#8a6a2e;font-weight:bold">${display}</span>`, { maxWidth: 220 })
         .openPopup();
 
       // ── Nearby PropKnown price pins ───────────────────────────────────────

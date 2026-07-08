@@ -16,7 +16,7 @@ export default function WhyChooseUs() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left */}
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Why PropKnown</p>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Why PropKnown</p>
             <h2
               className="section-heading mb-6"
               style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}
@@ -31,12 +31,12 @@ export default function WhyChooseUs() {
             </p>
 
             {/* Quote */}
-            <blockquote className="border-l-4 pl-6 py-2" style={{ borderColor: "#C9A24B" }}>
+            <blockquote className="border-l-4 pl-6 py-2" style={{ borderColor: "#8a6a2e" }}>
               <p className="text-gray-700 italic text-lg" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
                 &ldquo;Real estate decisions should be data-driven, not impulse-driven.
                 That&apos;s the PropKnown promise.&rdquo;
               </p>
-              <footer className="mt-3 text-sm font-semibold" style={{ color: "#C9A24B" }}>
+              <footer className="mt-3 text-sm font-semibold" style={{ color: "#8a6a2e" }}>
                 — Pinnelli Raghu Kiran, Founder
               </footer>
             </blockquote>
@@ -46,7 +46,7 @@ export default function WhyChooseUs() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {POINTS.map((p) => (
               <div key={p.title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-yellow-500 transition-colors group shadow-sm">
-                <p.icon size={22} className="mb-3" style={{ color: "#C9A24B" }} />
+                <p.icon size={22} className="mb-3" style={{ color: "#8a6a2e" }} />
                 <h4 className="text-gray-900 font-semibold text-sm mb-1.5 group-hover:text-yellow-700 transition-colors">
                   {p.title}
                 </h4>

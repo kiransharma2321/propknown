@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Pricing & Service Packages",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "PropKnown Service Pricing — Transparent, No Hidden Fees",
     description:
       "Clear, fair pricing for buying, selling, property management, legal verification, and NRI services. No surprise charges.",
+    images: [OG_IMAGE],
   },
 };
 

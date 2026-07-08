@@ -106,7 +106,7 @@ export default function PriceCheckPage() {
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-500 text-xs px-4 py-2 rounded-full mb-4">
-            <Scale size={13} style={{ color: "#C9A24B" }} /> Price Reality Check
+            <Scale size={13} style={{ color: "#8a6a2e" }} /> Price Reality Check
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             Is That Price <span className="gold-text">Fair?</span>

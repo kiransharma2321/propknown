@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | PropKnown Infra Pvt Ltd",
+  title: "Privacy Policy",
   description: "PropKnown privacy policy — how we collect, use, and protect your data.",
 };
 
@@ -30,11 +30,11 @@ export default function PrivacyPage() {
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">5. Your Rights</h2>
-            <p>You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#C9A24B" }}>kiranpropservices@gmail.com</a>.</p>
+            <p>You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#8a6a2e" }}>kiranpropservices@gmail.com</a>.</p>
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">6. Contact</h2>
-            <p>PropKnown Infra Pvt Ltd · Shop No 3, Venkateswara Nilyam, Opp. Vertex Prime, Nizampet Road, Hyderabad 500090 · <a href="tel:+919701771333" style={{ color: "#C9A24B" }}>+91 97017 71333</a></p>
+            <p>PropKnown Infra Pvt Ltd · Shop No 3, Venkateswara Nilyam, Opp. Vertex Prime, Nizampet Road, Hyderabad 500090 · <a href="tel:+919701771333" style={{ color: "#8a6a2e" }}>+91 97017 71333</a></p>
           </section>
         </div>
       </div>

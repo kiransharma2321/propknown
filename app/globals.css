@@ -2,11 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
-
+/* --font-playfair / --font-inter are supplied by next/font/google via the className applied
+   to <html> in app/layout.tsx -- self-hosted, no render-blocking third-party font request. */
 :root {
-  --font-playfair: 'Playfair Display', Georgia, serif;
-  --font-inter: 'Inter', system-ui, sans-serif;
   --gold: #C9A24B;
 }
 
@@ -24,8 +22,15 @@ body {
 @layer components {
   .font-playfair { font-family: var(--font-playfair); }
 
+  /* Darkened from the brand's #C9A24B/#e8c97a pair (2.40:1 / 1.61:1 on white -- both fail
+     WCAG AA even at the relaxed 3:1 large-text minimum). This class is used on ~24 pages,
+     the large majority on white backgrounds, so the shared gradient itself needed fixing
+     rather than each call site. Both new stops clear the strict 4.5:1 text minimum
+     (5.02:1 / 4.62:1) regardless of the exact font size at any given usage. The one
+     dark-background usage (homepage hero) stays comfortably legible -- a darker gradient
+     against a dark background has MORE contrast, not less. */
   .gold-text {
-    background: linear-gradient(135deg, #C9A24B, #e8c97a, #C9A24B);
+    background: linear-gradient(135deg, #8a6a2e, #8d7135, #8a6a2e);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

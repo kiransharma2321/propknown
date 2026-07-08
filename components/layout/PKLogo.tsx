@@ -61,7 +61,7 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
           PROPKNOWN
         </span>
         <span style={{
-          color: "#C9A24B",
+          color: "#8a6a2e",
           fontSize: "9px",
           fontWeight: "700",
           letterSpacing: "0.22em",

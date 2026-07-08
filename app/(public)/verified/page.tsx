@@ -4,11 +4,12 @@ import { CheckCircle, Shield, Clock, FileText, AlertTriangle, ArrowRight } from 
 import { LEGAL_CHECKLIST_ITEMS } from "@/lib/legalShield";
 
 export const metadata: Metadata = {
-  title: "PropKnown Verified | Property Due Diligence & Trust Badges",
+  title: "Verified | Property Due Diligence & Trust Badges",
   description: "Learn what PropKnown Verified means — RERA, title checks, document review, layout approval, and encumbrance clearance. No fake ticks. Honest badges.",
 };
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 const CHECKS = [
   {

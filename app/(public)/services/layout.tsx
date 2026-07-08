@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Property Services",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "Property Services — Legal, RERA, Management | PropKnown",
     description:
       "End-to-end real estate services: legal verification, RERA registration, property management, NRI support. Expert team led by ISB & IIM alumnus Raghu Kiran.",
+    images: [OG_IMAGE],
   },
 };
 

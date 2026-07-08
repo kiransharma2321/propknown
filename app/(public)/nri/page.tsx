@@ -4,12 +4,13 @@ import { Shield, Globe, FileText, CheckCircle, Phone, AlertCircle, ArrowRight } 
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 
 export const metadata: Metadata = {
-  title: "NRI Property Investment India | PropKnown — UAE, US, UK, Singapore",
+  title: "NRI Property Investment — UAE, US, UK, Singapore",
   description:
     "Complete guide for NRI property investment in India. FEMA rules, repatriation, power of attorney, remote buying, legal safeguards. Expert support from PropKnown.",
 };
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 const WA = "https://wa.me/919701771333";
 
 const MARKETS = [

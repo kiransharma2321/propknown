@@ -1,11 +1,67 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { findListingById, findNearbyListings } from "@/lib/listings";
+import { findListingById, findNearbyListings, type Listing } from "@/lib/listings";
 import PropertyDetailClient from "@/components/property/PropertyDetailClient";
 import { COMPANY } from "@/lib/utils";
 
+const BASE_URL = "https://www.propknown.com";
+
 interface Props {
   params: { id: string };
+}
+
+// Residence sub-type has a real, specific schema.org match for Apartment/Villa/House; anything
+// else (Plot, Farm Land, Commercial) has no accurate dedicated type, so it falls back to the
+// generic "Place" rather than forcing a wrong, more specific one.
+function residenceType(type: string): string {
+  if (type === "Apartment") return "Apartment";
+  if (type === "Villa" || type === "House") return "SingleFamilyResidence";
+  return "Place";
+}
+
+function buildListingJsonLd(listing: Listing) {
+  const url = `${BASE_URL}/buy/${listing.id}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: listing.title,
+    description: listing.description ?? `${listing.title} in ${listing.location}, ${listing.city}. ${listing.display}.`,
+    url,
+    image: listing.images,
+    datePosted: undefined, // Not tracked per-listing in the current data model -- omitted rather than guessed.
+    offers: {
+      "@type": "Offer",
+      price: listing.price,
+      priceCurrency: listing.currency,
+      url,
+    },
+    about: {
+      "@type": residenceType(listing.type),
+      name: listing.title,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: listing.location,
+        addressLocality: listing.city,
+        addressRegion: "Telangana",
+        addressCountry: "IN",
+      },
+      ...(listing.lat && listing.lng ? {
+        geo: { "@type": "GeoCoordinates", latitude: listing.lat, longitude: listing.lng },
+      } : {}),
+      ...(listing.sqft ? { floorSize: { "@type": "QuantitativeValue", value: listing.sqft, unitCode: "FTK" } } : {}),
+      ...(listing.beds ? { numberOfRooms: listing.beds } : {}),
+    },
+    // RERA/HMDA registration has no dedicated schema.org property -- PropertyValue under
+    // additionalProperty is the standard, honest way to attach a custom identifier without
+    // misusing an unrelated field.
+    ...(listing.badgeNo ? {
+      additionalProperty: {
+        "@type": "PropertyValue",
+        name: listing.badge === "RERA" ? "RERA Registration Number" : (listing.badge ?? "Registration Number"),
+        value: listing.badgeNo,
+      },
+    } : {}),
+  };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -39,7 +95,7 @@ export default function PropertyDetailPage({ params }: Props) {
             <Link
               href="/buy"
               className="px-6 py-3 rounded-xl border-2 font-semibold text-sm transition-all hover:bg-gray-50"
-              style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+              style={{ borderColor: "rgba(201,162,75,0.5)", color: "#8a6a2e" }}
             >
               ← Back to All Listings
             </Link>
@@ -62,7 +118,15 @@ export default function PropertyDetailPage({ params }: Props) {
 
   const nearbyListings = findNearbyListings(listing);
 
-  return <PropertyDetailClient listing={listing} nearbyListings={nearbyListings} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildListingJsonLd(listing)) }}
+      />
+      <PropertyDetailClient listing={listing} nearbyListings={nearbyListings} />
+    </>
+  );
 }
 
 // Pre-generate pages for all known listing IDs at build time

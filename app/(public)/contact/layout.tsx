@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "Contact PropKnown — WhatsApp 97017 71333",
     description:
       "Reach Raghu Kiran directly on WhatsApp 97017 71333 or visit our Hyderabad office. We respond within 2 hours.",
+    images: [OG_IMAGE],
   },
 };
 

@@ -5,7 +5,8 @@ import { Calculator, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { formatCurrency } from "@/lib/currency";
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 const STATE_RATES: Record<string, { stamp: number; registration: number }> = {
   Telangana:          { stamp: 7.0,  registration: 0.5 },

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "Property Investment Opportunities",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     title: "Property Investment Opportunities — RERA Verified | PropKnown",
     description:
       "AI-scored, RERA-verified investment properties. Kokapet, Gachibowli, Financial District & beyond. Average 20-30% appreciation in 3 years.",
+    images: [OG_IMAGE],
   },
 };
 

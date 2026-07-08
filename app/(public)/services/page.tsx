@@ -10,7 +10,7 @@ import {
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 
 export const metadata: Metadata = {
-  title: "Services | PropKnown Infra Pvt Ltd",
+  title: "Real Estate Services — Legal, RERA & Management",
   description: "Complete real estate services — Marketplace, Property Management, Land & Plot, Intelligence, Construction, and Legal. Enquire on WhatsApp.",
 };
 
@@ -32,7 +32,7 @@ interface Group {
 const GROUPS: Group[] = [
   {
     group: "Property Marketplace",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       { icon: Home,     name: "Buy Property",        desc: "RERA-verified listings across Hyderabad and 10+ cities. AI-scored for investment value, legal safety, and fair pricing." },
       { icon: TrendingUp,name: "Sell Property",      desc: "Maximum sale value in minimum time. Professional photography, digital marketing, and buyer matching from our verified buyer network." },
@@ -44,7 +44,7 @@ const GROUPS: Group[] = [
   },
   {
     group: "Property Management (PMS)",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       { icon: ShieldCheck, name: "Property Management",   desc: "Complete end-to-end property management — tenant sourcing, rent collection, maintenance, and monthly reports." },
       { icon: Wrench,      name: "Facility Management",   desc: "Day-to-day facility oversight for residential and commercial properties. Vendor coordination, AMCs, and quality checks." },
@@ -55,7 +55,7 @@ const GROUPS: Group[] = [
   },
   {
     group: "Land & Plot Services",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       {
         icon: MapPin, name: "Property Identification",
@@ -93,7 +93,7 @@ const GROUPS: Group[] = [
   },
   {
     group: "Property Intelligence",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       {
         icon: Camera, name: "Property Images & Videos",
@@ -105,7 +105,7 @@ const GROUPS: Group[] = [
   },
   {
     group: "Construction & Design",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       { icon: Hammer,  name: "Construction Services",  desc: "End-to-end construction management — house construction, additions, renovations. Licensed contractors, quality materials, transparent costing." },
       { icon: Palette, name: "Interior Design Services", desc: "Transform your space with professional interior design — residential, commercial, and modular kitchen. 3D visualization before execution." },
@@ -113,7 +113,7 @@ const GROUPS: Group[] = [
   },
   {
     group: "Legal & Documentation",
-    color: "#C9A24B",
+    color: "#8a6a2e",
     services: [
       { icon: Scale,     name: "Legal Verification",           desc: "Title deed verification, encumbrance certificate, EC, litigations, and mutation records checked by experienced property advocates." },
       { icon: FileText,  name: "Documentation & Registration", desc: "Sale deed drafting, stamp duty calculation, SRO registration, and mutation — handled end-to-end by our legal team." },
@@ -128,13 +128,13 @@ function ServiceCard({ s }: { s: Service }) {
     <div className={`bg-white border rounded-2xl p-6 flex flex-col hover:shadow-md transition-all ${s.featured ? "border-yellow-400 ring-1 ring-yellow-400/30" : "border-gray-200 hover:border-yellow-400"}`}>
       {s.featured && (
         <div className="mb-3">
-          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: "rgba(201,162,75,0.12)", color: "#C9A24B" }}>
+          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: "rgba(201,162,75,0.12)", color: "#8a6a2e" }}>
             ★ FEATURED — Annual Subscription
           </span>
         </div>
       )}
       <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(201,162,75,0.1)" }}>
-        <s.icon size={22} style={{ color: "#C9A24B" }} />
+        <s.icon size={22} style={{ color: "#8a6a2e" }} />
       </div>
       <h3 className="text-gray-900 font-bold text-base mb-2">{s.name}</h3>
       <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-4">{s.desc}</p>
@@ -142,7 +142,7 @@ function ServiceCard({ s }: { s: Service }) {
         <ol className="mb-4 space-y-1.5">
           {s.steps.map((step, i) => (
             <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
-              <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5" style={{ background: "rgba(201,162,75,0.15)", color: "#C9A24B" }}>{i + 1}</span>
+              <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5" style={{ background: "rgba(201,162,75,0.15)", color: "#8a6a2e" }}>{i + 1}</span>
               {step}
             </li>
           ))}
@@ -172,7 +172,7 @@ export default function ServicesPage() {
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-16">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>What We Do</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>What We Do</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             End-to-End <span className="gold-text">Real Estate Services</span>
           </h1>

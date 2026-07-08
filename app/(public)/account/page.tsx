@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Heart, Bell, LogOut, Trash2 } from "lucide-react";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 const CITIES = ["Any City", "Hyderabad", "Bangalore", "Mumbai", "Pune", "Chennai", "Delhi NCR", "Dubai"];
 const TYPES  = ["Any Type", "Apartment", "Villa", "House", "Commercial", "Plot", "Farm Land"];
 
@@ -149,7 +150,7 @@ export default function AccountDashboardPage() {
             <input placeholder="Max ₹L" type="number" value={newAlert.maxBudget}
               onChange={e => setNewAlert(a => ({ ...a, maxBudget: e.target.value }))}
               className="w-24 border border-gray-300 text-gray-900 text-sm rounded-lg py-2 px-3" />
-            <button type="submit" className="px-4 py-2 rounded-lg font-semibold text-sm text-black" style={{ background: GOLD }}>
+            <button type="submit" className="px-4 py-2 rounded-lg font-semibold text-sm text-black" style={{ background: "#C9A24B" }}>
               Save Alert
             </button>
           </form>

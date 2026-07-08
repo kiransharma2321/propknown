@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, MapPin, ChevronDown, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
@@ -25,7 +26,7 @@ const CITIES  = ["All Cities","Hyderabad","Bangalore","Mumbai","Pune","Chennai",
 const TYPES   = ["All Types","Apartment","Villa","House","Commercial","Plot","Agriculture Land","Farm Land"];
 const BUDGETS = ["Any Budget","Under ₹50L","₹50L–1Cr","₹1Cr–2Cr","₹2Cr–5Cr","Above ₹5Cr"];
 
-function scoreColor(s: number) { return s >= 9 ? "#22c55e" : s >= 8 ? "#C9A24B" : "#94a3b8"; }
+function scoreColor(s: number) { return s >= 9 ? "#22c55e" : s >= 8 ? "#8a6a2e" : "#94a3b8"; }
 
 interface Submission {
   id: string; title: string; propType: string; bhk?: string;
@@ -58,8 +59,9 @@ function SubmissionCard({ s }: { s: Submission }) {
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-yellow-400 hover:shadow-lg transition-all group flex flex-col">
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
         {firstPhoto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={firstPhoto} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <Image src={firstPhoto} alt={`${s.title} — ${s.propType} in ${s.area}, ${s.city}`} fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
             <Building2 size={40} />
@@ -87,7 +89,7 @@ function SubmissionCard({ s }: { s: Submission }) {
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{s.title}</h3>
         <div className="flex items-center gap-1 text-gray-400 text-xs mb-2"><MapPin size={10} />{s.area}, {s.city}</div>
-        <p className="text-xl font-bold mb-2" style={{ color:"#C9A24B", fontFamily:"var(--font-playfair,Georgia,serif)" }}>{s.priceDisplay}</p>
+        <p className="text-xl font-bold mb-2" style={{ color:"#8a6a2e", fontFamily:"var(--font-playfair,Georgia,serif)" }}>{s.priceDisplay}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-2">
           {s.bhk && <span>{s.bhk}</span>}
           {s.size && <span>{s.size} {s.sizeUnit}</span>}
@@ -105,7 +107,7 @@ function SubmissionCard({ s }: { s: Submission }) {
           onClick={() => added ? remove(`sub-${s.id}`) : add(compareItem)}
           className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold py-1.5 rounded-lg mb-2 border transition-all"
           style={added
-            ? { background:"rgba(201,162,75,0.15)", color:"#C9A24B", borderColor:"rgba(201,162,75,0.5)" }
+            ? { background:"rgba(201,162,75,0.15)", color:"#8a6a2e", borderColor:"rgba(201,162,75,0.5)" }
             : { background:"transparent", color:"#6b7280", borderColor:"#e5e7eb" }
           }
         >
@@ -115,7 +117,7 @@ function SubmissionCard({ s }: { s: Submission }) {
         <div className="mt-auto flex gap-2">
           <a href={waMsg} target="_blank" rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg transition-all"
-            style={{ background:"rgba(201,162,75,0.12)", color:"#C9A24B", border:"1px solid rgba(201,162,75,0.3)" }}>
+            style={{ background:"rgba(201,162,75,0.12)", color:"#8a6a2e", border:"1px solid rgba(201,162,75,0.3)" }}>
             <MessageCircle size={12} /> Enquire
           </a>
           <Link href={`/buy/submission/${s.id}`}
@@ -190,7 +192,7 @@ function BuyPageInner() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-10">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color:"#C9A24B" }}>Property Search</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color:"#8a6a2e" }}>Property Search</p>
           <h1 className="section-heading" style={{ fontFamily:"var(--font-playfair,Georgia,serif)" }}>
             Verified Properties, <span className="gold-text">Zero Guesswork</span>
           </h1>
@@ -289,8 +291,9 @@ function BuyPageInner() {
                 return (
                   <div key={p.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-yellow-400 hover:shadow-lg transition-all group flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={p.img} alt={`${p.title} — ${p.type} in ${p.location}, ${p.city}`} fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute top-2 left-2">
                         <span className="bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ {p.badge}</span>
                       </div>
@@ -312,7 +315,7 @@ function BuyPageInner() {
                       <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{p.title}</h3>
                       <div className="flex items-center gap-1 text-gray-400 text-xs mb-2"><MapPin size={10} />{p.location}, {p.city}</div>
                       <p className="mb-2" style={{ fontFamily:"var(--font-playfair,Georgia,serif)" }}>
-                        <CurrencyPrice priceINR={p.price} className="text-xl font-bold text-[#C9A24B]" />
+                        <CurrencyPrice priceINR={p.price} className="text-xl font-bold text-[#8a6a2e]" />
                       </p>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-1">
                         {p.beds > 0 && <span>{p.beds} BHK</span>}
@@ -340,7 +343,7 @@ function BuyPageInner() {
                         onClick={() => added ? remove(p.id) : add(compareItem)}
                         className="w-full flex items-center justify-center gap-1.5 text-[10px] font-semibold py-1.5 rounded-lg mb-2 border transition-all"
                         style={added
-                          ? { background:"rgba(201,162,75,0.15)", color:"#C9A24B", borderColor:"rgba(201,162,75,0.5)" }
+                          ? { background:"rgba(201,162,75,0.15)", color:"#8a6a2e", borderColor:"rgba(201,162,75,0.5)" }
                           : { background:"transparent", color:"#6b7280", borderColor:"#e5e7eb" }
                         }
                       >
@@ -350,7 +353,7 @@ function BuyPageInner() {
                       <div className="mt-auto flex gap-2">
                         <a href={waMsg} target="_blank" rel="noopener noreferrer"
                           className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg transition-all"
-                          style={{ background:"rgba(201,162,75,0.12)", color:"#C9A24B", border:"1px solid rgba(201,162,75,0.3)" }}>
+                          style={{ background:"rgba(201,162,75,0.12)", color:"#8a6a2e", border:"1px solid rgba(201,162,75,0.3)" }}>
                           <MessageCircle size={12} /> Enquire
                         </a>
                         <Link href={`/buy/${p.id}`} className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all border border-gray-200">
@@ -369,7 +372,7 @@ function BuyPageInner() {
         {filtered.length === 0 && filteredSubs.length === 0 && isSearchActive && (
           <div className="text-center py-24">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background:"rgba(201,162,75,0.1)", border:"1px solid rgba(201,162,75,0.3)" }}>
-              <Search size={32} style={{ color:"#C9A24B" }} />
+              <Search size={32} style={{ color:"#8a6a2e" }} />
             </div>
             <p className="text-gray-700 text-lg font-semibold mb-2">No properties listed in this area yet.</p>
             <p className="text-gray-500 text-base mb-8 max-w-md mx-auto">
@@ -383,7 +386,7 @@ function BuyPageInner() {
               WhatsApp Raghu — 97017 71333
             </a>
             <div className="mt-6">
-              <button onClick={clearAll} className="text-sm font-medium" style={{ color:"#C9A24B" }}>← Clear filters and show all listings</button>
+              <button onClick={clearAll} className="text-sm font-medium" style={{ color:"#8a6a2e" }}>← Clear filters and show all listings</button>
             </div>
           </div>
         )}

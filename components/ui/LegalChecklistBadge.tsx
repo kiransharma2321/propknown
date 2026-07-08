@@ -23,7 +23,7 @@ export default function LegalChecklistBadge({ checklist, notes, id }: Props) {
   return (
     <div id={id} className="border border-gray-200 rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-1">
-        <Shield size={16} style={{ color: "#C9A24B" }} />
+        <Shield size={16} style={{ color: "#8a6a2e" }} />
         <h3 className="text-gray-900 font-bold text-sm">Legal Safety Checklist</h3>
       </div>
       <p className="text-gray-400 text-xs mb-4">

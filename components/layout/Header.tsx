@@ -46,7 +46,7 @@ export default function Header() {
           <div className="flex items-center gap-6">
             <a href={`tel:${COMPANY.phone}`}
               className="flex items-center gap-1.5 text-xs font-medium transition-colors"
-              style={{ color: "#C9A24B" }}>
+              style={{ color: "#8a6a2e" }}>
               <Phone size={12} />{COMPANY.phone}
             </a>
             <a href={`mailto:${COMPANY.email}`} className="text-gray-500 text-xs hover:text-gray-800 transition-colors">

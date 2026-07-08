@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
   title: "For Builders & Developers",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     title: "Builder & Developer Partnerships | PropKnown",
     description:
       "Reach verified buyers, leverage AI pricing, and close faster. PropKnown's builder partnership programme — RERA-compliant, results-driven.",
+    images: [OG_IMAGE],
   },
 };
 

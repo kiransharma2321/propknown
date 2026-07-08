@@ -55,7 +55,7 @@ export default function RequestVideoTourButton({ propertyId, title, className }:
       <button
         onClick={() => setOpen(true)}
         className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm border-2 transition-all hover:bg-gray-50 ${className ?? ""}`}
-        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#8a6a2e" }}
       >
         <Video size={16} /> Request Live Video Tour
       </button>
@@ -65,7 +65,7 @@ export default function RequestVideoTourButton({ propertyId, title, className }:
   return (
     <form onSubmit={submit} className={`border rounded-xl p-4 space-y-2.5 ${className ?? ""}`} style={{ borderColor: "rgba(201,162,75,0.4)" }}>
       <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-        <Video size={13} style={{ color: "#C9A24B" }} /> Request a live video tour
+        <Video size={13} style={{ color: "#8a6a2e" }} /> Request a live video tour
       </p>
       <input
         value={form.name}

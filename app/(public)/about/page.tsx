@@ -4,7 +4,7 @@ import Link from "next/link";
 import { COMPANY } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "About PropKnown | Pinnelli Raghu Kiran — Founder",
+  title: "About Us | Pinnelli Raghu Kiran — Founder",
   description: "Founded 01 October 2023 by Pinnelli Raghu Kiran — ISB Alumni, IIM PG Diploma, BITS, 20+ years. India's first AI-powered verified real estate platform.",
 };
 
@@ -37,7 +37,7 @@ export default function AboutPage() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Our Story</p>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Our Story</p>
           <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
             Built on Expertise. <span className="gold-text">Driven by Trust.</span>
           </h1>
@@ -51,14 +51,14 @@ export default function AboutPage() {
           <div>
             <div
               className="w-32 h-32 rounded-full border-2 flex items-center justify-center mb-6 mx-auto lg:mx-0"
-              style={{ borderColor: "#C9A24B", background: "linear-gradient(135deg,rgba(201,162,75,0.15),rgba(201,162,75,0.05))" }}
+              style={{ borderColor: "#8a6a2e", background: "linear-gradient(135deg,rgba(201,162,75,0.15),rgba(201,162,75,0.05))" }}
             >
               <span className="text-5xl font-bold gold-text" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>P</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
               Pinnelli Raghu Kiran
             </h2>
-            <p className="font-semibold text-sm tracking-wider mb-5" style={{ color: "#C9A24B" }}>
+            <p className="font-semibold text-sm tracking-wider mb-5" style={{ color: "#8a6a2e" }}>
               Founder &amp; Managing Director, PropKnown Infra Pvt Ltd
             </p>
             <div className="flex flex-wrap gap-2 mb-7">
@@ -66,13 +66,13 @@ export default function AboutPage() {
                 <span key={b} className="bg-gray-100 border border-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-full">{b}</span>
               ))}
             </div>
-            <blockquote className="border-l-4 pl-6 py-2 mb-7" style={{ borderColor: "#C9A24B" }}>
+            <blockquote className="border-l-4 pl-6 py-2 mb-7" style={{ borderColor: "#8a6a2e" }}>
               <p className="text-gray-700 italic text-lg leading-relaxed" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
                 &ldquo;I started PropKnown to fix the two things buyers hate most — fake listings
                 and spam. Every property is verified, every number comes with honest AI intelligence.
                 Know. Invest. Grow.&rdquo;
               </p>
-              <footer className="mt-3 text-sm font-semibold" style={{ color: "#C9A24B" }}>
+              <footer className="mt-3 text-sm font-semibold" style={{ color: "#8a6a2e" }}>
                 — Pinnelli Raghu Kiran, Founder
               </footer>
             </blockquote>
@@ -94,7 +94,7 @@ export default function AboutPage() {
             ].map(({ title, desc }) => (
               <div key={title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-yellow-400 transition-colors shadow-sm">
                 <div className="flex items-start gap-3">
-                  <CheckCircle size={18} className="shrink-0 mt-0.5" style={{ color: "#C9A24B" }} />
+                  <CheckCircle size={18} className="shrink-0 mt-0.5" style={{ color: "#8a6a2e" }} />
                   <div>
                     <p className="text-gray-900 font-semibold text-sm mb-1">{title}</p>
                     <p className="text-gray-500 text-xs leading-relaxed">{desc}</p>
@@ -108,7 +108,7 @@ export default function AboutPage() {
         {/* Core Values */}
         <div className="mb-20">
           <div className="text-center mb-10">
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>What We Stand For</p>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>What We Stand For</p>
             <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
               Core <span className="gold-text">Values</span>
             </h2>
@@ -117,7 +117,7 @@ export default function AboutPage() {
             {CORE_VALUES.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="bg-gray-50 border border-gray-200 rounded-xl p-6 hover:border-yellow-400 transition-colors text-center shadow-sm">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "rgba(201,162,75,0.1)" }}>
-                  <Icon size={26} style={{ color: "#C9A24B" }} />
+                  <Icon size={26} style={{ color: "#8a6a2e" }} />
                 </div>
                 <h3 className="text-gray-900 font-bold text-base mb-2">{title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{desc}</p>
@@ -129,7 +129,7 @@ export default function AboutPage() {
         {/* Goals + Advantages */}
         <div className="grid lg:grid-cols-2 gap-10 mb-20">
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>Where We&apos;re Headed</p>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Where We&apos;re Headed</p>
             <h2 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>Company <span className="gold-text">Goals</span></h2>
             <div className="space-y-4">
               {GOALS.map(({ title, desc }) => (
@@ -141,7 +141,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#C9A24B" }}>What Makes Us Different</p>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>What Makes Us Different</p>
             <h2 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>Competitive <span className="gold-text">Advantages</span></h2>
             <div className="space-y-4">
               {ADVANTAGES.map(({ title, desc }) => (

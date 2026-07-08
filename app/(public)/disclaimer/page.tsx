@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Disclaimer | PropKnown Infra Pvt Ltd",
+  title: "Disclaimer",
   description: "Disclaimer for PropKnown AI valuations and property information.",
 };
 
@@ -18,7 +18,7 @@ export default function DisclaimerPage() {
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">RERA Verification</h2>
-            <p>RERA and HMDA registration numbers shown on listings are provided by sellers/developers and believed to be accurate. PropKnown strongly recommends independently verifying all RERA details at <a href="https://rera.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#C9A24B" }}>rera.telangana.gov.in</a> before making any investment decision.</p>
+            <p>RERA and HMDA registration numbers shown on listings are provided by sellers/developers and believed to be accurate. PropKnown strongly recommends independently verifying all RERA details at <a href="https://rera.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#8a6a2e" }}>rera.telangana.gov.in</a> before making any investment decision.</p>
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">No Guarantee of Transaction</h2>
@@ -30,7 +30,7 @@ export default function DisclaimerPage() {
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">Contact</h2>
-            <p>For questions about this disclaimer: <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#C9A24B" }}>kiranpropservices@gmail.com</a></p>
+            <p>For questions about this disclaimer: <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#8a6a2e" }}>kiranpropservices@gmail.com</a></p>
           </section>
         </div>
       </div>

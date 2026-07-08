@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
 
-const GOLD = "#C9A24B";
+// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#8a6a2e";
 
 function LoginForm() {
   const router = useRouter();
@@ -83,7 +84,7 @@ function LoginForm() {
 
           <button type="submit" disabled={loading}
             className="w-full py-3 rounded-xl font-bold text-sm text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-            style={{ background: GOLD }}>
+            style={{ background: "#C9A24B" }}>
             {loading ? "Please wait…" : mode === "login" ? "Log In" : "Create Account"}
           </button>
         </form>

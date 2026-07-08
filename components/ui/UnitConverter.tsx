@@ -48,7 +48,7 @@ export default function UnitConverter() {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
       <p className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
-        <Ruler size={14} style={{ color: "#C9A24B" }} /> Unit Converter
+        <Ruler size={14} style={{ color: "#8a6a2e" }} /> Unit Converter
       </p>
 
       {/* Input row */}
