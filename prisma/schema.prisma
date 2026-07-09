@@ -158,6 +158,10 @@ model PropertySubmission {
   ownerPhone   String
   ownerEmail   String
   photoIds     String   @default("[]") @db.Text
+  // Keyed by photoId (from photoIds above), not array position -- { [photoId]: "caption text" }.
+  // Owner-written at submission time, optional. Used as the photo's alt text in the gallery
+  // instead of a generic repeated title/description when present for that specific photo.
+  photoCaptions Json    @default("{}")
   videoIds     String   @default("[]") @db.Text
   videoUrls    String   @default("[]") @db.Text
   docIds       String   @default("[]") @db.Text

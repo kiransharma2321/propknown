@@ -16,7 +16,7 @@ interface SubDetail {
   size?: string; sizeUnit?: string; priceDisplay: string;
   city: string; area: string; description: string; features?: string;
   reraNumber?: string; ownerName: string; ownerPhone: string;
-  photoIds: string[]; videoIds: string[]; videoUrls: string[];
+  photoIds: string[]; photoCaptions?: Record<string, string>; videoIds: string[]; videoUrls: string[];
   verificationFlags?: VerificationFlags;
   legalChecklist?: LegalChecklist;
   legalNotes?: string;
@@ -61,6 +61,12 @@ export default function SubmissionDetailPage() {
   const photoUrls = sub.photoIds.map(pid => `/api/files/${pid}`);
   const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'm interested in "${sub.title}" at ${sub.area}, ${sub.city}. Asking: ${sub.priceDisplay}`)}`;
 
+  // Owner-written caption when available, otherwise a fallback that at least varies per photo
+  // instead of repeating the exact same alt text for every image in the gallery.
+  const photoAlt = (i: number) =>
+    sub.photoCaptions?.[sub.photoIds[i]]?.trim() ||
+    `${sub.title} — photo ${i + 1} of ${photoUrls.length}, ${sub.area}, ${sub.city}`;
+
   const isYoutube = (url: string) => url.includes("youtube.com") || url.includes("youtu.be");
   const ytEmbed   = (url: string) => {
     const m = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
@@ -82,7 +88,7 @@ export default function SubmissionDetailPage() {
             {photoUrls.length > 0 ? (
               <div className="mb-3 rounded-2xl overflow-hidden bg-gray-100 aspect-[16/9]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrls[activePhoto]} alt={sub.title} className="w-full h-full object-cover" />
+                <img src={photoUrls[activePhoto]} alt={photoAlt(activePhoto)} className="w-full h-full object-cover" />
               </div>
             ) : (
               <div className="mb-3 rounded-2xl bg-gray-100 aspect-[16/9] flex items-center justify-center">
@@ -97,7 +103,7 @@ export default function SubmissionDetailPage() {
                   <button key={i} onClick={() => setActivePhoto(i)}
                     className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-400" : "border-transparent"}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <img src={url} alt={photoAlt(i)} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

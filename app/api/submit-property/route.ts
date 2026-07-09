@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       title, propType, bhk, size, sizeUnit,
       priceDisplay, city, area, description, features, reraNumber,
       ownerName, ownerPhone, ownerEmail,
-      photoIds = [], videoIds = [], videoUrls = [], docIds = [],
+      photoIds = [], photoCaptions = {}, videoIds = [], videoUrls = [], docIds = [],
     } = body;
 
     if (!title || !propType || !priceDisplay || !city || !area || !description || !ownerName || !ownerPhone || !ownerEmail) {
@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
     }
     if (!Array.isArray(photoIds) || photoIds.length === 0) {
       return NextResponse.json({ error: "Please upload at least 1 photo." }, { status: 400 });
+    }
+
+    // Only trust captions keyed to photo IDs actually in this submission's own photoIds --
+    // and re-trim/re-cap the length server-side rather than relying on the client's maxLength.
+    const cleanCaptions: Record<string, string> = {};
+    if (photoCaptions && typeof photoCaptions === "object") {
+      for (const id of photoIds) {
+        const c = photoCaptions[id];
+        if (typeof c === "string" && c.trim()) cleanCaptions[id] = c.trim().slice(0, 80);
+      }
     }
 
     const submission = await prisma.propertySubmission.create({
@@ -44,7 +54,8 @@ export async function POST(req: NextRequest) {
         ownerName:    ownerName.trim(),
         ownerPhone:   ownerPhone.trim(),
         ownerEmail:   ownerEmail.trim().toLowerCase(),
-        photoIds:     JSON.stringify(photoIds),
+        photoIds:      JSON.stringify(photoIds),
+        photoCaptions: cleanCaptions,
         videoIds:     JSON.stringify(videoIds),
         videoUrls:    JSON.stringify(videoUrls),
         docIds:       JSON.stringify(docIds),

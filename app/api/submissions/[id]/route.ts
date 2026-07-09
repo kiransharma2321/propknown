@@ -27,6 +27,7 @@ export async function GET(
     ownerName:   sub.ownerName,
     ownerPhone:  sub.ownerPhone,
     photoIds:    JSON.parse(sub.photoIds  || "[]"),
+    photoCaptions: sub.photoCaptions,
     videoIds:    JSON.parse(sub.videoIds  || "[]"),
     videoUrls:   JSON.parse(sub.videoUrls || "[]"),
     verificationFlags: sub.verificationFlags,

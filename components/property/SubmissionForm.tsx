@@ -66,6 +66,9 @@ interface PhotoEntry {
   uploadedId?: string;
   uploading: boolean;
   error?: string;
+  /** Optional, owner-written -- e.g. "Modular kitchen", "Master bedroom with balcony view".
+   *  Shown as the photo's alt text in the gallery instead of a generic repeated title, when set. */
+  caption: string;
 }
 
 interface VideoEntry {
@@ -172,6 +175,7 @@ export default function SubmissionForm() {
       file:      f,
       preview:   URL.createObjectURL(f),
       uploading: true,
+      caption:   "",
     }));
     setPhotos(prev => [...prev, ...newEntries].slice(0, 5));
 
@@ -194,6 +198,9 @@ export default function SubmissionForm() {
 
   const removePhoto = (tempId: string) =>
     setPhotos(prev => prev.filter(p => p.tempId !== tempId));
+
+  const setPhotoCaption = (tempId: string, caption: string) =>
+    setPhotos(prev => prev.map(p => p.tempId === tempId ? { ...p, caption } : p));
 
   // ─── Videos ────────────────────────────────────────────────────────
   const addVideoFile = useCallback(async (file: File) => {
@@ -281,6 +288,13 @@ export default function SubmissionForm() {
     const uploadedPhotos = photos.filter(p => p.uploadedId);
     if (!uploadedPhotos.length) { setError("Please upload at least 1 photo."); return; }
 
+    // Keyed by photoId rather than array position -- position alone would silently point at the
+    // wrong photo if a caption were ever added, reordered, or the array re-filtered downstream.
+    const photoCaptions: Record<string, string> = {};
+    for (const p of uploadedPhotos) {
+      if (p.uploadedId && p.caption.trim()) photoCaptions[p.uploadedId] = p.caption.trim();
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/submit-property", {
@@ -289,6 +303,7 @@ export default function SubmissionForm() {
         body: JSON.stringify({
           ...form,
           photoIds: photos.filter(p => p.uploadedId).map(p => p.uploadedId),
+          photoCaptions,
           videoIds: videos.filter(v => v.kind === "file" && v.uploadedId).map(v => v.uploadedId),
           videoUrls: videos.filter(v => v.kind === "url" && v.url.trim()).map(v => v.url.trim()),
           docIds: docs.filter(d => d.uploadedId).map(d => d.uploadedId),
@@ -436,30 +451,39 @@ export default function SubmissionForm() {
         )}
 
         {photos.length > 0 && (
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {photos.map(p => (
-              <div key={p.tempId} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.preview} alt="" className="w-full h-full object-cover" />
-                {p.uploading && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Loader2 size={18} className="animate-spin text-white" />
-                  </div>
-                )}
-                {p.error && (
-                  <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center p-1">
-                    <p className="text-white text-[10px] text-center">{p.error}</p>
-                  </div>
-                )}
-                {p.uploadedId && !p.uploading && (
-                  <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle size={10} className="text-white" />
-                  </div>
-                )}
-                <button type="button" onClick={() => removePhoto(p.tempId)}
-                  className="absolute top-1 left-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <X size={10} className="text-white" />
-                </button>
+              <div key={p.tempId}>
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.preview} alt="" className="w-full h-full object-cover" />
+                  {p.uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <Loader2 size={18} className="animate-spin text-white" />
+                    </div>
+                  )}
+                  {p.error && (
+                    <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center p-1">
+                      <p className="text-white text-[10px] text-center">{p.error}</p>
+                    </div>
+                  )}
+                  {p.uploadedId && !p.uploading && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <CheckCircle size={10} className="text-white" />
+                    </div>
+                  )}
+                  <button type="button" onClick={() => removePhoto(p.tempId)}
+                    className="absolute top-1 left-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X size={10} className="text-white" />
+                  </button>
+                </div>
+                <input
+                  value={p.caption}
+                  onChange={e => setPhotoCaption(p.tempId, e.target.value)}
+                  placeholder="What's in this photo? (optional)"
+                  maxLength={80}
+                  className="w-full mt-1.5 border border-gray-200 rounded-md px-2 py-1 text-[11px] text-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+                />
               </div>
             ))}
           </div>
