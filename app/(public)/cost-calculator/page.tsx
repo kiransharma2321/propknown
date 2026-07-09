@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import CostCalculator from "@/components/ui/CostCalculator";
 import Link from "next/link";
 import { Calculator, Info } from "lucide-react";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "True Cost Calculator — India Property Purchase Cost";
+const description = "Calculate the true all-in cost of buying property in India. Stamp duty, registration, GST, legal fees, brokerage, EMI — accurate state-wise estimates.";
 
 export const metadata: Metadata = {
-  title: "True Cost Calculator — India Property Purchase Cost",
-  description: "Calculate the true all-in cost of buying property in India. Stamp duty, registration, GST, legal fees, brokerage, EMI — accurate state-wise estimates.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/cost-calculator" },
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
@@ -35,9 +41,22 @@ const FAQ = [
   },
 ];
 
+// Sourced directly from the FAQ array rendered below -- same questions/answers, so this
+// can't drift out of sync with what's actually visible on the page.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
 export default function CostCalculatorPage() {
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="max-w-4xl mx-auto px-6">
 
         {/* Breadcrumb */}

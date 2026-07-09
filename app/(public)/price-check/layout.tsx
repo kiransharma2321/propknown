@@ -3,7 +3,7 @@ import { OG_IMAGE } from "@/app/layout";
 
 const TITLE = "Price Reality Check — Is That Property Overpriced?";
 const DESC =
-  "Find out instantly if a property's asking price is overpriced or underpriced. Enter the location, size, and price to compare it against PropKnown's live AI market analysis — free, no signup required for your first checks.";
+  "Find out instantly if a property is overpriced or underpriced. Compare the asking price against PropKnown live AI market analysis — free to try.";
 
 export const metadata: Metadata = {
   title: TITLE,

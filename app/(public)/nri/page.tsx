@@ -2,12 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, Globe, FileText, CheckCircle, Phone, AlertCircle, ArrowRight } from "lucide-react";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "NRI Property Investment — UAE, US, UK, Singapore";
+const description =
+  "Complete guide for NRI property investment in India. FEMA rules, repatriation, power of attorney, remote buying, legal safeguards. Expert support from PropKnown.";
 
 export const metadata: Metadata = {
-  title: "NRI Property Investment — UAE, US, UK, Singapore",
-  description:
-    "Complete guide for NRI property investment in India. FEMA rules, repatriation, power of attorney, remote buying, legal safeguards. Expert support from PropKnown.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/nri" },
+  // Without this, shares of this page fell back to the sitewide homepage OG copy/image
+  // instead of this page's own title/description.
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.

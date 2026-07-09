@@ -74,6 +74,8 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
+        aria-label="Notifications"
+        aria-expanded={open}
         className="relative p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
         {unread > 0 ? <BellDot size={18} className="text-yellow-400" /> : <Bell size={18} />}
         {unread > 0 && (
@@ -90,11 +92,11 @@ export default function NotificationBell() {
             <span className="text-white text-sm font-semibold">Notifications {unread > 0 && <span className="text-yellow-400">({unread})</span>}</span>
             <div className="flex items-center gap-2">
               {unread > 0 && (
-                <button onClick={markAllRead} className="text-zinc-400 hover:text-white transition-colors" title="Mark all read">
+                <button onClick={markAllRead} aria-label="Mark all read" className="text-zinc-400 hover:text-white transition-colors" title="Mark all read">
                   <Check size={14} />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-white transition-colors">
+              <button onClick={() => setOpen(false)} aria-label="Close notifications" className="text-zinc-400 hover:text-white transition-colors">
                 <X size={14} />
               </button>
             </div>
@@ -108,16 +110,24 @@ export default function NotificationBell() {
               notifications.slice(0, 20).map(n => (
                 <div
                   key={n.id}
-                  onClick={() => { if (!n.isRead) markRead(n.id); }}
-                  className={`flex items-start gap-3 px-4 py-3 border-b border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer ${!n.isRead ? "bg-zinc-800/50" : ""}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${TYPE_COLOR[n.type] ?? "bg-zinc-500"}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-xs leading-tight mb-0.5 ${n.isRead ? "text-zinc-400" : "text-white font-medium"}`}>{n.title}</p>
-                    {n.body && <p className="text-zinc-500 text-[10px] leading-tight truncate">{n.body}</p>}
-                    <p className="text-zinc-600 text-[10px] mt-1">{timeAgo(n.createdAt)}</p>
-                  </div>
+                  className={`flex items-start gap-3 px-4 py-3 border-b border-zinc-800 hover:bg-zinc-800 transition-colors ${!n.isRead ? "bg-zinc-800/50" : ""}`}>
+                  {/* A sibling button+link, not a link nested inside a button -- <button><a/></button>
+                      is invalid HTML. This also makes the mark-as-read action keyboard-focusable,
+                      which the previous div onClick wasn't. */}
+                  <button
+                    onClick={() => { if (!n.isRead) markRead(n.id); }}
+                    aria-label={n.isRead ? n.title : `Mark "${n.title}" as read`}
+                    className="flex items-start gap-3 flex-1 min-w-0 text-left"
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${TYPE_COLOR[n.type] ?? "bg-zinc-500"}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-xs leading-tight mb-0.5 ${n.isRead ? "text-zinc-400" : "text-white font-medium"}`}>{n.title}</p>
+                      {n.body && <p className="text-zinc-500 text-[10px] leading-tight truncate">{n.body}</p>}
+                      <p className="text-zinc-600 text-[10px] mt-1">{timeAgo(n.createdAt)}</p>
+                    </div>
+                  </button>
                   {n.link && (
-                    <Link href={n.link} className="text-zinc-500 hover:text-yellow-400 shrink-0 mt-0.5" onClick={e => e.stopPropagation()}>
+                    <Link href={n.link} className="text-zinc-500 hover:text-yellow-400 shrink-0 mt-0.5">
                       <ExternalLink size={12} />
                     </Link>
                   )}

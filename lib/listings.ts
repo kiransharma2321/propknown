@@ -69,6 +69,40 @@ export function getListingCoords(location: string, city: string): [number, numbe
   return cityFallbacks[city] ?? null;
 }
 
+// For structured-data addresses (JSON-LD PostalAddress). Found and fixed a real bug while
+// auditing: the RealEstateListing schema previously hardcoded addressRegion:"Telangana" and
+// addressCountry:"IN" for every listing regardless of city -- silently wrong for the site's
+// own Dubai Marina listing (city: "Dubai") and Whitefield listing (city: "Bangalore", which is
+// Karnataka, not Telangana). Returns undefined region/country for any city not in this map
+// rather than guessing, since a wrong claimed location is worse than an absent one.
+const CITY_REGION_COUNTRY: Record<string, { region?: string; country: string }> = {
+  "Hyderabad":  { region: "Telangana",    country: "IN" },
+  "Rangareddy": { region: "Telangana",    country: "IN" },
+  "Bangalore":  { region: "Karnataka",    country: "IN" },
+  "Mumbai":     { region: "Maharashtra",  country: "IN" },
+  "Pune":       { region: "Maharashtra",  country: "IN" },
+  "Chennai":    { region: "Tamil Nadu",   country: "IN" },
+  "Delhi NCR":  { region: "Delhi",        country: "IN" },
+  "Dubai":      { country: "AE" },
+  "Singapore":  { country: "SG" },
+  "London":     { country: "GB" },
+  "Toronto":    { region: "Ontario",      country: "CA" },
+};
+
+export function getAddressRegionCountry(city: string): { region?: string; country?: string } {
+  return CITY_REGION_COUNTRY[city] ?? {};
+}
+
+// Plain .slice(0, n) on a meta description cuts mid-word ("...excellent cross-ventil") --
+// found while auditing the two dynamic listing pages that use this pattern. Backs up to the
+// last space within the limit instead, so it always ends on a whole word.
+export function truncateAtWord(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  const cut = text.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trim();
+}
+
 function withCoords(l: Omit<Listing, "lat" | "lng">): Listing {
   const c = getListingCoords(l.location, l.city);
   return { ...l, lat: c?.[0], lng: c?.[1] };

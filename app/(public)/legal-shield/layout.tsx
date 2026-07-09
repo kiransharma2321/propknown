@@ -3,7 +3,7 @@ import { OG_IMAGE } from "@/app/layout";
 
 const TITLE = "Legal Shield — Fraud & Red-Flag Property Checker";
 const DESC =
-  "Free fraud and red-flag checker for Indian real estate listings. Spot common scam signals, compare asking price against the market, and verify any RERA registration number against your state's official portal.";
+  "Free fraud checker for Indian real estate listings. Spot common scam signals, compare asking price against the market, verify any RERA number officially.";
 
 export const metadata: Metadata = {
   title: TITLE,

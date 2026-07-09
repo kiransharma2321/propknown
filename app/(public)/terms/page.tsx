@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description: "Terms and conditions for using PropKnown real estate services.",
+  description: "Terms of use for PropKnown: acceptance, use of listings and AI valuations, intellectual property, liability limits, and governing law under Indian jurisdiction.",
   alternates: { canonical: "https://www.propknown.com/terms" },
 };
 

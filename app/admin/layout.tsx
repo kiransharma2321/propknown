@@ -1,4 +1,6 @@
-export const metadata = { title: "PropKnown Admin" };
+// Internal tool, no public content to rank -- inherited the root layout's sitewide
+// index:true/follow:true with no override, so /admin/* was indexable by Google.
+export const metadata = { title: "PropKnown Admin", robots: { index: false, follow: false } };
 
 // Nested layouts must NOT render their own <html>/<head>/<body> -- only the root layout
 // (app/layout.tsx) may. This used to do exactly that, which produced two nested <html> roots

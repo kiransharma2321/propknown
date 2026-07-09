@@ -2,6 +2,7 @@
 
 import { X, Star, Shield, CheckCircle, ExternalLink, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useComparison } from "./ComparisonContext";
 import { formatPrice } from "@/lib/utils";
 
@@ -58,7 +59,7 @@ export default function ComparisonModal({ onClose }: { onClose: () => void }) {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={clear} className="text-xs text-gray-400 hover:text-red-500 transition-colors">Clear all</button>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <button onClick={onClose} aria-label="Close comparison" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
               <X size={16} />
             </button>
           </div>
@@ -75,13 +76,15 @@ export default function ComparisonModal({ onClose }: { onClose: () => void }) {
                     <div className="relative">
                       <button
                         onClick={() => remove(it.id)}
+                        aria-label={`Remove ${it.title} from comparison`}
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 hover:bg-red-100 text-gray-500 hover:text-red-500 flex items-center justify-center transition-colors text-[10px]"
                       >
                         <X size={10} />
                       </button>
                       {it.image ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={it.image} alt={it.title} className="w-full aspect-[4/3] object-cover rounded-xl mb-2" />
+                        <div className="relative w-full aspect-[4/3] rounded-xl mb-2 overflow-hidden">
+                          <Image src={it.image} alt={`${it.title} — ${it.type} in ${it.location}, ${it.city}`} fill sizes="200px" className="object-cover" />
+                        </div>
                       ) : (
                         <div className="w-full aspect-[4/3] bg-gray-100 rounded-xl mb-2 flex items-center justify-center text-gray-300 text-2xl">🏠</div>
                       )}

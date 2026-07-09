@@ -207,21 +207,21 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Full Name *</label>
-                <input className={inp} placeholder="Your name" value={contact.name} onChange={e => setContact(c => ({ ...c, name: e.target.value }))} />
+                <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block" htmlFor={`smartlead-name-${source}`}>Full Name *</label>
+                <input id={`smartlead-name-${source}`} className={inp} placeholder="Your name" value={contact.name} onChange={e => setContact(c => ({ ...c, name: e.target.value }))} />
               </div>
               <div>
-                <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Phone *</label>
-                <input className={inp} placeholder="+91 XXXXX XXXXX" value={contact.phone} onChange={e => setContact(c => ({ ...c, phone: e.target.value }))} />
+                <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block" htmlFor={`smartlead-phone-${source}`}>Phone *</label>
+                <input id={`smartlead-phone-${source}`} className={inp} placeholder="+91 XXXXX XXXXX" value={contact.phone} onChange={e => setContact(c => ({ ...c, phone: e.target.value }))} />
               </div>
             </div>
             <div>
-              <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Email</label>
-              <input className={inp} type="email" placeholder="email@example.com" value={contact.email} onChange={e => setContact(c => ({ ...c, email: e.target.value }))} />
+              <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block" htmlFor={`smartlead-email-${source}`}>Email</label>
+              <input id={`smartlead-email-${source}`} className={inp} type="email" placeholder="email@example.com" value={contact.email} onChange={e => setContact(c => ({ ...c, email: e.target.value }))} />
             </div>
             <div>
-              <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Additional Notes</label>
-              <textarea className={`${inp} resize-none`} rows={3} placeholder="Any specific requirements or questions?" value={contact.message} onChange={e => setContact(c => ({ ...c, message: e.target.value }))} />
+              <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1.5 block" htmlFor={`smartlead-message-${source}`}>Additional Notes</label>
+              <textarea id={`smartlead-message-${source}`} className={`${inp} resize-none`} rows={3} placeholder="Any specific requirements or questions?" value={contact.message} onChange={e => setContact(c => ({ ...c, message: e.target.value }))} />
             </div>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}

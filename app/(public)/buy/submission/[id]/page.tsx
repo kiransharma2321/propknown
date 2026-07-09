@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as ImageIcon } from "lucide-react";
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
@@ -86,9 +87,10 @@ export default function SubmissionDetailPage() {
           <div className="lg:col-span-2">
             {/* Main photo */}
             {photoUrls.length > 0 ? (
-              <div className="mb-3 rounded-2xl overflow-hidden bg-gray-100 aspect-[16/9]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrls[activePhoto]} alt={photoAlt(activePhoto)} className="w-full h-full object-cover" />
+              <div className="relative mb-3 rounded-2xl overflow-hidden bg-gray-100 aspect-[16/9]">
+                {/* This is the likely LCP element on this page -- priority skips lazy-loading
+                    so it doesn't delay the largest paint. */}
+                <Image src={photoUrls[activePhoto]} alt={photoAlt(activePhoto)} fill priority sizes="(min-width: 1024px) 66vw, 100vw" className="object-cover" />
               </div>
             ) : (
               <div className="mb-3 rounded-2xl bg-gray-100 aspect-[16/9] flex items-center justify-center">
@@ -101,9 +103,8 @@ export default function SubmissionDetailPage() {
               <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
                 {photoUrls.map((url, i) => (
                   <button key={i} onClick={() => setActivePhoto(i)}
-                    className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-400" : "border-transparent"}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt={photoAlt(i)} className="w-full h-full object-cover" />
+                    className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-400" : "border-transparent"}`}>
+                    <Image src={url} alt={photoAlt(i)} fill sizes="64px" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -155,6 +156,7 @@ export default function SubmissionDetailPage() {
                   milestones={sub.constructionMilestones}
                   pctComplete={sub.constructionPct}
                   expectedCompletion={sub.expectedCompletion}
+                  propertyTitle={sub.title}
                 />
               </div>
             )}

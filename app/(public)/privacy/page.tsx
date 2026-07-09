@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "PropKnown privacy policy — how we collect, use, and protect your data.",
+  description: "PropKnown privacy policy: what data we collect (name, phone, email, enquiries), how we use it, our security measures, cookie use, and how to request access or deletion.",
   alternates: { canonical: "https://www.propknown.com/privacy" },
 };
 

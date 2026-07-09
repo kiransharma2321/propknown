@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Heart, Bell, LogOut, Trash2 } from "lucide-react";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
 
@@ -110,8 +111,7 @@ export default function AccountDashboardPage() {
               {favorites.map(f => (
                 <div key={f.id} className="flex gap-3 border border-gray-200 rounded-xl p-3">
                   {f.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={f.image} alt={f.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                    <Image src={f.image} alt={f.location ? `${f.title}, ${f.location}` : f.title} width={64} height={64} className="w-16 h-16 rounded-lg object-cover shrink-0" />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm text-gray-900 line-clamp-1">{f.title}</p>

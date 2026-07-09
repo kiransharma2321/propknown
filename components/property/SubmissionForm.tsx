@@ -349,29 +349,29 @@ export default function SubmissionForm() {
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className={lbl}>Property Title *</label>
-            <input required value={form.title} onChange={e => setF("title", e.target.value)}
+            <label className={lbl} htmlFor="submission-title">Property Title *</label>
+            <input id="submission-title" required value={form.title} onChange={e => setF("title", e.target.value)}
               className={inp} placeholder="e.g. 3BHK Apartment in Kokapet" />
           </div>
           <div>
-            <label className={lbl}>Property Type *</label>
-            <select required value={form.propType} onChange={e => changePropType(e.target.value)} className={inp}>
+            <label className={lbl} htmlFor="submission-prop-type">Property Type *</label>
+            <select id="submission-prop-type" required value={form.propType} onChange={e => changePropType(e.target.value)} className={inp}>
               {PROP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
           <div>
-            <label className={lbl}>BHK / Configuration</label>
-            <input value={form.bhk} onChange={e => setF("bhk", e.target.value)}
+            <label className={lbl} htmlFor="submission-bhk">BHK / Configuration</label>
+            <input id="submission-bhk" value={form.bhk} onChange={e => setF("bhk", e.target.value)}
               className={inp} placeholder="3 BHK, 4 BHK, G+2, etc." />
           </div>
           <div>
-            <label className={lbl}>Size</label>
-            <input value={form.size} onChange={e => setF("size", e.target.value)}
+            <label className={lbl} htmlFor="submission-size">Size</label>
+            <input id="submission-size" value={form.size} onChange={e => setF("size", e.target.value)}
               className={inp} placeholder="e.g. 1850" type="number" min="0" />
           </div>
           <div>
-            <label className={lbl}>Size Unit</label>
-            <select value={form.sizeUnit} onChange={e => setF("sizeUnit", e.target.value)} className={inp}>
+            <label className={lbl} htmlFor="submission-size-unit">Size Unit</label>
+            <select id="submission-size-unit" value={form.sizeUnit} onChange={e => setF("sizeUnit", e.target.value)} className={inp}>
               {UNIT_OPTIONS.map(u => <option key={u}>{u}</option>)}
             </select>
           </div>
@@ -386,23 +386,23 @@ export default function SubmissionForm() {
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={lbl}>City *</label>
-            <input required value={form.city} onChange={e => setF("city", e.target.value)}
+            <label className={lbl} htmlFor="submission-city">City *</label>
+            <input id="submission-city" required value={form.city} onChange={e => setF("city", e.target.value)}
               className={inp} placeholder="Hyderabad" />
           </div>
           <div>
-            <label className={lbl}>Area / Locality *</label>
-            <input required value={form.area} onChange={e => setF("area", e.target.value)}
+            <label className={lbl} htmlFor="submission-area">Area / Locality *</label>
+            <input id="submission-area" required value={form.area} onChange={e => setF("area", e.target.value)}
               className={inp} placeholder="Kokapet, Gachibowli, Kondapur…" />
           </div>
           <div className="sm:col-span-2">
-            <label className={lbl}>Asking Price *</label>
-            <input required value={form.priceDisplay} onChange={e => setF("priceDisplay", e.target.value)}
+            <label className={lbl} htmlFor="submission-price">Asking Price *</label>
+            <input id="submission-price" required value={form.priceDisplay} onChange={e => setF("priceDisplay", e.target.value)}
               className={inp} placeholder="e.g. ₹1.5 Cr  or  ₹85 Lakhs  or  AED 2.2M" />
           </div>
           <div>
-            <label className={lbl}>RERA Number (if any)</label>
-            <input value={form.reraNumber} onChange={e => setF("reraNumber", e.target.value)}
+            <label className={lbl} htmlFor="submission-rera">RERA Number (if any)</label>
+            <input id="submission-rera" value={form.reraNumber} onChange={e => setF("reraNumber", e.target.value)}
               className={inp} placeholder="P02400…" />
           </div>
         </div>
@@ -416,14 +416,14 @@ export default function SubmissionForm() {
         </h3>
         <div className="space-y-4">
           <div>
-            <label className={lbl}>Property Description *</label>
-            <textarea required value={form.description} onChange={e => setF("description", e.target.value)}
+            <label className={lbl} htmlFor="submission-description">Property Description *</label>
+            <textarea id="submission-description" required value={form.description} onChange={e => setF("description", e.target.value)}
               rows={4} className={`${inp} resize-none`}
               placeholder="Describe your property — floors, facing, nearby landmarks, amenities, condition, age of building…" />
           </div>
           <div>
-            <label className={lbl}>Key Features (optional)</label>
-            <textarea value={form.features} onChange={e => setF("features", e.target.value)}
+            <label className={lbl} htmlFor="submission-features">Key Features (optional)</label>
+            <textarea id="submission-features" value={form.features} onChange={e => setF("features", e.target.value)}
               rows={2} className={`${inp} resize-none`}
               placeholder="e.g. East-facing, Vastu compliant, 2 car parking, gym, swimming pool, 24/7 security" />
           </div>
@@ -477,7 +477,9 @@ export default function SubmissionForm() {
                     <X size={10} className="text-white" />
                   </button>
                 </div>
+                <label className="sr-only" htmlFor={`submission-photo-caption-${p.tempId}`}>Photo caption</label>
                 <input
+                  id={`submission-photo-caption-${p.tempId}`}
                   value={p.caption}
                   onChange={e => setPhotoCaption(p.tempId, e.target.value)}
                   placeholder="What's in this photo? (optional)"
@@ -513,7 +515,8 @@ export default function SubmissionForm() {
             ) : (
               <>
                 <LinkIcon size={18} className="text-gray-400 shrink-0" />
-                <input value={v.url} onChange={e => setVideoUrl(v.tempId, e.target.value)}
+                <label className="sr-only" htmlFor={`submission-video-url-${v.tempId}`}>Video URL</label>
+                <input id={`submission-video-url-${v.tempId}`} value={v.url} onChange={e => setVideoUrl(v.tempId, e.target.value)}
                   className={`${inp} flex-1`} placeholder="https://youtube.com/... or Google Drive link" />
               </>
             )}
@@ -594,18 +597,18 @@ export default function SubmissionForm() {
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={lbl}>Full Name *</label>
-            <input required value={form.ownerName} onChange={e => setF("ownerName", e.target.value)}
+            <label className={lbl} htmlFor="submission-owner-name">Full Name *</label>
+            <input id="submission-owner-name" required value={form.ownerName} onChange={e => setF("ownerName", e.target.value)}
               className={inp} placeholder="Your name" />
           </div>
           <div>
-            <label className={lbl}>Phone Number *</label>
-            <input required value={form.ownerPhone} onChange={e => setF("ownerPhone", e.target.value)}
+            <label className={lbl} htmlFor="submission-owner-phone">Phone Number *</label>
+            <input id="submission-owner-phone" required value={form.ownerPhone} onChange={e => setF("ownerPhone", e.target.value)}
               className={inp} placeholder="+91 99999 99999" type="tel" />
           </div>
           <div className="sm:col-span-2">
-            <label className={lbl}>Email Address *</label>
-            <input required value={form.ownerEmail} onChange={e => setF("ownerEmail", e.target.value)}
+            <label className={lbl} htmlFor="submission-owner-email">Email Address *</label>
+            <input id="submission-owner-email" required value={form.ownerEmail} onChange={e => setF("ownerEmail", e.target.value)}
               className={inp} placeholder="you@example.com" type="email" />
           </div>
         </div>

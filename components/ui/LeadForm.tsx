@@ -69,8 +69,9 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Full Name *</label>
+            <label className={labelCls} htmlFor={`leadform-name-${source}`}>Full Name *</label>
             <input
+              id={`leadform-name-${source}`}
               className={inputCls}
               placeholder="Your name"
               value={form.name}
@@ -78,8 +79,9 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
             />
           </div>
           <div>
-            <label className={labelCls}>Phone *</label>
+            <label className={labelCls} htmlFor={`leadform-phone-${source}`}>Phone *</label>
             <input
+              id={`leadform-phone-${source}`}
               className={inputCls}
               placeholder="+91 XXXXX XXXXX"
               value={form.phone}
@@ -88,8 +90,9 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
           </div>
         </div>
         <div>
-          <label className={labelCls}>Email</label>
+          <label className={labelCls} htmlFor={`leadform-email-${source}`}>Email</label>
           <input
+            id={`leadform-email-${source}`}
             className={inputCls}
             type="email"
             placeholder="email@example.com"
@@ -98,8 +101,9 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
           />
         </div>
         <div>
-          <label className={labelCls}>Message</label>
+          <label className={labelCls} htmlFor={`leadform-message-${source}`}>Message</label>
           <textarea
+            id={`leadform-message-${source}`}
             className={`${inputCls} resize-none`}
             rows={3}
             placeholder="Tell us about your requirements..."

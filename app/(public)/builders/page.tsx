@@ -4,7 +4,7 @@ import LeadForm from "@/components/ui/LeadForm";
 
 export const metadata: Metadata = {
   title: "For Builders — Developer Partner Program",
-  description: "Channel partner program for builders and developers. Access our active buyer network, AI-powered marketing, RERA compliance support, and transparent inventory management.",
+  description: "Channel partner program for builders and developers. Access our active buyer network, AI-powered marketing, RERA compliance support, and inventory management.",
 };
 
 export default function BuildersPage() {

@@ -206,34 +206,34 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-8 shadow-sm">
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">① City</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5" htmlFor="buy-filter-city">① City</label>
               <div className="relative">
-                <select value={city} onChange={e => setCity(e.target.value)} className={`w-full ${sel}`}>
+                <select id="buy-filter-city" value={city} onChange={e => setCity(e.target.value)} className={`w-full ${sel}`}>
                   {CITIES.map(c => <option key={c}>{c}</option>)}
                 </select>
                 <ChevronDown size={12} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">② Area / Locality</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5" htmlFor="buy-filter-area">② Area / Locality</label>
               <div className="relative">
-                <input value={area} onChange={e => setArea(e.target.value)} placeholder="Kokapet, Gachibowli…" className={`w-full ${inp} pr-7`} />
-                {area && <button onClick={() => setArea("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"><X size={13} /></button>}
+                <input id="buy-filter-area" value={area} onChange={e => setArea(e.target.value)} placeholder="Kokapet, Gachibowli…" className={`w-full ${inp} pr-7`} />
+                {area && <button onClick={() => setArea("")} aria-label="Clear area filter" className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"><X size={13} /></button>}
               </div>
             </div>
             <div className="flex-1 min-w-[160px]">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">③ Property Type</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5" htmlFor="buy-filter-type">③ Property Type</label>
               <div className="relative">
-                <select value={type} onChange={e => setType(e.target.value)} className={`w-full ${sel}`}>
+                <select id="buy-filter-type" value={type} onChange={e => setType(e.target.value)} className={`w-full ${sel}`}>
                   {TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
                 <ChevronDown size={12} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
               </div>
             </div>
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">④ Budget</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5" htmlFor="buy-filter-budget">④ Budget</label>
               <div className="relative">
-                <select value={budget} onChange={e => setBudget(e.target.value)} className={`w-full ${sel}`}>
+                <select id="buy-filter-budget" value={budget} onChange={e => setBudget(e.target.value)} className={`w-full ${sel}`}>
                   {BUDGETS.map(b => <option key={b}>{b}</option>)}
                 </select>
                 <ChevronDown size={12} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />

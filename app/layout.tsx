@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 
 // Self-hosted via next/font -- replaces the render-blocking third-party
 // fonts.googleapis.com <link>/@import this site used to make on every single page. Variable
@@ -75,11 +76,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
       { url: "/logo.png", type: "image/png", sizes: "512x512" },
     ],
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
 
   robots: {
     index: true,
@@ -91,6 +95,13 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+};
+
+// bg-brand-black below is actually white (#FFFFFF) -- see tailwind.config.ts, the token names
+// are swapped from what they sound like. Matches the real page background so mobile browser
+// chrome blends in instead of showing an unstyled default.
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
 };
 
 // JSON-LD structured data for the business
@@ -196,8 +207,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} />
-            <script
+            {/* next/script with afterInteractive -- was a plain <script> tag, which Next.js
+                doesn't apply any loading strategy to, so it competed with the initial render
+                instead of loading after the page became interactive. */}
+            <Script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} strategy="afterInteractive" />
+            <Script
+              id="ga-init"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
               }}

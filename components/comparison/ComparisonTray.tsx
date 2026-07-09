@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { GitCompare, X } from "lucide-react";
 import { useComparison } from "./ComparisonContext";
 import ComparisonModal from "./ComparisonModal";
@@ -28,16 +29,16 @@ export default function ComparisonTray() {
         <div className="flex items-center gap-2">
           {items.map(it => (
             <div key={it.id} className="relative group">
-              <div className="w-9 h-9 rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700 shrink-0">
+              <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700 shrink-0">
                 {it.image ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={it.image} alt={it.title} className="w-full h-full object-cover" />
+                  <Image src={it.image} alt={`${it.title} — ${it.type} in ${it.location}, ${it.city}`} fill sizes="36px" className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-zinc-500 text-lg">🏠</div>
                 )}
               </div>
               <button
                 onClick={() => remove(it.id)}
+                aria-label={`Remove ${it.title} from comparison`}
                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-zinc-700 hover:bg-red-600 text-white hidden group-hover:flex items-center justify-center transition-colors"
               >
                 <X size={8} />

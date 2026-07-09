@@ -3,7 +3,7 @@ import { OG_IMAGE } from "@/app/layout";
 
 const TITLE = "Buy RERA-Verified Properties";
 const DESC =
-  "Browse RERA-verified properties in Hyderabad — apartments, villas, HMDA plots, farmland, and commercial spaces. AI-scored listings with WhatsApp enquiry. Kokapet, Gachibowli, Nallagandla, Financial District and more.";
+  "Browse RERA-verified properties in Hyderabad — apartments, villas, HMDA plots, farmland, commercial. AI-scored listings, WhatsApp enquiry. Kokapet, Gachibowli & more.";
 
 export const metadata: Metadata = {
   title: TITLE,

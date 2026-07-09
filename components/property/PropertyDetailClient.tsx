@@ -437,6 +437,7 @@ out body qt 30;`;
                 milestones={listing.constructionMilestones}
                 pctComplete={listing.constructionPctComplete}
                 expectedCompletion={listing.constructionExpectedCompletion}
+                propertyTitle={listing.title}
               />
             )}
 
@@ -613,7 +614,9 @@ out body qt 30;`;
 
               {/* Lead form */}
               <div className="border border-gray-200 rounded-2xl p-5">
-                <h3 className="text-gray-900 font-bold text-base mb-1">Request a Callback</h3>
+                {/* h2, not h3 -- this sidebar card isn't a subsection of any h2 above it
+                    (it sits in a separate <aside>-like column), so h3 skipped a level. */}
+                <h2 className="text-gray-900 font-bold text-base mb-1">Request a Callback</h2>
                 <p className="text-gray-400 text-xs mb-4">We respond within 2 hours.</p>
 
                 {fstate === "success" ? (
@@ -624,21 +627,27 @@ out body qt 30;`;
                   </div>
                 ) : (
                   <form onSubmit={submitLead} className="space-y-3">
+                    <label className="sr-only" htmlFor="callback-name">Your Name</label>
                     <input
+                      id="callback-name"
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="Your Name *"
                       required
                       className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
                     />
+                    <label className="sr-only" htmlFor="callback-phone">Phone Number</label>
                     <input
+                      id="callback-phone"
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="Phone Number *"
                       required type="tel"
                       className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
                     />
+                    <label className="sr-only" htmlFor="callback-message">Message</label>
                     <textarea
+                      id="callback-message"
                       value={form.message}
                       onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                       placeholder="Message (optional)"
@@ -670,7 +679,7 @@ out body qt 30;`;
               <div className="border border-gray-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp size={16} style={{ color: GOLD }} />
-                  <h3 className="text-gray-900 font-bold text-sm">Area Price Insight</h3>
+                  <h2 className="text-gray-900 font-bold text-sm">Area Price Insight</h2>
                 </div>
                 {marketData ? (
                   <>

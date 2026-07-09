@@ -57,26 +57,26 @@ function LoginForm() {
         <form onSubmit={onSubmit} className="space-y-4">
           {mode === "signup" && (
             <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1 block">Full Name</label>
-              <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              <label className="text-xs font-semibold text-gray-600 mb-1 block" htmlFor="login-name">Full Name</label>
+              <input id="login-name" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-500" />
             </div>
           )}
           <div>
-            <label className="text-xs font-semibold text-gray-600 mb-1 block">Email</label>
-            <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            <label className="text-xs font-semibold text-gray-600 mb-1 block" htmlFor="login-email">Email</label>
+            <input id="login-email" required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-500" />
           </div>
           {mode === "signup" && (
             <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1 block">Phone (optional)</label>
-              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              <label className="text-xs font-semibold text-gray-600 mb-1 block" htmlFor="login-phone">Phone (optional)</label>
+              <input id="login-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-500" />
             </div>
           )}
           <div>
-            <label className="text-xs font-semibold text-gray-600 mb-1 block">Password</label>
-            <input required type="password" minLength={6} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            <label className="text-xs font-semibold text-gray-600 mb-1 block" htmlFor="login-password">Password</label>
+            <input id="login-password" required type="password" minLength={6} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-500" />
           </div>
 

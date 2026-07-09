@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle, Shield, Clock, FileText, AlertTriangle, ArrowRight } from "lucide-react";
 import { LEGAL_CHECKLIST_ITEMS } from "@/lib/legalShield";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "Verified | Property Due Diligence & Trust Badges";
+const description = "Learn what PropKnown Verified means — RERA, title checks, document review, layout approval, and encumbrance clearance. No fake ticks. Honest badges.";
 
 export const metadata: Metadata = {
-  title: "Verified | Property Due Diligence & Trust Badges",
-  description: "Learn what PropKnown Verified means — RERA, title checks, document review, layout approval, and encumbrance clearance. No fake ticks. Honest badges.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/verified" },
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.

@@ -76,7 +76,12 @@ export default function Header() {
           </Link>
         </div>
 
-        <button className="xl:hidden text-gray-600 hover:text-gray-900 transition-colors" onClick={() => setOpen(!open)}>
+        <button
+          className="xl:hidden text-gray-600 hover:text-gray-900 transition-colors"
+          onClick={() => setOpen(!open)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+        >
           {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </nav>

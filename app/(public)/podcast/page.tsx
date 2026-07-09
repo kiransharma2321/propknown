@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import { Mic2, PlayCircle, Clock } from "lucide-react";
+import { OG_IMAGE } from "@/app/layout";
+
+const BASE_URL = "https://www.propknown.com";
+const title = "Podcast — Real Estate Intelligence";
+const description = "PropKnown Podcast: real conversations on Hyderabad market trends, NRI investment (Dubai vs Hyderabad), RERA buyer rights, and AI in real estate.";
 
 export const metadata: Metadata = {
-  title: "Podcast — Real Estate Intelligence",
-  description: "PropKnown Podcast: Market trends, investment strategies, buyer stories, and expert conversations on Indian and global real estate.",
-  alternates: { canonical: "https://www.propknown.com/podcast" },
+  title,
+  description,
+  alternates: { canonical: `${BASE_URL}/podcast` },
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 const EPISODES = [
@@ -16,9 +23,37 @@ const EPISODES = [
   { ep: "EP 07", title: "First Home Buyer Blueprint: From Search to Registration", duration: "55 min", guest: "Kavitha Nair, Home Buyer Advocate" },
 ];
 
+// "42 min" -> "PT42M" (ISO 8601), a direct reformat of the existing duration string --
+// no fabricated data. Episodes have no stored publish date or audio file URL, so
+// datePublished/associatedMedia are omitted entirely rather than guessed (same principle
+// as datePosted on the listing schema elsewhere in this app).
+function toIsoDuration(display: string): string | undefined {
+  const m = display.match(/(\d+)\s*min/i);
+  return m ? `PT${m[1]}M` : undefined;
+}
+
+const podcastJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "PodcastSeries",
+  name: "PropKnown Podcast",
+  description,
+  url: `${BASE_URL}/podcast`,
+  webFeed: `${BASE_URL}/podcast`,
+  image: OG_IMAGE.url,
+  publisher: { "@type": "Organization", name: "PropKnown Infra Pvt Ltd", url: BASE_URL },
+  episode: EPISODES.map(ep => ({
+    "@type": "PodcastEpisode",
+    name: ep.title,
+    url: `${BASE_URL}/podcast#${ep.ep.toLowerCase().replace(/\s+/g, "-")}`,
+    ...(toIsoDuration(ep.duration) ? { duration: toIsoDuration(ep.duration) } : {}),
+    actor: { "@type": "Person", name: ep.guest },
+  })),
+};
+
 export default function PodcastPage() {
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(podcastJsonLd) }} />
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-500 text-xs px-4 py-2 rounded-full mb-4">
@@ -36,7 +71,7 @@ export default function PodcastPage() {
         <h2 className="text-xl font-bold text-gray-900 mb-5">Latest Episodes</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {EPISODES.map((ep) => (
-            <div key={ep.ep} className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4">
+            <div key={ep.ep} id={ep.ep.toLowerCase().replace(/\s+/g, "-")} className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(201,162,75,0.1)", border: "1px solid rgba(201,162,75,0.3)" }}>
                 <PlayCircle size={20} style={{ color: "#8a6a2e" }} />
               </div>

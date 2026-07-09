@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
-  description: "Disclaimer for PropKnown AI valuations and property information.",
+  description: "Disclaimer: AI valuations and investment scores are indicative estimates only, not certified advice. RERA numbers should be independently verified before any decision.",
   alternates: { canonical: "https://www.propknown.com/disclaimer" },
 };
 

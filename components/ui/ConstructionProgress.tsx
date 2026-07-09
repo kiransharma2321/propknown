@@ -5,6 +5,10 @@ interface Props {
   milestones: ConstructionMilestone[];
   pctComplete?: number | null;
   expectedCompletion?: string | null;
+  /** For photo alt text -- without it, alt text was just the milestone label ("Foundation
+   *  complete") with no property context. Optional so existing call sites don't break if
+   *  ever reused without it; alt text degrades gracefully to the milestone label alone. */
+  propertyTitle?: string;
 }
 
 function fmtDate(iso: string): string {
@@ -15,7 +19,7 @@ function fmtDate(iso: string): string {
   }
 }
 
-export default function ConstructionProgress({ milestones, pctComplete, expectedCompletion }: Props) {
+export default function ConstructionProgress({ milestones, pctComplete, expectedCompletion, propertyTitle }: Props) {
   if (!milestones || milestones.length === 0) return null;
 
   const sorted = sortMilestones(milestones);
@@ -69,7 +73,7 @@ export default function ConstructionProgress({ milestones, pctComplete, expected
               {m.note && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{m.note}</p>}
               {m.photoUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.photoUrl} alt={m.title} className="mt-2 w-full max-w-xs rounded-lg border border-gray-200 object-cover" style={{ maxHeight: 200 }} />
+                <img src={m.photoUrl} alt={propertyTitle ? `${propertyTitle} — ${m.title}` : m.title} className="mt-2 w-full max-w-xs rounded-lg border border-gray-200 object-cover" style={{ maxHeight: 200 }} />
               )}
             </div>
           </div>
