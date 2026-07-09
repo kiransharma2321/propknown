@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
+// title/description are NOT set here -- page.tsx in this same route segment defines its own
+// and always wins over a sibling layout.tsx's, so anything here would be unreachable dead
+// code. openGraph below is different: page.tsx doesn't define its own, so this one actually
+// is what renders -- confirmed by checking real build output before touching this file.
 export const metadata: Metadata = {
-  title: "Contact Us",
-  description:
-    "Contact PropKnown — WhatsApp Raghu on 97017 71333 for instant property advice. Visit us at Shop No 3, Venkateswara Nilayam, Nizampet Road, Hyderabad 500090. Email: kiranpropservices@gmail.com. We respond within 2 hours.",
+  alternates: { canonical: "https://www.propknown.com/contact" },
   openGraph: {
     title: "Contact PropKnown — WhatsApp 97017 71333",
     description:

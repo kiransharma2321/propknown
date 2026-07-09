@@ -64,13 +64,29 @@ function buildListingJsonLd(listing: Listing) {
   };
 }
 
+function buildBreadcrumbJsonLd(listing: Listing) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+      { "@type": "ListItem", position: 2, name: "Buy Properties", item: `${BASE_URL}/buy` },
+      { "@type": "ListItem", position: 3, name: listing.title, item: `${BASE_URL}/buy/${listing.id}` },
+    ],
+  };
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const listing = findListingById(params.id);
   if (!listing) return { title: "Property Not Found — PropKnown" };
+  const title = `${listing.title} — ${listing.display} | PropKnown`;
+  const description = listing.description?.slice(0, 155) ?? `${listing.title} in ${listing.location}, ${listing.city}. ${listing.display}. RERA/HMDA verified. PropKnown.`;
   return {
-    title: `${listing.title} — ${listing.display} | PropKnown`,
-    description: listing.description?.slice(0, 155) ?? `${listing.title} in ${listing.location}, ${listing.city}. ${listing.display}. RERA/HMDA verified. PropKnown.`,
+    title,
+    description,
+    alternates: { canonical: `${BASE_URL}/buy/${listing.id}` },
     openGraph: { images: listing.images[0] ? [listing.images[0]] : [] },
+    twitter: { card: "summary_large_image", title, description, images: listing.images[0] ? [listing.images[0]] : undefined },
   };
 }
 
@@ -123,6 +139,10 @@ export default function PropertyDetailPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildListingJsonLd(listing)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbJsonLd(listing)) }}
       />
       <PropertyDetailClient listing={listing} nearbyListings={nearbyListings} />
     </>

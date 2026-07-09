@@ -19,6 +19,13 @@ const footerLinks = {
     { label: "Pricing",           href: "/pricing" },
     { label: "Contact",           href: "/contact" },
   ],
+  Resources: [
+    { label: "True Cost Calculator", href: "/cost-calculator" },
+    { label: "Price Reality Check",  href: "/price-check" },
+    { label: "Legal Shield",         href: "/legal-shield" },
+    { label: "Podcast",              href: "/podcast" },
+    { label: "PropKnown Verified",   href: "/verified" },
+  ],
 };
 
 function InstagramIcon() {
@@ -54,7 +61,7 @@ export default function Footer() {
   return (
     <footer className="bg-black border-t border-zinc-800">
       {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
         {/* Brand */}
         <div className="lg:col-span-2">
           {/* Logo */}

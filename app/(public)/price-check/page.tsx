@@ -199,6 +199,7 @@ export default function PriceCheckPage() {
 
         {result && (
           <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-6 shadow-md">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Your Price Reality Check Result</h2>
             {result.verdict === "insufficient_data" ? (
               <div className="flex items-start gap-3">
                 <AlertCircle size={20} className="shrink-0 mt-0.5 text-gray-400" />

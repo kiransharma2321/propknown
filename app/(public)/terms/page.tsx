@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description: "Terms and conditions for using PropKnown real estate services.",
+  alternates: { canonical: "https://www.propknown.com/terms" },
 };
 
 export default function TermsPage() {

@@ -716,7 +716,7 @@ out body qt 30;`;
                         <span className="font-semibold text-gray-500">Typical listings: </span>{marketData.typicalListings}
                       </p>
                     )}
-                    <p className="text-[10px] text-gray-400 mt-3 italic leading-relaxed">
+                    <p className="text-xs text-gray-400 mt-3 italic leading-relaxed">
                       AI-generated estimate based on live web search, not individual listing quotes — actual prices vary. Verify with RERA and a PropKnown advisor before any decision.
                     </p>
                   </>

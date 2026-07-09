@@ -204,9 +204,9 @@ export default function LegalShieldPage() {
 
                 {result.redFlags.length > 0 ? (
                   <div className="border border-gray-200 rounded-2xl p-5">
-                    <p className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                    <h2 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
                       <AlertTriangle size={15} className="text-yellow-600" /> Signals to Check ({result.redFlags.length})
-                    </p>
+                    </h2>
                     <div className="space-y-3">
                       {result.redFlags.map((f, i) => (
                         <div key={i} className="flex items-start gap-2.5">
@@ -227,7 +227,7 @@ export default function LegalShieldPage() {
                 )}
 
                 <div className="border border-gray-200 rounded-2xl p-5">
-                  <p className="font-bold text-gray-900 text-sm mb-3">What to Verify Next</p>
+                  <h2 className="font-bold text-gray-900 text-sm mb-3">What to Verify Next</h2>
                   <ul className="space-y-2">
                     {result.whatToVerifyNext.map((step, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600">
@@ -249,7 +249,7 @@ export default function LegalShieldPage() {
                   <MessageCircle size={16} /> Talk to Raghu for Professional Verification
                 </a>
 
-                <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+                <p className="text-xs text-gray-400 text-center leading-relaxed">
                   This is an educational red-flag check, not legal advice; always verify with professionals and PropKnown.
                 </p>
               </div>

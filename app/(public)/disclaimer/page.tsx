@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Disclaimer",
   description: "Disclaimer for PropKnown AI valuations and property information.",
+  alternates: { canonical: "https://www.propknown.com/disclaimer" },
 };
 
 export default function DisclaimerPage() {

@@ -603,9 +603,9 @@ export default function AIIntelligencePage() {
 
                   {/* Big price */}
                   <div className="mb-6">
-                    <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">
+                    <h2 className="text-gray-400 text-xs uppercase tracking-widest mb-1 font-normal">
                       Current Price per {displayUnitLabel}
-                    </p>
+                    </h2>
                     <p className="text-5xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
                       {sym}{displayPrice.toLocaleString()}
                       <span className="text-xl text-gray-400 font-normal ml-2">
@@ -654,26 +654,26 @@ export default function AIIntelligencePage() {
                 {/* Charts */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <h3 className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-normal flex items-center gap-2">
                       <Activity size={13} className="text-gray-400" />
                       5-Year Price History
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
                         <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" /></svg>
                         AI Estimated
                       </span>
-                    </p>
+                    </h3>
                     <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} />
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <h3 className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-normal flex items-center gap-2">
                       <ArrowUpRight size={13} style={{ color: "#8a6a2e" }} />
                       5-Year Forecast
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
                         <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
                         Projected
                       </span>
-                    </p>
+                    </h3>
                     <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} dashed />
                     <p className="text-center text-gray-400 text-xs mt-1">
                       {r.priceForecast5yr[4]?.year} forecast:

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "NRI Property Investment — UAE, US, UK, Singapore",
   description:
     "Complete guide for NRI property investment in India. FEMA rules, repatriation, power of attorney, remote buying, legal safeguards. Expert support from PropKnown.",
+  alternates: { canonical: "https://www.propknown.com/nri" },
 };
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.

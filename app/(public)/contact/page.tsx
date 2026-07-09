@@ -73,7 +73,7 @@ export default function ContactPage() {
 
             {/* Global offices */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-gray-900 font-semibold mb-4">Global Presence</h3>
+              <h2 className="text-gray-900 font-semibold mb-4">Global Presence</h2>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { flag: "🇮🇳", label: "India", sub: "Hyderabad HQ" },

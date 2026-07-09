@@ -47,9 +47,9 @@ export default function WhyChooseUs() {
             {POINTS.map((p) => (
               <div key={p.title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-yellow-500 transition-colors group shadow-sm">
                 <p.icon size={22} className="mb-3" style={{ color: "#8a6a2e" }} />
-                <h4 className="text-gray-900 font-semibold text-sm mb-1.5 group-hover:text-yellow-700 transition-colors">
+                <h3 className="text-gray-900 font-semibold text-sm mb-1.5 group-hover:text-yellow-700 transition-colors">
                   {p.title}
-                </h4>
+                </h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{p.desc}</p>
               </div>
             ))}

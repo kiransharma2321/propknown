@@ -30,7 +30,7 @@ export default function BuildersPage() {
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-md transition-colors shadow-sm">
               <Icon size={24} className="mb-3" style={{ color: "#8a6a2e" }} />
-              <h3 className="text-gray-900 font-semibold mb-2 text-base">{title}</h3>
+              <h2 className="text-gray-900 font-semibold mb-2 text-base">{title}</h2>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
             </div>
           ))}

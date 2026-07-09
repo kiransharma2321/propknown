@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
+// title/description live in page.tsx (same segment, always wins) -- not repeated here.
 export const metadata: Metadata = {
-  title: "Pricing & Service Packages",
-  description:
-    "Transparent PropKnown service pricing. No hidden fees. Packages for buyers, sellers, property management, legal verification, and NRI services. One-time and annual plans available.",
+  alternates: { canonical: "https://www.propknown.com/pricing" },
   openGraph: {
     title: "PropKnown Service Pricing — Transparent, No Hidden Fees",
     description:

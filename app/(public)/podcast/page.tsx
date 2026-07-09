@@ -4,6 +4,7 @@ import { Mic2, PlayCircle, Clock } from "lucide-react";
 export const metadata: Metadata = {
   title: "Podcast — Real Estate Intelligence",
   description: "PropKnown Podcast: Market trends, investment strategies, buyer stories, and expert conversations on Indian and global real estate.",
+  alternates: { canonical: "https://www.propknown.com/podcast" },
 };
 
 const EPISODES = [
@@ -32,6 +33,7 @@ export default function PodcastPage() {
           </p>
         </div>
 
+        <h2 className="text-xl font-bold text-gray-900 mb-5">Latest Episodes</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {EPISODES.map((ep) => (
             <div key={ep.ep} className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4">

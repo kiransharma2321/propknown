@@ -150,6 +150,34 @@ const jsonLd = {
   ],
 };
 
+// A dedicated Organization schema alongside RealEstateAgent above -- RealEstateAgent (a
+// LocalBusiness subtype) already carries the address/hours/geo data most SEO tooling asks
+// LocalBusiness markup for, but some tooling and Google's own Knowledge Panel guidance
+// specifically look for a plain Organization entry too. Kept intentionally minimal (no
+// duplication of the address/hours/geo already declared above) rather than repeating the
+// same facts under a second, redundant type.
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "PropKnown Infra Pvt Ltd",
+  alternateName: "PropKnown",
+  url: BASE_URL,
+  logo: `${BASE_URL}/logo.png`,
+  sameAs: [
+    "https://instagram.com/propknown",
+    "https://facebook.com/propknown",
+    "https://linkedin.com/company/propknown",
+    "https://youtube.com/@propknown",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+919701771333",
+    contactType: "customer service",
+    email: "kiranpropservices@gmail.com",
+    areaServed: ["IN", "AE", "GB", "SG", "US"],
+  },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
@@ -157,6 +185,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <ClientProviders>
           {children}

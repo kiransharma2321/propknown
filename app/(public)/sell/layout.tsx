@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
+// title/description live in page.tsx (same segment, always wins) -- not repeated here.
 export const metadata: Metadata = {
-  title: "Sell Your Property",
-  description:
-    "Sell your property fast with PropKnown's verified buyer network. Free AI valuation, RERA compliance guidance, zero brokerage for sellers in Hyderabad, Bangalore, and globally. WhatsApp Raghu on 97017 71333.",
+  alternates: { canonical: "https://www.propknown.com/sell" },
   openGraph: {
     title: "Sell Your Property — Free AI Valuation | PropKnown",
     description:

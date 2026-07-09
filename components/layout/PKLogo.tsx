@@ -15,7 +15,7 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
           width: "44px", height: "44px", borderRadius: "10px",
           background: "#ffffff", flexShrink: 0, overflow: "hidden",
         }}>
-          <Image src="/logo.png" alt="" width={0} height={0} sizes="36px"
+          <Image src="/logo.png" alt="" width={512} height={512} sizes="36px"
             style={{ height: "36px", width: "36px", objectFit: "contain" }} />
         </span>
         <span style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
@@ -43,8 +43,8 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
       <Image
         src="/logo.png"
         alt="PropKnown logo"
-        width={0}
-        height={0}
+        width={512}
+        height={512}
         sizes="56px"
         priority
         style={{ height: "56px", width: "auto", display: "block", mixBlendMode: "multiply" }}

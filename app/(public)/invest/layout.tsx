@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
+// title/description live in page.tsx (same segment, always wins) -- not repeated here.
+// keywords IS kept: page.tsx doesn't define its own, so this one is what actually applies.
 export const metadata: Metadata = {
-  title: "Property Investment Opportunities",
-  description:
-    "Discover high-yield property investment opportunities in Hyderabad and globally. HMDA plots, AI-scored apartments, NRI-friendly options, Kokapet villas, Gachibowli flats. PropKnown curates only RERA-verified, legally clear assets.",
+  alternates: { canonical: "https://www.propknown.com/invest" },
   keywords: [
     "property investment Hyderabad 2026", "HMDA plot investment", "Kokapet real estate",
     "NRI property investment India", "high yield rental property", "PropKnown invest",
