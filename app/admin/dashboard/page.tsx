@@ -1294,7 +1294,7 @@ function AdminDashboardInner() {
                       <tr><td colSpan={7} className="text-center py-10 text-zinc-500">No leads yet. Leads from all forms appear here.</td></tr>
                     ) : adminLeads.map(l => {
                       const leadWaLink = `https://wa.me/${toIndianWaNumber(l.phone)}?text=${encodeURIComponent(`Hi ${l.name}, this is Raghu from PropKnown. How can I help you?`)}`;
-                      const notifyWaLink = `https://wa.me/919701771333?text=${encodeURIComponent(
+                      const notifyWaLink = `https://wa.me/917013016003?text=${encodeURIComponent(
                         [`New PropKnown lead:`, `Name: ${l.name}`, `Phone: ${l.phone}`, l.email ? `Email: ${l.email}` : null, `Source: ${l.source}`, l.message ? `Enquiry: ${l.message}` : null]
                           .filter(Boolean).join("\n")
                       )}`;
@@ -1328,7 +1328,7 @@ function AdminDashboardInner() {
               {[
                 { label: "Company", value: "PropKnown Infra Pvt Ltd" },
                 { label: "Founder", value: "Pinnelli Raghu Kiran" },
-                { label: "WhatsApp", value: "+91 97017 71333" },
+                { label: "WhatsApp", value: "+91 70130 16003" },
                 { label: "Email", value: "kiranpropservices@gmail.com" },
                 { label: "Address", value: "Shop No 3, Venkateswara Nilyam, Nizampet Road, Hyd 500090" },
               ].map(({ label, value }) => (

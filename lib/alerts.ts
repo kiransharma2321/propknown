@@ -73,7 +73,7 @@ function buildAlertHtml(buyerName: string, listing: NewListing): string {
         <div style="margin-top:20px">
           <a href="https://www.propknown.com/buy" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">View on PropKnown →</a>
         </div>
-        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333</p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003</p>
       </div>
     </div>`;
 }

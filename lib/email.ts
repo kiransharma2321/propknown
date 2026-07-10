@@ -80,7 +80,7 @@ export async function sendAdminEmail(opts: SendOptions): Promise<void> {
   }));
 }
 
-// Admin's own WhatsApp number (matches the site-wide contact number, +91 97017 71333) --
+// Admin's own WhatsApp number (matches the site-wide contact number, +91 70130 16003) --
 // generates a wa.me link pre-addressed to Raghu himself with the lead's details already
 // filled in, so opening it (from the admin panel or this email) drops a ready-to-send
 // summary into his own WhatsApp for logging/forwarding to whoever's handling follow-up.
@@ -96,7 +96,7 @@ export function buildRaghuNotifyWhatsAppLink(lead: {
     `Source: ${lead.source}`,
     lead.message ? `Enquiry: ${lead.message}` : null,
   ].filter(Boolean);
-  return `https://wa.me/919701771333?text=${encodeURIComponent(lines.join("\n"))}`;
+  return `https://wa.me/917013016003?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
 export function buildLeadHtml(lead: {
@@ -132,7 +132,7 @@ export function buildLeadHtml(lead: {
           <a href="${notifyWaLink}" style="display:inline-block;background:#128C7E;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Notify Raghu (WhatsApp)</a>
           <a href="https://www.propknown.com/admin/dashboard?tab=leads" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Open CRM →</a>
         </div>
-        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333</p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003</p>
       </div>
     </div>`;
 }
@@ -169,7 +169,7 @@ export function buildSubmissionHtml(s: {
         <div style="margin-top:20px">
           <a href="https://www.propknown.com/admin/dashboard?tab=submissions" style="display:inline-block;background:#C9A24B;color:#000;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Review in Admin Dashboard →</a>
         </div>
-        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333</p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003</p>
       </div>
     </div>`;
 }
@@ -191,8 +191,8 @@ export function buildApprovalHtml(opts: {
         <p style="color:#333;font-size:14px">Your property listing "<strong>${title}</strong>" has been <strong>${opts.action}</strong> by our team.</p>
         ${!isApproved && reason ? `<p style="color:#dc2626;font-size:13px;background:#fef2f2;padding:10px 14px;border-radius:8px;border:1px solid #fecaca">Reason: ${reason}</p>` : ""}
         ${isApproved ? `<p style="color:#333;font-size:13px">Your property is now live on PropKnown and visible to buyers. We will contact you shortly with next steps.</p>` : `<p style="color:#333;font-size:13px">Please make the requested changes and resubmit, or contact us for clarification.</p>`}
-        <p style="margin-top:20px;color:#555;font-size:13px">Questions? Call or WhatsApp Raghu: <a href="tel:+919701771333" style="color:#C9A24B;font-weight:700">+91 97017 71333</a></p>
-        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 97017 71333 · Hyderabad</p>
+        <p style="margin-top:20px;color:#555;font-size:13px">Questions? Call or WhatsApp Raghu: <a href="tel:+917013016003" style="color:#C9A24B;font-weight:700">+91 70130 16003</a></p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003 · Hyderabad</p>
       </div>
     </div>`;
 }

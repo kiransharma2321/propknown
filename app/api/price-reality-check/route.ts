@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       verdict:     "insufficient_data",
       pricePerUnit: Math.round(pricePerUnit),
       unit:        resolvedUnit,
-      message:     `We don't have reliable live market data for ${location.trim()} right now, so we can't confidently assess this price. Please try again in a moment, or WhatsApp Raghu on 97017 71333 for a manual opinion.`,
+      message:     `We don't have reliable live market data for ${location.trim()} right now, so we can't confidently assess this price. Please try again in a moment, or WhatsApp Raghu on 70130 16003 for a manual opinion.`,
     });
   }
 

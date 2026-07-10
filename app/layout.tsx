@@ -115,7 +115,7 @@ const jsonLd = {
   url: BASE_URL,
   logo: `${BASE_URL}/logo.png`,
   image: `${BASE_URL}/og-image.png`,
-  telephone: "+919701771333",
+  telephone: "+917013016003",
   email: "kiranpropservices@gmail.com",
   address: {
     "@type": "PostalAddress",
@@ -182,7 +182,7 @@ const organizationJsonLd = {
   ],
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+919701771333",
+    telephone: "+917013016003",
     contactType: "customer service",
     email: "kiranpropservices@gmail.com",
     areaServed: ["IN", "AE", "GB", "SG", "US"],

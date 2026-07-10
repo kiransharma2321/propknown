@@ -535,7 +535,7 @@ export default function AIIntelligencePage() {
                       <AlertCircle size={14} className="shrink-0 mt-0.5" />
                       <span>{error}</span>
                       {error.includes("WhatsApp") ? (
-                        <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer"
+                        <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer"
                           className="ml-auto text-green-600 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline">
                           <MessageCircle size={13} /> WhatsApp
                         </a>

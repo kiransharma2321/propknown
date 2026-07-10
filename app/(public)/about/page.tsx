@@ -77,7 +77,7 @@ export default function AboutPage() {
               </footer>
             </blockquote>
             <a
-              href={`https://wa.me/919701771333?text=${waMsg}`}
+              href={`https://wa.me/917013016003?text=${waMsg}`}
               target="_blank" rel="noopener noreferrer"
               className="btn-gold inline-flex"
             >

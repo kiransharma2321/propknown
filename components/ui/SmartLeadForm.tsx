@@ -85,7 +85,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
         <h3 className="font-semibold text-xl text-gray-900 mb-2">Enquiry Received!</h3>
         <p className="text-gray-500 text-sm max-w-xs">Our team will reach out within 2 hours. You can also WhatsApp us directly.</p>
         <a
-          href="https://wa.me/919701771333"
+          href="https://wa.me/917013016003"
           className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{ background: "#25d366" }}
           target="_blank" rel="noopener noreferrer"
@@ -236,8 +236,8 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
             <p className="text-center text-gray-500 text-xs">
               Or WhatsApp directly:{" "}
-              <a href="https://wa.me/919701771333" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "#8a6a2e" }}>
-                +91 97017 71333
+              <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "#8a6a2e" }}>
+                +91 70130 16003
               </a>
             </p>
           </div>

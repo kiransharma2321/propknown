@@ -5,7 +5,7 @@ import { COMPANY } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Contact Us | Hyderabad Real Estate Experts",
-  description: "Contact PropKnown Infra Pvt Ltd. Office: Nizampet Road, Hyderabad. Phone: +91 97017 71333. Email: kiranpropservices@gmail.com. Mon–Sat 9am–7pm.",
+  description: "Contact PropKnown Infra Pvt Ltd. Office: Nizampet Road, Hyderabad. Phone: +91 70130 16003. Email: kiranpropservices@gmail.com. Mon–Sat 9am–7pm.",
 };
 
 export default function ContactPage() {

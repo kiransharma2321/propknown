@@ -52,12 +52,12 @@ export default function KnownAIChat() {
         }),
       });
       const data = await res.json();
-      const reply = data.reply || "Sorry, I had trouble there. Please try again, or WhatsApp us on 97017 71333!";
+      const reply = data.reply || "Sorry, I had trouble there. Please try again, or WhatsApp us on 70130 16003!";
       setMessages(prev => [...prev, { role: "bot", text: reply }]);
     } catch {
       setMessages(prev => [...prev, {
         role: "bot",
-        text: "Sorry, I had trouble there. Please try again, or WhatsApp us on 97017 71333 for instant help!",
+        text: "Sorry, I had trouble there. Please try again, or WhatsApp us on 70130 16003 for instant help!",
       }]);
     } finally {
       setTyping(false);

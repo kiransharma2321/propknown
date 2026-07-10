@@ -60,12 +60,12 @@ export default function LegalShieldPage() {
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setError("Could not run the check right now. Please WhatsApp us on 97017 71333.");
+        setError("Could not run the check right now. Please WhatsApp us on 70130 16003.");
         return;
       }
       setResult(data);
     } catch {
-      setError("Could not run the check right now. Please WhatsApp us on 97017 71333.");
+      setError("Could not run the check right now. Please WhatsApp us on 70130 16003.");
     } finally {
       setLoading(false);
     }

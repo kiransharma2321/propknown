@@ -35,7 +35,7 @@ export default function TermsPage() {
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">6. Contact</h2>
-            <p>PropKnown Infra Pvt Ltd · <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#8a6a2e" }}>kiranpropservices@gmail.com</a> · <a href="tel:+919701771333" style={{ color: "#8a6a2e" }}>+91 97017 71333</a></p>
+            <p>PropKnown Infra Pvt Ltd · <a href="mailto:kiranpropservices@gmail.com" className="underline" style={{ color: "#8a6a2e" }}>kiranpropservices@gmail.com</a> · <a href="tel:+917013016003" style={{ color: "#8a6a2e" }}>+91 70130 16003</a></p>
           </section>
         </div>
       </div>

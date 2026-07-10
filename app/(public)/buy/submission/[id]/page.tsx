@@ -60,7 +60,7 @@ export default function SubmissionDetailPage() {
   }
 
   const photoUrls = sub.photoIds.map(pid => `/api/files/${pid}`);
-  const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'm interested in "${sub.title}" at ${sub.area}, ${sub.city}. Asking: ${sub.priceDisplay}`)}`;
+  const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'm interested in "${sub.title}" at ${sub.area}, ${sub.city}. Asking: ${sub.priceDisplay}`)}`;
 
   // Owner-written caption when available, otherwise a fallback that at least varies per photo
   // instead of repeating the exact same alt text for every image in the gallery.

@@ -28,8 +28,8 @@ export function slugify(text: string): string {
 export const COMPANY = {
   name:    "PROPKNOWN INFRA PVT LTD",
   tagline: "KNOW. INVEST. GROW.",
-  phone:   "+91 97017 71333",
-  whatsapp:"919701771333",
+  phone:   "+91 70130 16003",
+  whatsapp:"917013016003",
   email:   "kiranpropservices@gmail.com",
   address: "Shop No 3, Venkateswara Nilayam, Opposite Vertex Prime, Nizampet Road, Hyderabad 500090",
   founder: "Pinnelli Raghu Kiran",

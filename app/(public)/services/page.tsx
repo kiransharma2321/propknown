@@ -123,7 +123,7 @@ const GROUPS: Group[] = [
 ];
 
 function ServiceCard({ s }: { s: Service }) {
-  const waMsg = `https://wa.me/919701771333?text=${encodeURIComponent(`Hi, I'd like to enquire about the "${s.name}" service from PropKnown.`)}`;
+  const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'd like to enquire about the "${s.name}" service from PropKnown.`)}`;
   return (
     <div className={`bg-white border rounded-2xl p-6 flex flex-col hover:shadow-md transition-all ${s.featured ? "border-yellow-400 ring-1 ring-yellow-400/30" : "border-gray-200 hover:border-yellow-400"}`}>
       {s.featured && (

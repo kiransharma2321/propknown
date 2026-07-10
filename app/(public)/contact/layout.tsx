@@ -8,9 +8,9 @@ import { OG_IMAGE } from "@/app/layout";
 export const metadata: Metadata = {
   alternates: { canonical: "https://www.propknown.com/contact" },
   openGraph: {
-    title: "Contact PropKnown — WhatsApp 97017 71333",
+    title: "Contact PropKnown — WhatsApp 70130 16003",
     description:
-      "Reach Raghu Kiran directly on WhatsApp 97017 71333 or visit our Hyderabad office. We respond within 2 hours.",
+      "Reach Raghu Kiran directly on WhatsApp 70130 16003 or visit our Hyderabad office. We respond within 2 hours.",
     images: [OG_IMAGE],
   },
 };

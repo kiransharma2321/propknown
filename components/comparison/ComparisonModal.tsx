@@ -227,7 +227,7 @@ export default function ComparisonModal({ onClose }: { onClose: () => void }) {
             <Link href="/cost-calculator" className="underline" style={{ color: GOLD }} onClick={onClose}>Cost Calculator</Link> for exact figures.
           </p>
           <a
-            href={`https://wa.me/919701771333?text=${waText}`}
+            href={`https://wa.me/917013016003?text=${waText}`}
             target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-white text-xs font-bold px-5 py-2.5 rounded-xl shrink-0 transition-all hover:opacity-90"
             style={{ background: "#25D366" }}
