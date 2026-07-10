@@ -44,7 +44,7 @@ export default function Header() {
             Premium Real Estate Across {COMPANY.markets.join(" · ")}
           </span>
           <div className="flex items-center gap-6">
-            <a href={`tel:${COMPANY.phone}`}
+            <a href={`tel:${COMPANY.phoneTel}`}
               className="flex items-center gap-1.5 text-xs font-medium transition-colors"
               style={{ color: "#8a6a2e" }}>
               <Phone size={12} />{COMPANY.phone}

@@ -20,7 +20,7 @@ export default function CTASection() {
             </p>
 
             <div className="space-y-4 mb-8">
-              <a href={`tel:${COMPANY.phone}`} className="flex items-center gap-4 group">
+              <a href={`tel:${COMPANY.phoneTel}`} className="flex items-center gap-4 group">
                 <div className="w-12 h-12 rounded-full border border-gold-500/40 bg-gold-500/10 flex items-center justify-center group-hover:bg-gold-500 group-hover:border-gold-500 transition-all">
                   <Phone size={18} className="text-gold-400 group-hover:text-black transition-colors" />
                 </div>

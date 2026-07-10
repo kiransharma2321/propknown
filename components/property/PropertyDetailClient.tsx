@@ -603,7 +603,7 @@ out body qt 30;`;
               </a>
 
               <a
-                href={`tel:${COMPANY.phone}`}
+                href={`tel:${COMPANY.phoneTel}`}
                 className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl font-semibold text-sm border-2 transition-all hover:bg-gray-50"
                 style={{ borderColor: "rgba(201,162,75,0.5)", color: GOLD }}
               >

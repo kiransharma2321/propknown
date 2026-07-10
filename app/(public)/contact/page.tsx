@@ -27,7 +27,7 @@ export default function ContactPage() {
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { icon: Phone,   label: "Phone / WhatsApp", value: COMPANY.phone,   href: `tel:${COMPANY.phone}` },
+                { icon: Phone,   label: "Phone / WhatsApp", value: COMPANY.phone,   href: `tel:${COMPANY.phoneTel}` },
                 { icon: Mail,    label: "Email",             value: COMPANY.email,   href: `mailto:${COMPANY.email}` },
                 { icon: Clock,   label: "Business Hours",    value: "Mon–Sat 9am–7pm IST", href: null },
                 { icon: MapPin,  label: "Office",            value: COMPANY.address, href: null },

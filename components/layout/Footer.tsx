@@ -116,7 +116,7 @@ export default function Footer() {
       {/* Contact bar */}
       <div className="border-t border-zinc-900 bg-zinc-950">
         <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href={`tel:${COMPANY.phone}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors text-sm">
+          <a href={`tel:${COMPANY.phoneTel}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors text-sm">
             <Phone size={16} className="shrink-0" style={{ color: "#C9A24B" }} />
             {COMPANY.phone}
           </a>

@@ -29,6 +29,7 @@ export const COMPANY = {
   name:    "PROPKNOWN INFRA PVT LTD",
   tagline: "KNOW. INVEST. GROW.",
   phone:   "+91 70130 16003",
+  phoneTel:"+917013016003",
   whatsapp:"917013016003",
   email:   "kiranpropservices@gmail.com",
   address: "Shop No 3, Venkateswara Nilayam, Opposite Vertex Prime, Nizampet Road, Hyderabad 500090",
