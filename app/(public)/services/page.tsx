@@ -125,24 +125,24 @@ const GROUPS: Group[] = [
 function ServiceCard({ s }: { s: Service }) {
   const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'd like to enquire about the "${s.name}" service from PropKnown.`)}`;
   return (
-    <div className={`bg-white border rounded-2xl p-6 flex flex-col hover:shadow-md transition-all ${s.featured ? "border-yellow-400 ring-1 ring-yellow-400/30" : "border-gray-200 hover:border-yellow-400"}`}>
+    <div className={`card-dark p-6 flex flex-col ${s.featured ? "ring-1 ring-[#D6A63E]/30" : ""}`} style={s.featured ? { borderColor: "#D6A63E" } : undefined}>
       {s.featured && (
         <div className="mb-3">
-          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: "rgba(201,162,75,0.12)", color: "#8a6a2e" }}>
+          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: "rgba(214,166,62,0.12)", color: "var(--gold-text)" }}>
             ★ FEATURED — Annual Subscription
           </span>
         </div>
       )}
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(201,162,75,0.1)" }}>
-        <s.icon size={22} style={{ color: "#8a6a2e" }} />
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(214,166,62,0.1)" }}>
+        <s.icon size={22} style={{ color: "var(--gold-text)" }} />
       </div>
-      <h3 className="text-gray-900 font-bold text-base mb-2">{s.name}</h3>
+      <h3 className="heading-h3 mb-2">{s.name}</h3>
       <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-4">{s.desc}</p>
       {s.steps && (
         <ol className="mb-4 space-y-1.5">
           {s.steps.map((step, i) => (
             <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
-              <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5" style={{ background: "rgba(201,162,75,0.15)", color: "#8a6a2e" }}>{i + 1}</span>
+              <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5" style={{ background: "rgba(214,166,62,0.15)", color: "var(--gold-text)" }}>{i + 1}</span>
               {step}
             </li>
           ))}
@@ -155,11 +155,7 @@ function ServiceCard({ s }: { s: Service }) {
           ))}
         </div>
       )}
-      <a
-        href={waMsg}
-        target="_blank" rel="noopener noreferrer"
-        className="btn-secondary mt-auto inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4"
-      >
+      <a href={waMsg} target="_blank" rel="noopener noreferrer" className="btn-primary mt-auto justify-center text-sm py-2.5 px-4">
         Enquire on WhatsApp
       </a>
     </div>
@@ -172,8 +168,8 @@ export default function ServicesPage() {
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-16">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>What We Do</p>
-          <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "var(--gold-text)" }}>What We Do</p>
+          <h1 className="heading-h1">
             End-to-End <span className="gold-text">Real Estate Services</span>
           </h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
@@ -197,7 +193,7 @@ export default function ServicesPage() {
           <div key={group} className="mb-16">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-px flex-1 bg-gray-200" />
-              <h2 className="text-gray-900 font-bold text-xl whitespace-nowrap" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+              <h2 className="heading-h3 whitespace-nowrap">
                 <span className="gold-text">{group}</span>
               </h2>
               <div className="h-px flex-1 bg-gray-200" />
