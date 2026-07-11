@@ -20,8 +20,8 @@ export default function InvestPage() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Grow Your Wealth</p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "var(--gold-text)" }}>Grow Your Wealth</p>
+          <h1 className="heading-h1 mb-4">
             Invest With <span className="gold-text">Insight, Not Guesswork</span>
           </h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -38,9 +38,9 @@ export default function InvestPage() {
             { icon: Shield,     title: "RERA Verified",      desc: "Zero unverified projects. Full compliance across all markets." },
             { icon: BarChart3,  title: "Portfolio Tracking", desc: "Monitor your investments across markets in one place." },
           ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center hover:border-yellow-400 hover:shadow-md transition-colors shadow-sm">
-              <Icon size={28} className="mx-auto mb-3" style={{ color: "#8a6a2e" }} />
-              <h3 className="text-gray-900 font-semibold mb-2 text-base">{title}</h3>
+            <div key={title} className="card-dark bg-gray-50 p-5 text-center">
+              <Icon size={28} className="mx-auto mb-3" style={{ color: "var(--gold-text)" }} />
+              <h3 className="heading-h3 mb-2">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
             </div>
           ))}
@@ -48,15 +48,15 @@ export default function InvestPage() {
 
         {/* Markets */}
         <div className="mb-16">
-          <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h2 className="heading-h2 mb-6 text-center">
             Top Investment <span className="gold-text">Markets</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {INVEST_MARKETS.map((m) => (
-              <div key={m.city} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-yellow-400 hover:shadow-md transition-all group shadow-sm">
+              <div key={m.city} className="card-dark p-5 group">
                 <div className="text-3xl mb-3">{m.flag}</div>
-                <h3 className="text-gray-900 font-semibold mb-1 group-hover:text-yellow-700 transition-colors text-base">{m.city}</h3>
-                <p className="font-bold text-sm mb-2" style={{ color: "#8a6a2e" }}>{m.roi}</p>
+                <h3 className="heading-h3 mb-1 transition-colors group-hover:text-[#7A5C1A]">{m.city}</h3>
+                <p className="font-bold text-sm mb-2" style={{ color: "var(--gold-text)" }}>{m.roi}</p>
                 <p className="text-gray-500 text-sm">{m.type}</p>
               </div>
             ))}
@@ -66,7 +66,7 @@ export default function InvestPage() {
         {/* CTA */}
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="text-gray-900 text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+            <h2 className="heading-h2 mb-4">
               Start Your Investment <span className="gold-text">Journey</span>
             </h2>
             <p className="text-gray-500 mb-6 leading-relaxed">Tell us your investment goals and budget. We&apos;ll curate the best options within 24 hours.</p>
