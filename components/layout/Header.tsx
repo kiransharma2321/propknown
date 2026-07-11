@@ -103,7 +103,7 @@ export default function Header() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className={`nav-link text-[13px] pb-1 border-b-2 ${active ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
+                  className={`nav-link inline-flex items-center text-[13px] pb-1 border-b-2 ${active ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
                 >
                   {l.label}
                 </Link>
@@ -122,10 +122,10 @@ export default function Header() {
               onClick={() => setResourcesOpen(o => !o)}
               aria-expanded={resourcesOpen}
               aria-haspopup="true"
-              className={`nav-link text-[13px] pb-1 border-b-2 flex items-center gap-1 ${resourcesActive ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
+              className={`nav-link inline-flex items-center gap-1 text-[13px] pb-1 border-b-2 ${resourcesActive ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
             >
               Resources
-              <ChevronDown size={14} className={`transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={14} className={`shrink-0 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
             </button>
 
             {resourcesOpen && (
