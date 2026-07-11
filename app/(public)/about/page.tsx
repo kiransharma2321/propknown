@@ -79,7 +79,7 @@ export default function AboutPage() {
             <a
               href={`https://wa.me/917013016003?text=${waMsg}`}
               target="_blank" rel="noopener noreferrer"
-              className="btn-gold inline-flex"
+              className="btn-primary inline-flex"
             >
               Connect with Raghu on WhatsApp
             </a>
@@ -170,7 +170,7 @@ export default function AboutPage() {
         </div>
 
         <div className="text-center">
-          <Link href="/contact" className="btn-gold text-lg px-10 py-4">Work With Us</Link>
+          <Link href="/contact" className="btn-primary text-lg px-10 py-4">Work With Us</Link>
         </div>
       </div>
     </div>

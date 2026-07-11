@@ -89,7 +89,7 @@ export default function AiIntelRegisterGate({ searchContext, onUnlocked }: Props
         <button
           type="submit"
           disabled={submitting}
-          className="btn-gold w-full justify-center py-3 text-sm disabled:opacity-60"
+          className="btn-primary w-full justify-center py-3 text-sm disabled:opacity-60"
         >
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
           {submitting ? "Unlocking…" : "Unlock Unlimited Searches"}

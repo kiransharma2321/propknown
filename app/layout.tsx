@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Montserrat } from "next/font/google";
 import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
@@ -16,10 +16,10 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   display: "swap",
 });
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-inter",
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -191,7 +191,7 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${montserrat.variable}`}>
       <body className="bg-brand-black text-brand-white antialiased">
         <script
           type="application/ld+json"

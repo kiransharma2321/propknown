@@ -2,10 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --font-playfair / --font-inter are supplied by next/font/google via the className applied
-   to <html> in app/layout.tsx -- self-hosted, no render-blocking third-party font request. */
+/* --font-playfair / --font-montserrat are supplied by next/font/google via the className
+   applied to <html> in app/layout.tsx -- self-hosted, no render-blocking third-party font
+   request. Playfair Display = all headings (H1-H3). Montserrat = body/nav/buttons/labels. */
 :root {
-  --gold: #C9A24B;
+  /* Brand palette. #D6A63E ("--gold") is ~2.2:1 contrast on white -- WCAG AA needs 4.5:1 for
+     text -- so it's reserved for solid fills (buttons, badges) with dark text on top.
+     "--gold-text" is the same hue darkened to 6.2:1, used anywhere gold appears AS text
+     (links, nav hover/active, tertiary buttons, underlines). */
+  --navy:      #0C1D42;
+  --gold:      #D6A63E;
+  --gold-text: #7A5C1A;
+  --cream:     #FAF9F5;
+  --charcoal:  #121212;
 }
 
 * { box-sizing: border-box; padding: 0; margin: 0; }
@@ -13,8 +22,8 @@ html { scroll-behavior: smooth; }
 
 body {
   background: #FFFFFF;
-  color: #1a1a1a;
-  font-family: var(--font-inter);
+  color: var(--charcoal);
+  font-family: var(--font-montserrat);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -22,89 +31,143 @@ body {
 @layer components {
   .font-playfair { font-family: var(--font-playfair); }
 
-  /* Darkened from the brand's #C9A24B/#e8c97a pair (2.40:1 / 1.61:1 on white -- both fail
-     WCAG AA even at the relaxed 3:1 large-text minimum). This class is used on ~24 pages,
-     the large majority on white backgrounds, so the shared gradient itself needed fixing
-     rather than each call site. Both new stops clear the strict 4.5:1 text minimum
-     (5.02:1 / 4.62:1) regardless of the exact font size at any given usage. The one
-     dark-background usage (homepage hero) stays comfortably legible -- a darker gradient
-     against a dark background has MORE contrast, not less. */
+  /* Text-safe gold gradient -- see --gold-text note above. Used on ~24 pages, the large
+     majority on white backgrounds, so the shared gradient itself needs to stay accessible
+     rather than patched per call site. Clears the strict 4.5:1 text minimum regardless of
+     the exact font size at any given usage. */
   .gold-text {
-    background: linear-gradient(135deg, #8a6a2e, #8d7135, #8a6a2e);
+    background: linear-gradient(135deg, var(--gold-text), #8a6f28, var(--gold-text));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .gold-border { border-color: #C9A24B; }
+  .gold-border { border-color: var(--gold); }
 
-  /* CTA button: gold bg, black text */
-  .btn-gold {
-    @apply font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2;
-    background: #C9A24B;
-    color: #000;
-  }
-  .btn-gold:hover { background: #b8922f; }
-
-  /* Primary button: black bg, white text */
+  /* ===== Button system: 3 variants used site-wide, nothing else. =====
+     PRIMARY   -- main CTAs ("Request Consultation", "Search Properties"): solid gold, navy text.
+     SECONDARY -- "Login", "Learn More": outlined navy ghost, fills navy on hover.
+     TERTIARY  -- "View All", "See Details": text-only gold, underline on hover. */
   .btn-primary {
-    @apply bg-gray-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 inline-flex items-center gap-2;
+    @apply font-bold px-6 py-3 rounded-lg transition-all duration-200 ease-out inline-flex items-center gap-2 shadow-sm;
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-primary:hover {
+    background: #c99a34;
+    box-shadow: 0 6px 16px rgba(214,166,62,0.35);
+    transform: translateY(-1px);
   }
 
-  .btn-outline-gold {
-    @apply border font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2;
-    border-color: #C9A24B;
-    color: #C9A24B;
+  .btn-secondary {
+    @apply font-semibold px-6 py-3 rounded-lg transition-all duration-200 ease-out inline-flex items-center gap-2 bg-transparent;
+    border: 1.5px solid var(--navy);
+    color: var(--navy);
   }
-  .btn-outline-gold:hover { background: #C9A24B; color: #000; }
+  .btn-secondary:hover { background: var(--navy); color: #fff; }
 
-  .section-heading {
-    @apply font-playfair text-3xl md:text-4xl lg:text-5xl font-bold;
-    color: #0a0a0a;
-    text-shadow: 0 2px 18px rgba(0,0,0,0.06);
+  /* Same SECONDARY intent, inverted for dark/black sections where a navy border+text
+     would be nearly invisible (navy is itself close to black). */
+  .btn-secondary-dark {
+    @apply font-semibold px-6 py-3 rounded-lg transition-all duration-200 ease-out inline-flex items-center gap-2 bg-transparent;
+    border: 1.5px solid var(--cream);
+    color: var(--cream);
+  }
+  .btn-secondary-dark:hover { background: var(--cream); color: var(--navy); }
+
+  .btn-tertiary {
+    @apply font-semibold text-sm transition-all duration-200 ease-out inline-flex items-center gap-1.5;
+    color: var(--gold-text);
+    text-decoration: none;
+  }
+  .btn-tertiary:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ===== Typography scale: H1 48-64px / H2 36px / H3 24px, Playfair, bold-semibold.
+     Body/small/caption (16/14/12px) map directly onto Tailwind's text-base/text-sm/text-xs
+     -- no new classes needed there, just consistent usage. ===== */
+  .heading-h1, .section-heading {
+    @apply font-playfair font-bold leading-tight text-[40px] sm:text-[48px] lg:text-[64px];
+    color: var(--navy);
+  }
+  .heading-h1-dark, .section-heading-dark {
+    @apply font-playfair font-bold leading-tight text-[40px] sm:text-[48px] lg:text-[64px];
+    color: var(--cream);
+    text-shadow: 0 2px 24px rgba(255,255,255,0.08), 0 4px 40px rgba(214,166,62,0.1);
+  }
+  .heading-h2 {
+    @apply font-playfair font-bold leading-tight text-3xl sm:text-[36px];
+    color: var(--navy);
+  }
+  .heading-h2-dark {
+    @apply font-playfair font-bold leading-tight text-3xl sm:text-[36px];
+    color: var(--cream);
+  }
+  .heading-h3 {
+    @apply font-playfair font-semibold leading-snug text-2xl;
+    color: var(--navy);
+  }
+  .heading-h3-dark {
+    @apply font-playfair font-semibold leading-snug text-2xl;
+    color: var(--cream);
   }
 
-  /* For section headings on dark (zinc/black) backgrounds */
-  .section-heading-dark {
-    @apply font-playfair text-3xl md:text-4xl lg:text-5xl font-bold;
-    color: #fff;
-    text-shadow: 0 2px 24px rgba(255,255,255,0.08), 0 4px 40px rgba(201,162,75,0.1);
-  }
+  /* Body copy -- 16px minimum, 1.6 line height, Montserrat (inherited from body). */
+  .body-copy { @apply text-base leading-[1.6]; color: var(--charcoal); }
 
   /* Light cards */
   .card-dark {
-    @apply bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-yellow-500 transition-colors duration-300 shadow-sm;
+    @apply bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 ease-out shadow-sm;
+  }
+  .card-dark:hover {
+    border-color: var(--gold);
+    box-shadow: 0 12px 24px rgba(12,29,66,0.10);
+    transform: translateY(-2px);
   }
 
   /* Light nav links */
   .nav-link {
     @apply text-gray-700 text-sm font-semibold transition-colors duration-200 whitespace-nowrap;
   }
-  .nav-link:hover { color: #8a6a2e; }
-  .nav-link-active { color: #8a6a2e; }
+  .nav-link:hover { color: var(--gold-text); }
+  .nav-link-active { color: var(--gold-text); }
 
-  /* Light inputs */
+  /* Light inputs -- gold border + soft glow on focus, consistent across every form. */
   .input-dark {
-    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-4 py-3 w-full focus:outline-none focus:border-yellow-500 transition-colors duration-200;
+    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-4 py-3 w-full focus:outline-none transition-colors duration-200;
+  }
+  .input-dark:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(214,166,62,0.15);
+  }
+  .input-dark.input-error {
+    border-color: #dc2626;
+  }
+  .input-dark.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
   }
 
   .label-dark {
     @apply text-gray-600 text-sm font-medium mb-1 block;
+  }
+
+  .error-text {
+    @apply text-sm mt-1;
+    color: #dc2626;
   }
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f5f5f5; }
-::-webkit-scrollbar-thumb { background: #C9A24B; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #b8922f; }
+::-webkit-scrollbar-thumb { background: #D6A63E; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c99a34; }
 
 /* WhatsApp pulse */
 .whatsapp-pulse { animation: pulseGold 2s infinite; }
 
 @keyframes pulseGold {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,75,0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(201,162,75,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(214,166,62,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(214,166,62,0); }
 }
 
 @keyframes fadeIn { 0% { opacity:0; } 100% { opacity:1; } }
@@ -114,7 +177,7 @@ body {
 }
 
 .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-.chat-widget { font-family: var(--font-inter); }
+.chat-widget { font-family: var(--font-montserrat); }
 
 /* KnownAI orb — holographic-globe wireframe (rotating meridian/latitude lines) + a crisp
    pulsing gold core. Durations are set inline per-instance (idle vs "actively thinking"). */

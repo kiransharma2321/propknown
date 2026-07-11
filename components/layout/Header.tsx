@@ -82,7 +82,7 @@ export default function Header() {
           <div className="flex items-center gap-6">
             <a href={`tel:${COMPANY.phoneTel}`}
               className="flex items-center gap-1.5 text-xs font-medium transition-colors"
-              style={{ color: "#8a6a2e" }}>
+              style={{ color: "var(--gold-text)" }}>
               <Phone size={12} />{COMPANY.phone}
             </a>
             <a href={`mailto:${COMPANY.email}`} className="text-gray-500 text-xs hover:text-gray-800 transition-colors">
@@ -103,7 +103,7 @@ export default function Header() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className={`nav-link text-[13px] pb-1 border-b-2 ${active ? "nav-link-active border-[#C9A24B]" : "border-transparent"}`}
+                  className={`nav-link text-[13px] pb-1 border-b-2 ${active ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
                 >
                   {l.label}
                 </Link>
@@ -122,7 +122,7 @@ export default function Header() {
               onClick={() => setResourcesOpen(o => !o)}
               aria-expanded={resourcesOpen}
               aria-haspopup="true"
-              className={`nav-link text-[13px] pb-1 border-b-2 flex items-center gap-1 ${resourcesActive ? "nav-link-active border-[#C9A24B]" : "border-transparent"}`}
+              className={`nav-link text-[13px] pb-1 border-b-2 flex items-center gap-1 ${resourcesActive ? "nav-link-active border-[#D6A63E]" : "border-transparent"}`}
             >
               Resources
               <ChevronDown size={14} className={`transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
@@ -138,7 +138,7 @@ export default function Header() {
                         href={r.href}
                         onClick={() => setResourcesOpen(false)}
                         className={`block px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
-                          active ? "text-[#8a6a2e] bg-gray-50" : "text-gray-700 hover:text-[#8a6a2e] hover:bg-gray-50"
+                          active ? "text-[#7A5C1A] bg-gray-50" : "text-gray-700 hover:text-[#7A5C1A] hover:bg-gray-50"
                         }`}
                       >
                         {r.label}
@@ -153,8 +153,8 @@ export default function Header() {
 
         <div className="hidden lg:flex items-center gap-3 shrink-0">
           <CurrencyToggle />
-          <AccountLink className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-[#C9A24B]/60 text-[#8a6a2e] hover:border-[#C9A24B] hover:bg-[#C9A24B]/10 transition-colors duration-200" />
-          <Link href="/contact" className="btn-gold text-sm py-2 px-4">
+          <AccountLink className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border-[1.5px] border-[var(--navy)] text-[var(--navy)] hover:bg-[var(--navy)] hover:text-white transition-all duration-200" />
+          <Link href="/contact" className="btn-primary text-sm py-2 px-4">
             Request Consultation
           </Link>
         </div>
@@ -210,10 +210,10 @@ export default function Header() {
             </li>
 
             <li className="pt-2 border-t border-gray-200">
-              <AccountLink className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg border border-[#C9A24B]/60 text-[#8a6a2e] hover:border-[#C9A24B] hover:bg-[#C9A24B]/10 transition-colors duration-200 w-full" />
+              <AccountLink className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg border-[1.5px] border-[var(--navy)] text-[var(--navy)] hover:bg-[var(--navy)] hover:text-white transition-all duration-200 w-full" />
             </li>
             <li>
-              <Link href="/contact" className="btn-gold text-sm w-full justify-center" onClick={() => setOpen(false)}>
+              <Link href="/contact" className="btn-primary text-sm w-full justify-center" onClick={() => setOpen(false)}>
                 Request Consultation
               </Link>
             </li>

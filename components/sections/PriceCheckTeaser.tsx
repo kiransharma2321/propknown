@@ -16,7 +16,7 @@ export default function PriceCheckTeaser() {
               not just PropKnown — and get an instant, honest verdict against current live market rates.
               No login needed to try it.
             </p>
-            <Link href="/price-check" className="btn-gold">
+            <Link href="/price-check" className="btn-primary">
               Check a Price <ArrowRight size={16} />
             </Link>
           </div>

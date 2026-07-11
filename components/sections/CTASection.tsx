@@ -52,7 +52,7 @@ export default function CTASection() {
                 </svg>
                 WhatsApp Now
               </Link>
-              <Link href="/contact" className="btn-outline-gold">
+              <Link href="/contact" className="btn-secondary-dark">
                 Contact Form <ArrowRight size={15} />
               </Link>
             </div>

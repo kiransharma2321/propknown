@@ -43,7 +43,7 @@ export default function AITeaser() {
               ))}
             </div>
 
-            <Link href="/ai-intelligence" className="btn-gold">
+            <Link href="/ai-intelligence" className="btn-primary">
               Get Market Intelligence <ArrowRight size={16} />
             </Link>
           </div>

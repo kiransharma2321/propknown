@@ -158,7 +158,7 @@ function ServiceCard({ s }: { s: Service }) {
       <a
         href={waMsg}
         target="_blank" rel="noopener noreferrer"
-        className="btn-outline-gold mt-auto inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4"
+        className="btn-secondary mt-auto inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4"
       >
         Enquire on WhatsApp
       </a>

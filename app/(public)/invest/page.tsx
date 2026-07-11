@@ -70,7 +70,7 @@ export default function InvestPage() {
               Start Your Investment <span className="gold-text">Journey</span>
             </h2>
             <p className="text-gray-500 mb-6 leading-relaxed">Tell us your investment goals and budget. We&apos;ll curate the best options within 24 hours.</p>
-            <Link href="/ai-intelligence" className="btn-outline-gold">
+            <Link href="/ai-intelligence" className="btn-secondary">
               Try AI Valuation First <ArrowRight size={16} />
             </Link>
           </div>

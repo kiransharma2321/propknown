@@ -112,7 +112,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
           />
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button type="submit" disabled={loading} className="btn-gold w-full justify-center disabled:opacity-60">
+        <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
           {loading ? (
             <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> Sending...</span>
           ) : (

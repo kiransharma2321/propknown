@@ -94,7 +94,7 @@ export default function FeaturedProperties() {
               Hand-picked, RERA-verified properties with AI-scored investment potential.
             </p>
           </div>
-          <Link href="/buy" className="btn-outline-gold whitespace-nowrap self-start md:self-auto">
+          <Link href="/buy" className="btn-secondary whitespace-nowrap self-start md:self-auto">
             Explore Verified Listings <ArrowRight size={16} />
           </Link>
         </div>

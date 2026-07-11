@@ -552,7 +552,7 @@ export default function AIIntelligencePage() {
                   )}
 
                   <button onClick={analyze} disabled={loading}
-                    className="btn-gold w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
+                    className="btn-primary w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">
                     {loading
                       ? <><Loader2 size={16} className="animate-spin" />{LOADING_STEPS[loadStep]}</>
                       : <><Bot size={16} />Get Market Intelligence</>}
