@@ -106,9 +106,9 @@ export default function PriceCheckPage() {
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-500 text-xs px-4 py-2 rounded-full mb-4">
-            <Scale size={13} style={{ color: "#8a6a2e" }} /> Price Reality Check
+            <Scale size={13} style={{ color: "var(--gold-text)" }} /> Price Reality Check
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h1 className="heading-h1 mb-4">
             Is That Price <span className="gold-text">Fair?</span>
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
@@ -124,7 +124,7 @@ export default function PriceCheckPage() {
               <input
                 type="text" value={location} onChange={e => setLocation(e.target.value)}
                 placeholder="e.g. Gachibowli, Hyderabad"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400"
+                className="input-dark text-sm px-3 py-2.5"
               />
             </div>
             <div>
@@ -136,7 +136,7 @@ export default function PriceCheckPage() {
                   setPropType(e.target.value);
                   if (t) setUnit(t.defaultUnit);
                 }}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 bg-white"
+                className="input-dark text-sm px-3 py-2.5 appearance-none"
               >
                 {PROPERTY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -145,7 +145,7 @@ export default function PriceCheckPage() {
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Unit</label>
               <select
                 value={unit} onChange={e => setUnit(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 bg-white"
+                className="input-dark text-sm px-3 py-2.5 appearance-none"
               >
                 {UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
               </select>
@@ -155,7 +155,7 @@ export default function PriceCheckPage() {
               <input
                 type="number" value={areaSize} onChange={e => setAreaSize(e.target.value)}
                 placeholder="e.g. 1500"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400"
+                className="input-dark text-sm px-3 py-2.5"
               />
             </div>
             <div>
@@ -163,24 +163,19 @@ export default function PriceCheckPage() {
               <input
                 type="number" value={price} onChange={e => setPrice(e.target.value)}
                 placeholder="e.g. 12000000"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400"
+                className="input-dark text-sm px-3 py-2.5"
               />
             </div>
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 text-red-600 text-sm mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+            <div className="flex items-start gap-2 error-text mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
               <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{error}</span>
             </div>
           )}
 
           {!limitReached && (
-            <button
-              onClick={check}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-black font-bold text-sm transition-all hover:opacity-90 disabled:opacity-60"
-              style={{ background: "#C9A24B" }}
-            >
+            <button onClick={check} disabled={loading} className="btn-primary w-full justify-center py-3 disabled:opacity-60">
               {loading ? <><Loader2 size={16} className="animate-spin" /> Checking against live market data…</> : <><Scale size={16} /> Check This Price</>}
             </button>
           )}
@@ -224,10 +219,7 @@ export default function PriceCheckPage() {
                 </div>
                 <p className="text-gray-700 text-sm leading-relaxed mb-5">{result.message}</p>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <button
-                    onClick={share}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:border-yellow-400 transition-all"
-                  >
+                  <button onClick={share} className="btn-secondary">
                     <Share2 size={15} /> {shareCopied ? "Copied to clipboard!" : "Share this result"}
                   </button>
                 </div>
