@@ -50,7 +50,7 @@ export default function DealsPage() {
         <div className="flex items-center gap-3 mb-6">
           <Link href="/crm/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
           <div>
-            <h1 className="text-white text-xl font-bold">Deals Dashboard</h1>
+            <h1 className="font-playfair text-white text-xl font-bold">Deals Dashboard</h1>
             <p className="text-zinc-500 text-sm">Pipeline overview and conversion analytics</p>
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function DealsPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Total Pipeline", value: `₹${(totalPipeline / 1e5).toFixed(1)}L`, icon: <TrendingUp size={16} />, color: "text-yellow-400" },
+            { label: "Total Pipeline", value: `₹${(totalPipeline / 1e5).toFixed(1)}L`, icon: <TrendingUp size={16} />, color: "text-[#D6A63E]" },
             { label: "Won Value",      value: `₹${(wonValue / 1e5).toFixed(1)}L`,      icon: <Trophy size={16} />,     color: "text-green-400" },
             { label: "Total Deals",    value: String(leads.length),                      icon: <IndianRupee size={16} />, color: "text-blue-400" },
             { label: "Win Rate",       value: `${winRate}%`,                             icon: <Trophy size={16} />,     color: "text-purple-400" },

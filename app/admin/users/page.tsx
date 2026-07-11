@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Plus, Trash2, Shield, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
@@ -13,8 +13,8 @@ interface AdminUser {
   createdAt: string;
 }
 
-const ROLE_LABELS: Record<string, { label: string; color: string }> = {
-  master:  { label: "Master Admin", color: "bg-yellow-500 text-black" },
+const ROLE_LABELS: Record<string, { label: string; color: string; style?: CSSProperties }> = {
+  master:  { label: "Master Admin", color: "text-black", style: { background: "var(--gold)" } },
   manager: { label: "Manager",      color: "bg-blue-500 text-white" },
   agent:   { label: "Agent",        color: "bg-zinc-600 text-white" },
 };
@@ -71,7 +71,7 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-3 mb-8">
           <Link href="/admin/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
           <div>
-            <h1 className="text-white text-xl font-bold flex items-center gap-2"><Shield size={18} style={{ color: "#C9A24B" }} /> User Management</h1>
+            <h1 className="font-playfair text-white text-xl font-bold flex items-center gap-2"><Shield size={18} style={{ color: "var(--gold)" }} /> User Management</h1>
             <p className="text-zinc-500 text-sm">Create and manage admin team members (Master Admin only)</p>
           </div>
         </div>
@@ -81,23 +81,23 @@ export default function AdminUsersPage() {
 
         {/* Add user form */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
-          <h2 className="text-white font-semibold text-sm mb-4">Add Team Member</h2>
+          <h2 className="font-playfair text-white font-semibold text-sm mb-4">Add Team Member</h2>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Full Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="John Doe" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-600" />
+                placeholder="John Doe" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
             </div>
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Email</label>
               <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="agent@propknown.com" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-600" />
+                placeholder="agent@propknown.com" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
             </div>
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Password</label>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="Strong password" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 pr-9 focus:outline-none focus:border-yellow-600" />
+                  placeholder="Strong password" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 pr-9 focus:outline-none focus:border-[#D6A63E]" />
                 <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
                   {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
@@ -114,8 +114,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <button onClick={addUser} disabled={saving || !form.name || !form.email || !form.password}
-            className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl text-black disabled:opacity-50"
-            style={{ background: "#C9A24B" }}>
+            className="btn-primary text-sm px-5 py-2.5 disabled:opacity-50">
             <Plus size={14} /> {saving ? "Creating..." : "Create User"}
           </button>
         </div>
@@ -123,7 +122,7 @@ export default function AdminUsersPage() {
         {/* Users list */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800">
-            <p className="text-white text-sm font-semibold">Team Members ({users.length})</p>
+            <p className="font-playfair text-white text-sm font-semibold">Team Members ({users.length})</p>
           </div>
           {loading ? (
             <div className="p-8 text-center text-zinc-500 text-sm">Loading...</div>
@@ -142,7 +141,7 @@ export default function AdminUsersPage() {
                       <p className="text-white text-sm font-medium">{u.name}</p>
                       <p className="text-zinc-500 text-xs">{u.email}</p>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${roleInfo.color}`}>{roleInfo.label}</span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${roleInfo.color}`} style={roleInfo.style}>{roleInfo.label}</span>
                     {!u.isActive && <span className="text-xs text-zinc-600 bg-zinc-800 px-2 py-1 rounded-full">Inactive</span>}
                     <p className="text-zinc-600 text-xs shrink-0">{new Date(u.createdAt).toLocaleDateString("en-IN")}</p>
                     {u.role !== "master" && u.isActive && (

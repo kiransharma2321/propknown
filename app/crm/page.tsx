@@ -45,7 +45,7 @@ export default function CRMLoginPage() {
               <Activity size={18} className="text-gold-400" />
             </div>
             <div>
-              <h1 className="text-white font-semibold">CRM Login</h1>
+              <h1 className="font-playfair text-white font-semibold">CRM Login</h1>
               <p className="text-zinc-500 text-xs">Lead management portal</p>
             </div>
           </div>

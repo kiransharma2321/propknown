@@ -104,13 +104,13 @@ function AiBrainTab() {
       {/* Header */}
       <div className="flex items-start justify-between mb-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>AI Brain</h1>
+          <h1 className="font-playfair text-2xl font-bold text-white">AI Brain</h1>
           <p className="text-zinc-400 text-sm mt-0.5">Manage listings, leads, and generate content in plain English</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 text-xs">Mode:</span>
           <select value={mode} onChange={e => setMode(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-yellow-600">
+            className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D6A63E]">
             {["Auto", "Manage Listings", "Manage Leads", "Write Content"].map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
@@ -126,7 +126,7 @@ function AiBrainTab() {
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
               {HINTS.map(h => (
                 <button key={h} onClick={() => setInput(h)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-400 hover:border-yellow-600/60 hover:text-white transition-all text-left">
+                  className="text-xs px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-400 hover:border-[#D6A63E]/60 hover:text-white transition-all text-left">
                   {h}
                 </button>
               ))}
@@ -146,7 +146,7 @@ function AiBrainTab() {
                 <div className="bg-zinc-800/50 border border-zinc-700/40 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
-                      <Brain size={11} style={{ color: "#C9A24B" }} />
+                      <Brain size={11} style={{ color: "var(--gold)" }} />
                       <span className="text-[10px] text-zinc-500">AI Brain Â· {m.ts}</span>
                     </div>
                     <CopyButton text={m.content} />
@@ -161,7 +161,7 @@ function AiBrainTab() {
         {loading && (
           <div className="flex justify-start">
             <div className="bg-zinc-800/50 border border-zinc-700/40 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
-              <Loader2 size={13} className="animate-spin" style={{ color: "#C9A24B" }} />
+              <Loader2 size={13} className="animate-spin" style={{ color: "var(--gold)" }} />
               <span className="text-zinc-400 text-sm">AI Brain is thinkingâ€¦</span>
             </div>
           </div>
@@ -189,11 +189,11 @@ function AiBrainTab() {
               : mode === "Manage Leads"
               ? "e.g. Show today's leads Â· Mark lead as contacted Â· Show won leads this monthâ€¦"
               : "e.g. Add listing: My Home Bhooja 3BHK, Kokapet, 1.5Cr, RERA P02400008234â€¦"}
-            className="flex-1 bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-600 resize-none"
+            className="flex-1 bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] resize-none"
           />
           <button onClick={send} disabled={loading || !input.trim()}
-            className="px-5 rounded-xl font-semibold text-black text-sm disabled:opacity-40 transition-all flex flex-col items-center justify-center gap-1 shrink-0"
-            style={{ background: "#C9A24B" }}>
+            className="px-5 rounded-lg font-semibold text-black text-sm disabled:opacity-40 transition-colors duration-200 flex flex-col items-center justify-center gap-1 shrink-0"
+            style={{ background: "var(--gold)" }}>
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Brain size={16} />}
             <span className="text-[10px]">Send</span>
           </button>
@@ -259,12 +259,12 @@ function QuickAddTab() {
     finally { setParsing(false); }
   };
 
-  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
+  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "Georgia, serif" }}>Quick Add Listing</h1>
+        <h1 className="font-playfair text-2xl font-bold text-white mb-1">Quick Add Listing</h1>
         <p className="text-zinc-400 text-sm">Paste any property details — AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
       </div>
 
@@ -282,7 +282,7 @@ function QuickAddTab() {
             />
             <button onClick={parseText} disabled={parsing || !rawText.trim()}
               className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-black disabled:opacity-50 transition-all"
-              style={{ background: "#C9A24B" }}>
+              style={{ background: "var(--gold)" }}>
               {parsing ? <><Loader2 size={14} className="animate-spin" /> Parsing...</> : <><Brain size={14} /> AI Auto-Fill</>}
             </button>
           </div>
@@ -323,7 +323,7 @@ function QuickAddTab() {
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-yellow-500 bg-yellow-500/5" : "border-zinc-700 hover:border-zinc-500"}`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-zinc-700 hover:border-zinc-500"}`}
             >
               <p className="text-zinc-400 text-sm">Drag &amp; drop photos here or click to browse</p>
               <p className="text-zinc-600 text-xs mt-1">JPG, PNG — up to 10 photos</p>
@@ -346,7 +346,7 @@ function QuickAddTab() {
           {/* 10-point checklist */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Shield size={14} style={{ color: "#C9A24B" }} />
+              <Shield size={14} style={{ color: "var(--gold)" }} />
               <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">10-Point Approval Checklist</p>
             </div>
             <div className="space-y-2">
@@ -357,7 +357,7 @@ function QuickAddTab() {
                     checked={checklist[i]}
                     onChange={e => setChecklist(prev => prev.map((v, j) => j === i ? e.target.checked : v))}
                     className="w-4 h-4 rounded"
-                    style={{ accentColor: "#C9A24B" }}
+                    style={{ accentColor: "var(--gold)" }}
                   />
                   <span className={`text-sm transition-colors ${checklist[i] ? "text-zinc-300 line-through opacity-60" : "text-zinc-400"}`}>{item}</span>
                 </label>
@@ -371,8 +371,8 @@ function QuickAddTab() {
           {/* Actions */}
           <div className="space-y-3">
             <button disabled={!allChecked}
-              className="w-full py-3 rounded-xl font-bold text-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#C9A24B" }}>
+              className="w-full py-3 rounded-lg font-bold text-black transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "var(--gold)" }}>
               {allChecked ? "✓ Approve & Publish" : "Complete All 10 Checklist Items to Approve"}
             </button>
             <div>
@@ -439,7 +439,7 @@ function SubmissionsTab() {
   const [milestonePhoto, setMilestonePhoto] = useState<File | null>(null);
   const [savingConstruction, setSavingConstruction] = useState(false);
 
-  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-yellow-600 placeholder-zinc-500";
+  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
 
   const fetchList = async (st = statusFilter) => {
     setLoadingList(true);
@@ -611,7 +611,7 @@ function SubmissionsTab() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-white">Property Submissions</h1>
+          <h1 className="font-playfair text-xl font-bold text-white">Property Submissions</h1>
           {pendingCount > 0 && (
             <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>
           )}
@@ -626,7 +626,7 @@ function SubmissionsTab() {
         {STATUS_TABS.map(t => (
           <button key={t.key} onClick={() => changeFilter(t.key)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-black" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
-            style={statusFilter === t.key ? { background: "#C9A24B" } : {}}>
+            style={statusFilter === t.key ? { background: "var(--gold)" } : {}}>
             {t.label}
           </button>
         ))}
@@ -655,16 +655,16 @@ function SubmissionsTab() {
                     <p className="text-zinc-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
                   </td>
                   <td className="px-4 py-3 text-zinc-300 text-xs">{s.area}, {s.city}</td>
-                  <td className="px-4 py-3 font-semibold text-sm" style={{ color: "#C9A24B" }}>{s.priceDisplay}</td>
+                  <td className="px-4 py-3 font-semibold text-sm" style={{ color: "var(--gold)" }}>{s.priceDisplay}</td>
                   <td className="px-4 py-3">
                     <p className="text-zinc-200 text-xs">{s.ownerName}</p>
-                    <a href={`tel:${s.ownerPhone}`} className="text-yellow-400 hover:text-yellow-300 text-xs">{s.ownerPhone}</a>
+                    <a href={`tel:${s.ownerPhone}`} className="text-[#D6A63E] hover:underline text-xs">{s.ownerPhone}</a>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1.5 text-xs">
                       {s.photoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><ImageIcon size={10} />{s.photoCount}</span>}
                       {s.videoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><Video size={10} />{s.videoCount}</span>}
-                      {s.docCount > 0 && <span className="flex items-center gap-0.5 text-yellow-500"><FileText size={10} />{s.docCount}</span>}
+                      {s.docCount > 0 && <span className="flex items-center gap-0.5 text-[#D6A63E]"><FileText size={10} />{s.docCount}</span>}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -678,7 +678,7 @@ function SubmissionsTab() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openDetail(s.id)}
-                        className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-yellow-600 hover:text-yellow-400 transition-all">
+                        className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all">
                         Review
                       </button>
                       <button onClick={() => doDelete(s.id)} className="text-zinc-600 hover:text-red-400 transition-colors p-1.5">
@@ -698,13 +698,13 @@ function SubmissionsTab() {
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
             {loadDetail ? (
-              <div className="p-20 text-center"><Loader2 size={28} className="mx-auto animate-spin" style={{ color: "#C9A24B" }} /></div>
+              <div className="p-20 text-center"><Loader2 size={28} className="mx-auto animate-spin" style={{ color: "var(--gold)" }} /></div>
             ) : reviewing && (
               <>
                 {/* Modal header */}
                 <div className="flex items-start justify-between p-6 border-b border-zinc-800">
                   <div>
-                    <h2 className="text-white font-bold text-lg">{reviewing.title}</h2>
+                    <h2 className="font-playfair text-white font-bold text-lg">{reviewing.title}</h2>
                     <p className="text-zinc-400 text-sm mt-0.5">{reviewing.propType}{reviewing.bhk ? ` · ${reviewing.bhk}` : ""} · {reviewing.area}, {reviewing.city}</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -734,7 +734,7 @@ function SubmissionsTab() {
                           <div className="flex gap-2 overflow-x-auto pb-1">
                             {reviewing.photoFiles.map((f, i) => (
                               <button key={f.id} onClick={() => setActivePhoto(i)}
-                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-500" : "border-zinc-700"}`}>
+                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-[#D6A63E]" : "border-zinc-700"}`}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={f.data} alt="" className="w-full h-full object-cover" />
                               </button>
@@ -759,7 +759,7 @@ function SubmissionsTab() {
                               <iframe key={i} src={ytEmbed(url)} title="Property video" className="w-full aspect-video rounded-xl" allowFullScreen />
                             ) : (
                               <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                                className="block text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-yellow-600 hover:text-white transition-all">
+                                className="block text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
                                 Video link: {url}
                               </a>
                             )
@@ -791,7 +791,7 @@ function SubmissionsTab() {
                           {reviewing.docFiles.map(doc => (
                             <div key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2.5">
                               <div className="flex items-center gap-2 min-w-0">
-                                <FileText size={13} className="text-yellow-500 shrink-0" />
+                                <FileText size={13} className="text-[#D6A63E] shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-zinc-200 text-xs truncate">{doc.name}</p>
                                   {doc.docType && <p className="text-zinc-500 text-[10px]">{doc.docType}</p>}
@@ -799,7 +799,7 @@ function SubmissionsTab() {
                               </div>
                               <a href={doc.data} download={doc.name}
                                 className="shrink-0 ml-3 flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-all"
-                                style={{ background: "rgba(201,162,75,0.15)", color: "#C9A24B", border: "1px solid rgba(201,162,75,0.4)" }}>
+                                style={{ background: "rgba(214,166,62,0.15)", color: "var(--gold)", border: "1px solid rgba(214,166,62,0.4)" }}>
                                 <Download size={11} /> Download
                               </a>
                             </div>
@@ -832,7 +832,7 @@ function SubmissionsTab() {
                     <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
                       <p className="text-white font-semibold text-sm">{reviewing.ownerName}</p>
-                      <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 text-sm">
+                      <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-[#D6A63E] hover:underline text-sm">
                         <Phone size={13} /> {reviewing.ownerPhone}
                       </a>
                       <a href={`mailto:${reviewing.ownerEmail}`} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-200 text-xs">
@@ -870,7 +870,7 @@ function SubmissionsTab() {
                             type="checkbox"
                             checked={!!vFlags[key]}
                             onChange={e => setVFlags(f => ({ ...f, [key]: e.target.checked }))}
-                            className="w-3.5 h-3.5 accent-yellow-600"
+                            className="w-3.5 h-3.5 accent-[#D6A63E]"
                           />
                           {label}
                         </label>
@@ -895,7 +895,7 @@ function SubmissionsTab() {
                         onClick={saveVerification}
                         disabled={savingVFlags}
                         className="w-full py-2 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
-                        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+                        style={{ borderColor: "rgba(214,166,62,0.5)", color: "var(--gold)" }}
                       >
                         {savingVFlags ? "Saving…" : "Save Verification Checks"}
                       </button>
@@ -912,7 +912,7 @@ function SubmissionsTab() {
                           <select
                             value={legal[item.key] ?? "pending"}
                             onChange={e => setLegal(l => ({ ...l, [item.key]: e.target.value as ChecklistStatus }))}
-                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-yellow-600 shrink-0"
+                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-[#D6A63E] shrink-0"
                           >
                             <option value="pending">Pending</option>
                             <option value="verified">Verified</option>
@@ -931,7 +931,7 @@ function SubmissionsTab() {
                         onClick={saveLegalChecklist}
                         disabled={savingLegal}
                         className="w-full py-2 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50"
-                        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#C9A24B" }}
+                        style={{ borderColor: "rgba(214,166,62,0.5)", color: "var(--gold)" }}
                       >
                         {savingLegal ? "Saving…" : "Save Legal Checklist"}
                       </button>
@@ -962,7 +962,7 @@ function SubmissionsTab() {
                         onClick={() => saveConstruction()}
                         disabled={savingConstruction}
                         className="w-full py-1.5 rounded-lg text-[11px] font-semibold border transition-all disabled:opacity-50"
-                        style={{ borderColor: "rgba(201,162,75,0.4)", color: "#C9A24B" }}
+                        style={{ borderColor: "rgba(214,166,62,0.4)", color: "var(--gold)" }}
                       >
                         Save % / Date
                       </button>
@@ -986,7 +986,7 @@ function SubmissionsTab() {
                           <select
                             value={newMilestone.title}
                             onChange={e => setNewMilestone(nm => ({ ...nm, title: e.target.value }))}
-                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-yellow-600"
+                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-[#D6A63E]"
                           >
                             {PRESET_MILESTONES.map(p => <option key={p} value={p}>{p}</option>)}
                             <option value="Custom">Custom…</option>
@@ -1010,7 +1010,7 @@ function SubmissionsTab() {
                           onClick={addMilestone}
                           disabled={savingConstruction}
                           className="w-full py-2 rounded-lg text-xs font-semibold text-black transition-all disabled:opacity-50"
-                          style={{ background: "#C9A24B" }}
+                          style={{ background: "var(--gold)" }}
                         >
                           {savingConstruction ? "Saving…" : "Add Milestone"}
                         </button>
@@ -1204,7 +1204,7 @@ function AdminDashboardInner() {
     router.push("/admin");
   };
 
-  const inputCls = "bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-yellow-600";
+  const inputCls = "bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-[#D6A63E]";
 
   const SIDEBAR_TABS = [
     { key: "aiBrain",     label: "AI Brain",       icon: Brain },
@@ -1222,17 +1222,17 @@ function AdminDashboardInner() {
         <div className="p-5 border-b border-zinc-800">
           <div className="flex flex-col leading-none">
             <span className="text-lg font-bold tracking-wide" style={{ fontFamily: "Georgia, serif" }}>
-              <span style={{ color: "#C9A24B" }}>PROP</span>
+              <span style={{ color: "var(--gold)" }}>PROP</span>
               <span className="text-white">KNOWN</span>
             </span>
-            <span className="text-[7px] tracking-[0.25em] mt-0.5" style={{ color: "#C9A24B" }}>ADMIN PORTAL</span>
+            <span className="text-[7px] tracking-[0.25em] mt-0.5" style={{ color: "var(--gold)" }}>ADMIN PORTAL</span>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {SIDEBAR_TABS.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setAdminTab(key)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${adminTab === key ? "text-black font-semibold" : "text-zinc-400 hover:text-white hover:bg-zinc-800"}`}
-              style={adminTab === key ? { background: "#C9A24B" } : {}}>
+              style={adminTab === key ? { background: "var(--gold)" } : {}}>
               <Icon size={15} /> {label}
             </button>
           ))}
@@ -1272,7 +1272,7 @@ function AdminDashboardInner() {
         {adminTab === "leads" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-bold text-white">All Leads</h1>
+              <h1 className="font-playfair text-xl font-bold text-white">All Leads</h1>
               <button onClick={fetchAdminLeads} className="text-zinc-400 hover:text-white text-sm border border-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
                 Refresh
               </button>
@@ -1301,7 +1301,7 @@ function AdminDashboardInner() {
                       return (
                       <tr key={l.id} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{l.name}</td>
-                        <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-yellow-400 hover:text-yellow-300">{l.phone}</a></td>
+                        <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-[#D6A63E] hover:underline">{l.phone}</a></td>
                         <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "—"}</td>
                         <td className="px-4 py-3"><span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
                         <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-zinc-800 text-zinc-300"}`}>{l.status}</span></td>
@@ -1322,9 +1322,9 @@ function AdminDashboardInner() {
 
         {adminTab === "settings" && (
           <div className="max-w-2xl space-y-6">
-            <h1 className="text-xl font-bold text-white mb-6">Settings</h1>
+            <h1 className="font-playfair text-xl font-bold text-white mb-6">Settings</h1>
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-              <h2 className="text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">Business Info</h2>
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">Business Info</h2>
               {[
                 { label: "Company", value: "PropKnown Infra Pvt Ltd" },
                 { label: "Founder", value: "Pinnelli Raghu Kiran" },
@@ -1339,7 +1339,7 @@ function AdminDashboardInner() {
               ))}
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-              <h2 className="text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">API Status</h2>
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">API Status</h2>
               {[
                 { label: "Gemini AI (KnownAI)", status: true,  note: "gemini-2.5-flash-lite" },
                 { label: "Resend (Email)",     status: true,  note: "raghupinnelli@gmail.com" },
@@ -1354,7 +1354,7 @@ function AdminDashboardInner() {
               ))}
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-              <h2 className="text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3 mb-4">Quick Links</h2>
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3 mb-4">Quick Links</h2>
               <div className="flex flex-wrap gap-3">
                 {[
                   { label: "View Website",    href: "/" },
@@ -1363,7 +1363,7 @@ function AdminDashboardInner() {
                   { label: "Buy Page",        href: "/buy" },
                 ].map(({ label, href }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                    className="text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-yellow-600 hover:text-white transition-all">
+                    className="text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
                     {label}
                   </a>
                 ))}
@@ -1375,17 +1375,17 @@ function AdminDashboardInner() {
         {adminTab === "properties" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-bold text-white">Property Management</h1>
+              <h1 className="font-playfair text-xl font-bold text-white">Property Management</h1>
               <button onClick={() => setShowForm(!showForm)}
                 className="flex items-center gap-2 text-black text-sm font-semibold px-4 py-2 rounded-lg transition-all"
-                style={{ background: "#C9A24B" }}>
+                style={{ background: "var(--gold)" }}>
                 <Plus size={16} /> Add Property
               </button>
             </div>
 
             {showForm && (
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
-                <h2 className="text-white font-semibold mb-4">New Property</h2>
+                <h2 className="font-playfair text-white font-semibold mb-4">New Property</h2>
                 <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="col-span-full">
                     <label className="text-zinc-400 text-xs mb-1 block">Title *</label>
@@ -1421,7 +1421,7 @@ function AdminDashboardInner() {
                   </div>
                   <div className="col-span-full border-t border-zinc-800 pt-4">
                     <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
-                      <Shield size={13} style={{ color: "#C9A24B" }} /> Approval Checklist
+                      <Shield size={13} style={{ color: "var(--gold)" }} /> Approval Checklist
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -1432,7 +1432,7 @@ function AdminDashboardInner() {
                       ].map(({ key, label }) => (
                         <label key={key} className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={(form as Record<string, unknown>)[key] as boolean}
-                            onChange={(e) => setForm({ ...form, [key]: e.target.checked })} className="w-4 h-4" style={{ accentColor: "#C9A24B" }} />
+                            onChange={(e) => setForm({ ...form, [key]: e.target.checked })} className="w-4 h-4" style={{ accentColor: "var(--gold)" }} />
                           <span className="text-zinc-300 text-sm">{label}</span>
                         </label>
                       ))}
@@ -1441,17 +1441,17 @@ function AdminDashboardInner() {
                   {/* Document Upload */}
                   <div className="col-span-full border-t border-zinc-800 pt-4">
                     <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
-                      <FileText size={13} style={{ color: "#C9A24B" }} /> Documents (RERA Certificate, Title Deed, Brochure, Floor Plan)
+                      <FileText size={13} style={{ color: "var(--gold)" }} /> Documents (RERA Certificate, Title Deed, Brochure, Floor Plan)
                     </p>
                     <div
                       onDragOver={e => { e.preventDefault(); setDocDragging(true); }}
                       onDragLeave={() => setDocDragging(false)}
                       onDrop={e => { e.preventDefault(); setDocDragging(false); addDocFiles(e.dataTransfer.files); }}
                       onClick={() => docInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-yellow-500 bg-yellow-900/10" : "border-zinc-700 hover:border-zinc-500"}`}
+                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-[#D6A63E] bg-[#D6A63E]/10" : "border-zinc-700 hover:border-zinc-500"}`}
                     >
                       <FileText size={24} className="mx-auto mb-2 text-zinc-600" />
-                      <p className="text-zinc-400 text-sm">Drag &amp; drop files here, or <span style={{ color: "#C9A24B" }}>Choose Files</span></p>
+                      <p className="text-zinc-400 text-sm">Drag &amp; drop files here, or <span style={{ color: "var(--gold)" }}>Choose Files</span></p>
                       <p className="text-zinc-600 text-xs mt-1">PDF, JPG, PNG Â· Max 5 MB each</p>
                     </div>
                     <input
@@ -1482,7 +1482,7 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className="col-span-full flex gap-3 pt-2">
-                    <button type="submit" disabled={saving} className="text-black text-sm font-semibold px-6 py-2 rounded-lg disabled:opacity-60" style={{ background: "#C9A24B" }}>
+                    <button type="submit" disabled={saving} className="text-black text-sm font-semibold px-6 py-2 rounded-lg disabled:opacity-60" style={{ background: "var(--gold)" }}>
                       {saving ? "Saving..." : "Save Property"}
                     </button>
                     <button type="button" onClick={() => { setShowForm(false); setDocFiles([]); }} className="border border-zinc-700 text-zinc-400 text-sm px-4 py-2 rounded-lg hover:text-white">
@@ -1497,7 +1497,7 @@ function AdminDashboardInner() {
               {(["pending", "approved"] as const).map((t) => (
                 <button key={t} onClick={() => setPropTab(t)}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${propTab === t ? "text-black" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
-                  style={propTab === t ? { background: "#C9A24B" } : {}}>
+                  style={propTab === t ? { background: "var(--gold)" } : {}}>
                   {t}
                 </button>
               ))}
@@ -1509,7 +1509,7 @@ function AdminDashboardInner() {
                 <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-white font-semibold">Documents</h3>
+                      <h3 className="font-playfair text-white font-semibold">Documents</h3>
                       <p className="text-zinc-500 text-xs mt-0.5 line-clamp-1">{viewDocsFor.title}</p>
                     </div>
                     <button onClick={() => setViewDocsFor(null)} className="text-zinc-500 hover:text-white transition-colors"><XCircle size={18} /></button>
@@ -1518,7 +1518,7 @@ function AdminDashboardInner() {
                     {((viewDocsFor.documents ?? []) as DocFile[]).map(doc => (
                       <li key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2.5">
                         <div className="flex items-center gap-2 min-w-0">
-                          <FileText size={14} className="text-yellow-500 shrink-0" />
+                          <FileText size={14} className="text-[#D6A63E] shrink-0" />
                           <div className="min-w-0">
                             <p className="text-zinc-200 text-sm truncate">{doc.name}</p>
                             <p className="text-zinc-600 text-[10px]">{(doc.size / 1024).toFixed(0)} KB Â· {doc.type}</p>
@@ -1528,7 +1528,7 @@ function AdminDashboardInner() {
                           href={`data:${doc.type};base64,${doc.data}`}
                           download={doc.name}
                           className="ml-3 shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                          style={{ background: "rgba(201,162,75,0.15)", color: "#C9A24B", border: "1px solid rgba(201,162,75,0.4)" }}
+                          style={{ background: "rgba(214,166,62,0.15)", color: "var(--gold)", border: "1px solid rgba(214,166,62,0.4)" }}
                         >
                           Download
                         </a>
@@ -1561,7 +1561,7 @@ function AdminDashboardInner() {
                           <p className="text-zinc-500 text-xs">{p.location}</p>
                         </td>
                         <td className="px-4 py-3 text-zinc-300">{p.city}</td>
-                        <td className="px-4 py-3 font-semibold" style={{ color: "#C9A24B" }}>{formatPrice(p.price, p.currency)}</td>
+                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--gold)" }}>{formatPrice(p.price, p.currency)}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
                             {[p.reraVerified, p.realPhotos, p.accuratePrice, p.ownerConsent].map((v, i) => (
@@ -1583,7 +1583,7 @@ function AdminDashboardInner() {
                             </button>
                             {p.documents && (p.documents as DocFile[]).length > 0 && (
                               <button onClick={() => setViewDocsFor(p)}
-                                className="bg-zinc-800 border border-zinc-600 text-zinc-300 text-xs px-3 py-1.5 rounded-lg hover:border-yellow-600 hover:text-yellow-400 transition-all flex items-center gap-1">
+                                className="bg-zinc-800 border border-zinc-600 text-zinc-300 text-xs px-3 py-1.5 rounded-lg hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all flex items-center gap-1">
                                 <FileText size={11} /> {(p.documents as DocFile[]).length} Doc{(p.documents as DocFile[]).length > 1 ? "s" : ""}
                               </button>
                             )}

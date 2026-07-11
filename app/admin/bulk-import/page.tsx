@@ -95,7 +95,7 @@ export default function BulkImportPage() {
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-white text-xl font-bold">Bulk Listing Import</h1>
+            <h1 className="font-playfair text-white text-xl font-bold">Bulk Listing Import</h1>
             <p className="text-zinc-500 text-sm">Import multiple property listings via CSV paste or upload</p>
           </div>
         </div>
@@ -107,9 +107,7 @@ export default function BulkImportPage() {
             <p className="text-zinc-500 text-xs">Required columns: title, priceDisplay, city, ownerName, ownerPhone</p>
             <p className="text-zinc-600 text-xs mt-1">Set approve=yes to auto-approve, or leave blank for pending review</p>
           </div>
-          <button onClick={downloadTemplate}
-            className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl text-black"
-            style={{ background: "#C9A24B" }}>
+          <button onClick={downloadTemplate} className="btn-primary text-sm px-4 py-2.5">
             <Download size={15} /> Download Template
           </button>
         </div>
@@ -122,12 +120,10 @@ export default function BulkImportPage() {
             onChange={e => { setCsv(e.target.value); setParsed([]); setResults(null); }}
             rows={10}
             placeholder={CSV_TEMPLATE}
-            className="w-full bg-zinc-800 border border-zinc-700 text-white text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-600 placeholder-zinc-700 resize-none"
+            className="w-full bg-zinc-800 border border-zinc-700 text-white text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-700 resize-none"
           />
           <div className="flex items-center gap-3 mt-3">
-            <button onClick={parseCSV} disabled={!csv.trim()}
-              className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl text-black disabled:opacity-40"
-              style={{ background: "#C9A24B" }}>
+            <button onClick={parseCSV} disabled={!csv.trim()} className="btn-primary text-sm px-5 py-2.5 disabled:opacity-40">
               <Upload size={15} /> Parse & Preview
             </button>
             {parseErrors.length > 0 && (
@@ -149,9 +145,7 @@ export default function BulkImportPage() {
                     className="rounded" />
                   Auto-approve all
                 </label>
-                <button onClick={runImport} disabled={importing}
-                  className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl text-black disabled:opacity-60"
-                  style={{ background: "#C9A24B" }}>
+                <button onClick={runImport} disabled={importing} className="btn-primary text-sm px-5 py-2.5 disabled:opacity-60">
                   {importing ? "Importing..." : `Import ${parsed.length} Listings`}
                 </button>
               </div>
@@ -230,13 +224,11 @@ export default function BulkImportPage() {
 
             {summary.ok > 0 && (
               <div className="mt-5 flex gap-3">
-                <Link href="/admin/dashboard"
-                  className="text-sm font-semibold px-5 py-2.5 rounded-xl text-black"
-                  style={{ background: "#C9A24B" }}>
+                <Link href="/admin/dashboard" className="btn-primary text-sm px-5 py-2.5">
                   Go to Dashboard →
                 </Link>
                 <button onClick={() => { setResults(null); setSummary(null); setParsed([]); setCsv(""); }}
-                  className="text-sm text-zinc-400 hover:text-white px-5 py-2.5 border border-zinc-700 rounded-xl hover:border-zinc-500 transition-all">
+                  className="btn-secondary-dark text-sm px-5 py-2.5">
                   Import More
                 </button>
               </div>

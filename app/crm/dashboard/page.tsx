@@ -223,13 +223,13 @@ export default function CRMDashboard() {
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-black border-b border-zinc-800 px-6 py-3 flex items-center gap-4 shrink-0 flex-wrap">
-          <h1 className="text-white font-semibold mr-auto">Lead Pipeline</h1>
+          <h1 className="font-playfair text-white font-semibold mr-auto">Lead Pipeline</h1>
 
           {/* Stats row */}
           <div className="flex items-center gap-4 text-xs text-zinc-400">
             <span>Total: <span className="text-white font-bold">{leads.length}</span></span>
             <span className="text-green-400">Won: ₹{(wonValue / 1e5).toFixed(1)}L</span>
-            <span className="text-yellow-400">Pipeline: ₹{(pipelineValue / 1e5).toFixed(1)}L</span>
+            <span className="text-[#D6A63E]">Pipeline: ₹{(pipelineValue / 1e5).toFixed(1)}L</span>
             {todayFollowUps > 0 && <span className="text-blue-400"><Clock size={11} className="inline" /> {todayFollowUps} today</span>}
             {overdueCount > 0 && <span className="text-red-400"><AlertCircle size={11} className="inline" /> {overdueCount} overdue</span>}
           </div>
@@ -243,7 +243,7 @@ export default function CRMDashboard() {
             <button
               onClick={() => setAddOpen(true)}
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold text-black"
-              style={{ background: "#C9A24B" }}>
+              style={{ background: "var(--gold)" }}>
               <Plus size={13} /> Add Lead
             </button>
           </div>
@@ -257,7 +257,7 @@ export default function CRMDashboard() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search name, phone, email..."
-              className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-yellow-600 placeholder-zinc-600"
+              className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600"
             />
           </div>
           <select
@@ -280,7 +280,7 @@ export default function CRMDashboard() {
                 const isOver   = dragOver === col.key;
                 return (
                   <div key={col.key}
-                    className={`w-64 rounded-xl border p-3 flex flex-col transition-all ${col.color} ${isOver ? "ring-2 ring-yellow-500/60 scale-[1.01]" : ""}`}
+                    className={`w-64 rounded-xl border p-3 flex flex-col transition-all ${col.color} ${isOver ? "ring-2 ring-[#D6A63E]/60 scale-[1.01]" : ""}`}
                     onDragOver={e => handleDragOver(e, col.key)}
                     onDrop={() => handleDrop(col.key)}>
                     <div className="flex items-center justify-between mb-3 px-1">
@@ -292,7 +292,7 @@ export default function CRMDashboard() {
 
                     <div className="flex-1 space-y-2 overflow-y-auto min-h-[60px]">
                       {colLeads.length === 0 ? (
-                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-yellow-500/40 text-yellow-600/60" : "border-zinc-800 text-zinc-700"}`}>
+                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-[#D6A63E]/40 text-[#D6A63E]/80" : "border-zinc-800 text-zinc-700"}`}>
                           {isOver ? "Drop here" : "No leads"}
                         </div>
                       ) : colLeads.map(lead => {
@@ -302,7 +302,7 @@ export default function CRMDashboard() {
                             onDragStart={() => handleDragStart(lead.id)}
                             onDragEnd={handleDragEnd}
                             onClick={() => openLead(lead)}
-                            className={`bg-zinc-900 border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-yellow-600/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-zinc-800"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
+                            className={`bg-zinc-900 border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#D6A63E]/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-zinc-800"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
                             <div className="flex items-start justify-between mb-1">
                               <p className="text-white text-sm font-medium leading-tight">{lead.name}</p>
                               <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${STATUS_COLORS[lead.status]}`} />
@@ -387,7 +387,7 @@ export default function CRMDashboard() {
       {selectedLead && (
         <aside className="w-80 bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 overflow-y-auto">
           <div className="flex items-center justify-between p-4 border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
-            <h2 className="text-white font-semibold text-sm">Lead Details</h2>
+            <h2 className="font-playfair text-white font-semibold text-sm">Lead Details</h2>
             <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
           </div>
 
@@ -400,7 +400,7 @@ export default function CRMDashboard() {
               </div>
               <div>
                 <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Phone</p>
-                <a href={`tel:${selectedLead.phone}`} className="text-yellow-400 hover:text-yellow-300 font-medium text-sm">{selectedLead.phone}</a>
+                <a href={`tel:${selectedLead.phone}`} className="text-[#D6A63E] hover:underline font-medium text-sm">{selectedLead.phone}</a>
               </div>
               {selectedLead.email && (
                 <div>
@@ -432,7 +432,7 @@ export default function CRMDashboard() {
                 <input type="date"
                   value={editFollowUp}
                   onChange={e => setFollowUp(e.target.value)}
-                  className="w-full mt-1 bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-600" />
+                  className="w-full mt-1 bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
               </div>
               <div>
                 <label className="text-zinc-500 text-[10px]">Lead Value (₹)</label>
@@ -442,12 +442,12 @@ export default function CRMDashboard() {
                     value={editValue}
                     onChange={e => setEditValue(e.target.value)}
                     placeholder="e.g. 5000000"
-                    className="w-full bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-yellow-600" />
+                    className="w-full bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
                 </div>
               </div>
               <button onClick={saveFollowUp}
                 className="w-full text-xs font-semibold py-2 rounded-lg text-black"
-                style={{ background: "#C9A24B" }}>
+                style={{ background: "var(--gold)" }}>
                 Save Follow-up & Value
               </button>
             </div>
@@ -462,10 +462,10 @@ export default function CRMDashboard() {
                     disabled={selectedLead.status === col.key}
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-all ${
                       selectedLead.status === col.key
-                        ? "text-black border-yellow-500 font-semibold"
-                        : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-yellow-500 hover:text-white"
+                        ? "text-black border-[#D6A63E] font-semibold"
+                        : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-[#D6A63E] hover:text-white"
                     }`}
-                    style={selectedLead.status === col.key ? { background: "#C9A24B" } : {}}>
+                    style={selectedLead.status === col.key ? { background: "var(--gold)" } : {}}>
                     {col.icon} {col.label}
                   </button>
                 ))}
@@ -482,7 +482,7 @@ export default function CRMDashboard() {
                   {[...(selectedLead.timeline ?? [])].reverse().map((entry, i) => (
                     <div key={i} className="flex gap-2 text-[10px]">
                       <span className="text-zinc-600 shrink-0">{new Date(entry.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
-                      <span className={`${entry.type === "note" ? "text-zinc-300" : "text-yellow-500"}`}>{entry.text}</span>
+                      <span className={entry.type === "note" ? "text-zinc-300" : "text-[#D6A63E]"}>{entry.text}</span>
                     </div>
                   ))}
                 </div>
@@ -499,11 +499,11 @@ export default function CRMDashboard() {
                 onChange={e => setNoteInput(e.target.value)}
                 rows={3}
                 placeholder="Add a note..."
-                className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-600 resize-none"
+                className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
               />
               <button onClick={saveNote} disabled={saving || !noteInput.trim()}
                 className="mt-2 w-full text-black text-xs font-semibold py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
-                style={{ background: "#C9A24B" }}>
+                style={{ background: "var(--gold)" }}>
                 {saving ? "Saving..." : "Save Note"}
               </button>
             </div>
@@ -530,7 +530,7 @@ export default function CRMDashboard() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-white font-semibold">Add Lead Manually</h3>
+              <h3 className="font-playfair text-white font-semibold">Add Lead Manually</h3>
               <button onClick={() => setAddOpen(false)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
             </div>
             <div className="space-y-3">
@@ -545,7 +545,7 @@ export default function CRMDashboard() {
                   <input type={f.type} placeholder={f.placeholder}
                     value={addForm[f.key as keyof typeof addForm]}
                     onChange={e => setAddForm(a => ({ ...a, [f.key]: e.target.value }))}
-                    className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-600 placeholder-zinc-600" />
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
                 </div>
               ))}
               <div>
@@ -557,7 +557,7 @@ export default function CRMDashboard() {
               </div>
               <button onClick={addLead} disabled={addLoading || !addForm.name || !addForm.phone}
                 className="w-full text-black font-semibold py-2.5 rounded-lg text-sm mt-2 disabled:opacity-50"
-                style={{ background: "#C9A24B" }}>
+                style={{ background: "var(--gold)" }}>
                 {addLoading ? "Adding..." : "Add Lead"}
               </button>
             </div>

@@ -50,7 +50,7 @@ export default function ContactsPage() {
           <div className="flex items-center gap-3">
             <Link href="/crm/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
             <div>
-              <h1 className="text-white text-xl font-bold">Contacts</h1>
+              <h1 className="font-playfair text-white text-xl font-bold">Contacts</h1>
               <p className="text-zinc-500 text-sm">{leads.length} contacts · Pipeline: ₹{(totalValue / 1e5).toFixed(1)}L</p>
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function ContactsPage() {
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search name, phone, email..."
-              className="bg-zinc-900 border border-zinc-700 text-white text-xs rounded-xl pl-8 pr-3 py-2 w-64 focus:outline-none focus:border-yellow-600 placeholder-zinc-600" />
+              className="bg-zinc-900 border border-zinc-700 text-white text-xs rounded-xl pl-8 pr-3 py-2 w-64 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export default function ContactsPage() {
                         <a href={`tel:${lead.phone}`} className="text-zinc-500 hover:text-white transition-colors" title="Call"><Phone size={14} /></a>
                         {lead.email && <a href={`mailto:${lead.email}`} className="text-zinc-500 hover:text-white transition-colors" title="Email"><Mail size={14} /></a>}
                         <a href={`https://wa.me/${toIndianWaNumber(lead.phone)}`} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-green-400 transition-colors" title="WhatsApp"><MessageSquare size={14} /></a>
-                        <Link href={`/crm/dashboard`} className="text-zinc-500 hover:text-yellow-400 transition-colors" title="Open in pipeline"><TrendingUp size={14} /></Link>
+                        <Link href={`/crm/dashboard`} className="text-zinc-500 hover:text-[#D6A63E] transition-colors" title="Open in pipeline"><TrendingUp size={14} /></Link>
                       </div>
                     </td>
                   </tr>
