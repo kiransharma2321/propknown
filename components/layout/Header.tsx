@@ -97,7 +97,7 @@ export default function Header() {
               </li>
             ))}
             <li className="pt-2 border-t border-gray-200">
-              <AccountLink className="flex items-center gap-1.5 text-sm text-gray-600 py-1" />
+              <AccountLink className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg border border-[#C9A24B]/60 text-[#8a6a2e] hover:border-[#C9A24B] hover:bg-[#C9A24B]/10 transition-colors duration-200 w-full" />
             </li>
             <li>
               <Link href="/contact" className="btn-gold text-sm w-full justify-center" onClick={() => setOpen(false)}>
