@@ -5,11 +5,11 @@ import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, Exte
 import { COMPANY } from "@/lib/utils";
 import { RERA_STATES } from "@/lib/reraStates";
 
-// #8a6a2e, not the brand's usual #C9A24B -- this page's background is white, and the
-// standard gold measures 2.40:1 contrast against white (WCAG AA requires 4.5:1 for text).
-// This darker shade measures 5.02:1, already precedented elsewhere in the codebase
+// --gold-text, not the brand's usual --gold -- this page's background is white, and the
+// standard gold measures 2.2:1 contrast against white (WCAG AA requires 4.5:1 for text).
+// This darker shade measures 6.2:1, already precedented elsewhere in the codebase
 // (VerificationBadge.tsx's light-background variant) for exactly this situation.
-const GOLD = "#8a6a2e";
+const GOLD = "#7A5C1A";
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "House", "Plot", "Commercial"];
 const UNITS = [{ value: "sqft", label: "per sq.ft" }, { value: "sqyard", label: "per sq.yard" }];
@@ -71,8 +71,8 @@ export default function LegalShieldPage() {
     }
   };
 
-  const inp = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400";
-  const sel = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 bg-white";
+  const inp = "input-dark text-sm px-3 py-2.5";
+  const sel = "input-dark text-sm px-3 py-2.5 appearance-none";
   const risk = result ? (RISK_STYLE[result.riskLevel] ?? RISK_STYLE.Medium) : null;
 
   const waMsg = encodeURIComponent(
@@ -84,10 +84,10 @@ export default function LegalShieldPage() {
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 border text-xs tracking-widest px-4 py-2 rounded-full mb-4 uppercase font-semibold"
-            style={{ borderColor: "rgba(201,162,75,0.4)", color: GOLD, background: "rgba(201,162,75,0.08)" }}>
+            style={{ borderColor: "rgba(214,166,62,0.4)", color: GOLD, background: "rgba(214,166,62,0.08)" }}>
             <Shield size={13} /> PropKnown Legal Shield
           </div>
-          <h1 className="section-heading mb-3" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h1 className="heading-h1 mb-3">
             Fraud & Red-Flag <span className="gold-text">Checker</span>
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto">
@@ -103,8 +103,8 @@ export default function LegalShieldPage() {
             on the source -- Google, or their state's official RERA authority below. */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-10">
           <div className="flex items-center gap-2 mb-1">
-            <Shield size={16} style={{ color: GOLD }} />
-            <h2 className="text-gray-900 font-bold text-base">RERA Verification</h2>
+            <Shield size={20} style={{ color: GOLD }} />
+            <h2 className="heading-h3">RERA Verification</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4 leading-relaxed">
             PropKnown doesn&apos;t run a live check against government RERA records. The safest way
@@ -114,7 +114,7 @@ export default function LegalShieldPage() {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
             {RERA_STATES.map(s => (
               <a key={s.code} href={s.portalUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-between gap-2 text-xs font-medium border border-gray-200 rounded-lg px-3 py-2 hover:border-yellow-400 hover:bg-yellow-50 transition-colors text-gray-700">
+                className="flex items-center justify-between gap-2 text-xs font-medium border border-gray-200 rounded-lg px-3 py-2 hover:border-[#D6A63E] hover:bg-[rgba(214,166,62,0.08)] transition-colors duration-200 text-gray-700">
                 {s.name} <ExternalLink size={11} className="shrink-0" style={{ color: GOLD }} />
               </a>
             ))}
@@ -167,11 +167,9 @@ export default function LegalShieldPage() {
                   className={`${inp} resize-none`} />
               </div>
 
-              {error && <p className="text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+              {error && <p className="error-text bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-              <button onClick={check} disabled={loading}
-                className="w-full py-3.5 rounded-xl font-bold text-black text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60"
-                style={{ background: GOLD }}>
+              <button onClick={check} disabled={loading} className="btn-primary w-full justify-center py-3.5 disabled:opacity-60">
                 {loading ? <><Loader2 size={16} className="animate-spin" /> Checking…</> : <><Shield size={16} /> Check for Red Flags</>}
               </button>
             </div>
@@ -204,8 +202,8 @@ export default function LegalShieldPage() {
 
                 {result.redFlags.length > 0 ? (
                   <div className="border border-gray-200 rounded-2xl p-5">
-                    <h2 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
-                      <AlertTriangle size={15} className="text-yellow-600" /> Signals to Check ({result.redFlags.length})
+                    <h2 className="heading-h3 mb-3 flex items-center gap-2">
+                      <AlertTriangle size={20} className="text-yellow-600" /> Signals to Check ({result.redFlags.length})
                     </h2>
                     <div className="space-y-3">
                       {result.redFlags.map((f, i) => (
@@ -227,11 +225,11 @@ export default function LegalShieldPage() {
                 )}
 
                 <div className="border border-gray-200 rounded-2xl p-5">
-                  <h2 className="font-bold text-gray-900 text-sm mb-3">What to Verify Next</h2>
+                  <h2 className="heading-h3 mb-3">What to Verify Next</h2>
                   <ul className="space-y-2">
                     {result.whatToVerifyNext.map((step, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600">
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-black shrink-0 mt-0.5" style={{ background: GOLD }}>{i + 1}</span>
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-black shrink-0 mt-0.5" style={{ background: "var(--gold)" }}>{i + 1}</span>
                         {step}
                       </li>
                     ))}
@@ -244,7 +242,7 @@ export default function LegalShieldPage() {
                 </div>
 
                 <a href={`https://wa.me/${COMPANY.whatsapp}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg font-bold text-white text-sm transition-colors duration-200 hover:opacity-90"
                   style={{ background: "#25D366" }}>
                   <MessageCircle size={16} /> Talk to Raghu for Professional Verification
                 </a>
