@@ -54,11 +54,11 @@ export default function AiIntelRegisterGate({ searchContext, onUnlocked }: Props
   };
 
   return (
-    <div className="border rounded-2xl p-6" style={{ borderColor: "rgba(201,162,75,0.4)", background: "rgba(201,162,75,0.05)" }}>
-      <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "rgba(201,162,75,0.15)" }}>
-        <Sparkles size={20} style={{ color: "#8a6a2e" }} />
+    <div className="border rounded-2xl p-6" style={{ borderColor: "rgba(214,166,62,0.4)", background: "rgba(214,166,62,0.05)" }}>
+      <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "rgba(214,166,62,0.15)" }}>
+        <Sparkles size={20} style={{ color: "var(--gold-text)" }} />
       </div>
-      <p className="text-gray-900 font-bold text-center mb-1">You&apos;ve used your 3 free searches!</p>
+      <p className="heading-h3 text-center mb-1">You&apos;ve used your 3 free searches!</p>
       <p className="text-gray-500 text-sm text-center mb-5 leading-relaxed max-w-sm mx-auto">
         Register free to unlock unlimited AI market intelligence. PropKnown may reach out with
         relevant property insights — no spam, ever.
@@ -85,7 +85,7 @@ export default function AiIntelRegisterGate({ searchContext, onUnlocked }: Props
           type="tel"
           className="input-dark w-full text-sm"
         />
-        {error && <p className="text-red-600 text-xs text-center">{error}</p>}
+        {error && <p className="error-text text-center">{error}</p>}
         <button
           type="submit"
           disabled={submitting}

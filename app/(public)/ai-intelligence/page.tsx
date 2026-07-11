@@ -187,10 +187,10 @@ function LineChart({
   const cH = H - PT - PB;
   const toX = (i: number) => PL + (i / (points.length - 1)) * cW;
   const toY = (v: number) => PT + ((hi - v) / range) * cH;
-  // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- this chart's data-point label
+  // --gold-text (6.2:1 on white) instead of --gold (2.2:1) -- this chart's data-point label
   // (fontSize=9 text below) needs WCAG AA's 4.5:1 minimum; the line/gradient don't strictly,
   // but share this constant for one consistent chart color.
-  const GOLD = "#8a6a2e";
+  const GOLD = "#7A5C1A";
 
   const poly = points.map((p, i) => `${toX(i).toFixed(1)},${toY(p.value).toFixed(1)}`).join(" ");
   const area =
@@ -410,10 +410,10 @@ export default function AIIntelligencePage() {
         {/* ── Page Header ──────────────────────────────────────────────────── */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 border text-xs tracking-widest px-4 py-2 rounded-full mb-4 uppercase font-semibold"
-            style={{ borderColor: "rgba(201,162,75,0.4)", color: "#8a6a2e", background: "rgba(201,162,75,0.08)" }}>
+            style={{ borderColor: "rgba(214,166,62,0.4)", color: "var(--gold-text)", background: "rgba(214,166,62,0.08)" }}>
             <Bot size={13} /> AI Market Intelligence
           </div>
-          <h1 className="section-heading mb-3" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h1 className="heading-h1 mb-3">
             AI Market Intelligence — Know Any Area&apos;s <span className="gold-text">True Value</span>
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto">
@@ -433,7 +433,7 @@ export default function AIIntelligencePage() {
 
                 {/* Location — 5 cols (was 6; 1 col given to Unit so it can show "sq.yard" fully) */}
                 <div className="sm:col-span-5 relative" ref={dropRef}>
-                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "#8a6a2e" }} />Location</label>
+                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "var(--gold-text)" }} />Location</label>
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
@@ -452,7 +452,7 @@ export default function AIIntelligencePage() {
                         <button
                           key={`${s.name}-${i}`}
                           onMouseDown={() => pickLocation(s)}
-                          className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-yellow-50 transition-colors text-left border-b border-gray-100 last:border-0"
+                          className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(214,166,62,0.08)] transition-colors duration-200 text-left border-b border-gray-100 last:border-0"
                         >
                           <span className="text-gray-900 text-sm">{s.name}</span>
                           <span className="text-gray-400 text-xs">{s.hint}</span>
@@ -580,7 +580,7 @@ export default function AIIntelligencePage() {
                   {/* Top row: location + badges */}
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-5 border-b border-gray-200">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <MapPin size={14} style={{ color: "#8a6a2e" }} />
+                      <MapPin size={14} style={{ color: "var(--gold-text)" }} />
                       <span className="text-gray-700 font-semibold">{r.locationName}</span>
                       <span className="text-gray-400 text-sm">·</span>
                       <span className="text-gray-500 text-sm capitalize">{propType}</span>
@@ -636,14 +636,13 @@ export default function AIIntelligencePage() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
                       { label: "Annual Growth",     val: `${r.growthRate}%`,          color: "text-green-600"  },
-                      { label: "Rental Yield",      val: `${r.rentalYield}% p.a.`,    color: "text-yellow-700" },
+                      { label: "Rental Yield",      val: `${r.rentalYield}% p.a.`,    color: "text-[#7A5C1A]" },
                       { label: "Investment Rating", val: `${r.investmentRating}/10`,  color: ratingColor       },
                       { label: "Best For",          val: r.bestFor,                   color: "text-gray-700"   },
                     ].map((m) => (
                       <div key={m.label} className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
                         <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">{m.label}</p>
-                        <p className={`font-bold text-sm leading-tight ${m.color}`}
-                          style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                        <p className={`font-playfair font-bold text-sm leading-tight ${m.color}`}>
                           {m.val}
                         </p>
                       </div>
@@ -658,7 +657,7 @@ export default function AIIntelligencePage() {
                       <Activity size={13} className="text-gray-400" />
                       5-Year Price History
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
-                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" /></svg>
+                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#7A5C1A" strokeWidth="2.5" /></svg>
                         AI Estimated
                       </span>
                     </h3>
@@ -667,10 +666,10 @@ export default function AIIntelligencePage() {
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                     <h3 className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-normal flex items-center gap-2">
-                      <ArrowUpRight size={13} style={{ color: "#8a6a2e" }} />
+                      <ArrowUpRight size={13} style={{ color: "var(--gold-text)" }} />
                       5-Year Forecast
                       <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
-                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#8a6a2e" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
+                        <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#7A5C1A" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
                         Projected
                       </span>
                     </h3>
@@ -690,18 +689,18 @@ export default function AIIntelligencePage() {
                 {/* AI Analysis */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
-                    <Bot size={16} style={{ color: "#8a6a2e" }} />
+                    <Bot size={16} style={{ color: "var(--gold-text)" }} />
                     <p className="text-gray-900 font-semibold text-sm">AI Market Analysis</p>
                     <span className="ml-auto text-[10px] text-gray-400 border border-gray-200 rounded px-2 py-0.5">Gemini AI</span>
                   </div>
                   <p className="text-gray-600 leading-relaxed text-sm mb-5">{r.summary}</p>
                   <div className="space-y-2.5">
                     <p className="text-gray-900 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <TrendingUp size={12} style={{ color: "#8a6a2e" }} /> Key Market Drivers
+                      <TrendingUp size={12} style={{ color: "var(--gold-text)" }} /> Key Market Drivers
                     </p>
                     {r.keyDrivers.map((d, i) => (
                       <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle size={14} style={{ color: "#8a6a2e" }} className="shrink-0 mt-0.5" />
+                        <CheckCircle size={14} style={{ color: "var(--gold-text)" }} className="shrink-0 mt-0.5" />
                         <span className="text-gray-600 text-sm">{d}</span>
                       </div>
                     ))}
@@ -715,7 +714,7 @@ export default function AIIntelligencePage() {
                     className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
                   >
                     <span className="text-gray-900 font-semibold flex items-center gap-2 text-sm">
-                      <Calculator size={16} style={{ color: "#8a6a2e" }} /> EMI Calculator
+                      <Calculator size={16} style={{ color: "var(--gold-text)" }} /> EMI Calculator
                       {areaNum > 0 && (
                         <span className="text-gray-400 text-xs font-normal">
                           — based on {fmtPrice(propValue, sym, dispCurr)} estimate
@@ -733,7 +732,7 @@ export default function AIIntelligencePage() {
                           <div className="flex items-center gap-3">
                             <input type="range" min="10" max="90" step="5" value={downPct}
                               onChange={(e) => setDownPct(Number(e.target.value))}
-                              className="flex-1 accent-yellow-500" />
+                              className="flex-1 accent-[#D6A63E]" />
                             <span className="text-gray-900 text-sm font-semibold w-10 text-right">{downPct}%</span>
                           </div>
                           <p className="text-gray-400 text-xs mt-1">Loan: {fmtPrice(loanAmt, sym, dispCurr)}</p>
@@ -759,21 +758,21 @@ export default function AIIntelligencePage() {
                       {monthlyEMI > 0 ? (
                         <div className="grid grid-cols-3 gap-3">
                           <div className="rounded-xl p-4 text-center border"
-                            style={{ background: "rgba(201,162,75,0.08)", borderColor: "rgba(201,162,75,0.3)" }}>
+                            style={{ background: "rgba(214,166,62,0.08)", borderColor: "rgba(214,166,62,0.3)" }}>
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Monthly EMI</p>
-                            <p className="font-bold text-xl" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                            <p className="font-playfair font-bold text-xl" style={{ color: "var(--gold-text)" }}>
                               {fmtPrice(Math.round(monthlyEMI), sym, dispCurr)}
                             </p>
                           </div>
                           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Total Interest</p>
-                            <p className="text-gray-900 font-bold text-xl" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                            <p className="font-playfair text-gray-900 font-bold text-xl">
                               {fmtPrice(Math.round(totalInt), sym, dispCurr)}
                             </p>
                           </div>
                           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                             <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Total Payable</p>
-                            <p className="text-gray-900 font-bold text-xl" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                            <p className="font-playfair text-gray-900 font-bold text-xl">
                               {fmtPrice(Math.round(totalPay), sym, dispCurr)}
                             </p>
                           </div>
@@ -820,7 +819,7 @@ export default function AIIntelligencePage() {
             {/* Hot markets */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
-                <Star size={13} fill="#8a6a2e" style={{ color: "#8a6a2e" }} /> Popular Markets
+                <Star size={13} fill="#7A5C1A" style={{ color: "var(--gold-text)" }} /> Popular Markets
               </p>
               <div className="flex flex-wrap gap-2">
                 {HOT_MARKETS.map((loc) => (
@@ -829,12 +828,12 @@ export default function AIIntelligencePage() {
                     onClick={() => { setQuery(loc); setSelected(loc); }}
                     className="text-xs px-2.5 py-1.5 rounded-full border transition-all"
                     style={selected === loc
-                      ? { background: "#C9A24B", color: "#000", borderColor: "#C9A24B", fontWeight: "600" }
+                      ? { background: "var(--gold)", color: "var(--navy)", borderColor: "var(--gold)", fontWeight: "600" }
                       : { borderColor: "#d1d5db", color: "#6b7280" }}
                     onMouseEnter={(e) => {
                       if (selected !== loc) {
-                        (e.currentTarget as HTMLElement).style.borderColor = "#8a6a2e";
-                        (e.currentTarget as HTMLElement).style.color = "#8a6a2e";
+                        (e.currentTarget as HTMLElement).style.borderColor = "#7A5C1A";
+                        (e.currentTarget as HTMLElement).style.color = "#7A5C1A";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -853,7 +852,7 @@ export default function AIIntelligencePage() {
             {/* How it works */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
-                <Bot size={14} style={{ color: "#8a6a2e" }} /> How It Works
+                <Bot size={14} style={{ color: "var(--gold-text)" }} /> How It Works
               </p>
               <div className="space-y-3">
                 {[
@@ -864,7 +863,7 @@ export default function AIIntelligencePage() {
                 ].map((s) => (
                   <div key={s.n} className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-black shrink-0 mt-0.5"
-                      style={{ background: "#C9A24B" }}>{s.n}</span>
+                      style={{ background: "var(--gold)" }}>{s.n}</span>
                     <div>
                       <p className="text-gray-900 text-xs font-semibold">{s.t}</p>
                       <p className="text-gray-400 text-xs">{s.d}</p>
@@ -880,7 +879,7 @@ export default function AIIntelligencePage() {
             {/* Coverage stats */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
               <p className="text-gray-900 font-semibold text-sm mb-4 flex items-center gap-2">
-                <Activity size={14} style={{ color: "#8a6a2e" }} /> Coverage
+                <Activity size={14} style={{ color: "var(--gold-text)" }} /> Coverage
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -890,7 +889,7 @@ export default function AIIntelligencePage() {
                   { v: "~10s",   l: "Per Analysis" },
                 ].map((s) => (
                   <div key={s.l} className="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
-                    <p className="font-bold text-lg" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>{s.v}</p>
+                    <p className="font-playfair font-bold text-lg" style={{ color: "var(--gold-text)" }}>{s.v}</p>
                     <p className="text-gray-400 text-[10px] mt-0.5">{s.l}</p>
                   </div>
                 ))}
