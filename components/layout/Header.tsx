@@ -52,7 +52,6 @@ export default function Header() {
             <a href={`mailto:${COMPANY.email}`} className="text-gray-500 text-xs hover:text-gray-800 transition-colors">
               {COMPANY.email}
             </a>
-            <AccountLink />
           </div>
         </div>
       </div>
@@ -71,6 +70,7 @@ export default function Header() {
 
         <div className="hidden lg:flex items-center gap-3">
           <CurrencyToggle />
+          <AccountLink className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-[#C9A24B]/60 text-[#8a6a2e] hover:border-[#C9A24B] hover:bg-[#C9A24B]/10 transition-colors duration-200" />
           <Link href="/contact" className="btn-gold text-sm py-2 px-4">
             Request Consultation
           </Link>
