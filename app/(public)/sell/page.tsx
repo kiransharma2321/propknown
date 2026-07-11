@@ -22,10 +22,10 @@ export default function SellPage() {
 
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <div className="text-center mb-12">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "var(--gold-text)" }}>
             Sell With Confidence
           </p>
-          <h1 className="section-heading mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h1 className="heading-h1 mb-4">
             List With <span className="gold-text">Confidence</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg mb-8">
@@ -34,15 +34,12 @@ export default function SellPage() {
 
           {/* Two primary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#submit-property"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-black text-sm transition-all hover:opacity-90 hover:shadow-lg"
-              style={{ background: "#C9A24B" }}>
+            <a href="#submit-property" className="btn-primary justify-center px-8 py-4">
               <Upload size={17} />
               Upload Property with Photos &amp; Docs
               <ChevronDown size={15} />
             </a>
-            <a href="#quick-enquiry"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-semibold text-gray-700 text-sm border-2 border-gray-300 hover:border-gray-500 transition-all">
+            <a href="#quick-enquiry" className="btn-secondary justify-center px-8 py-4">
               <Phone size={15} />
               Talk to Our Team
             </a>
@@ -57,9 +54,9 @@ export default function SellPage() {
             { icon: Users,       val: "Wide",    label: "Buyer network reach"     },
             { icon: CheckCircle, val: "20+",     label: "Years of expertise"      },
           ].map(({ icon: Icon, val, label }) => (
-            <div key={label} className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center hover:border-yellow-400 transition-colors shadow-sm">
-              <Icon size={24} className="mx-auto mb-3" style={{ color: "#8a6a2e" }} />
-              <p className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>{val}</p>
+            <div key={label} className="card-dark bg-gray-50 p-5 text-center">
+              <Icon size={24} className="mx-auto mb-3" style={{ color: "var(--gold-text)" }} />
+              <p className="font-playfair text-2xl font-bold text-gray-900 mb-1">{val}</p>
               <p className="text-gray-500 text-xs">{label}</p>
             </div>
           ))}
@@ -71,12 +68,12 @@ export default function SellPage() {
         <div id="submit-property" className="scroll-mt-28 mb-20">
           {/* Section banner */}
           <div className="rounded-2xl p-6 sm:p-8 mb-8 text-center"
-            style={{ background: "linear-gradient(135deg, rgba(201,162,75,0.12) 0%, rgba(201,162,75,0.04) 100%)", border: "2px solid rgba(201,162,75,0.4)" }}>
+            style={{ background: "linear-gradient(135deg, rgba(214,166,62,0.12) 0%, rgba(214,166,62,0.04) 100%)", border: "2px solid rgba(214,166,62,0.4)" }}>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4 uppercase tracking-widest"
-              style={{ background: "#C9A24B", color: "#000" }}>
+              style={{ background: "#D6A63E", color: "var(--navy)" }}>
               <Upload size={12} /> List Your Property Directly
             </div>
-            <h2 className="text-gray-900 text-3xl font-bold mb-3" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+            <h2 className="heading-h2 mb-3">
               Submit Your Property — <span className="gold-text">Photos, Video &amp; Documents</span>
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto mb-4">
@@ -110,10 +107,10 @@ export default function SellPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div id="quick-enquiry" className="scroll-mt-28 grid lg:grid-cols-2 gap-12 items-start mb-20">
           <div>
-            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>
+            <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "var(--gold-text)" }}>
               Agent-Assisted Sale
             </p>
-            <h2 className="text-gray-900 text-2xl font-bold mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+            <h2 className="heading-h2 mb-4">
               Sell With PropKnown&apos;s Expert Team
             </h2>
             <p className="text-gray-500 mb-6">
@@ -128,7 +125,7 @@ export default function SellPage() {
                 "Transparent commission only on success",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-gray-700 text-sm">
-                  <CheckCircle size={16} className="shrink-0" style={{ color: "#8a6a2e" }} />
+                  <CheckCircle size={16} className="shrink-0" style={{ color: "var(--gold-text)" }} />
                   {item}
                 </li>
               ))}
@@ -146,14 +143,14 @@ export default function SellPage() {
 
         {/* ── How it works (process) ─────────────────────────────────────────── */}
         <div>
-          <h2 className="text-gray-900 text-2xl font-bold mb-8 text-center" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h2 className="heading-h2 mb-8 text-center">
             How Agent-Assisted Sale <span className="gold-text">Works</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {STEPS.map((s) => (
-              <div key={s.step} className="bg-gray-50 border border-gray-200 rounded-xl p-5 h-full hover:border-yellow-400 transition-colors shadow-sm">
-                <p className="text-5xl font-bold mb-3" style={{ color: "rgba(201,162,75,0.25)", fontFamily: "var(--font-playfair, Georgia, serif)" }}>{s.step}</p>
-                <h3 className="text-gray-900 font-semibold mb-2">{s.title}</h3>
+              <div key={s.step} className="card-dark bg-gray-50 p-5 h-full">
+                <p className="font-playfair text-5xl font-bold mb-3" style={{ color: "rgba(214,166,62,0.25)" }}>{s.step}</p>
+                <h3 className="heading-h3 mb-2">{s.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
               </div>
             ))}

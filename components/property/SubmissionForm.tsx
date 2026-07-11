@@ -134,7 +134,7 @@ async function uploadToServer(file: File, docType?: string, isPrivate = false): 
   return d.id as string;
 }
 
-const inp = "border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-2.5 w-full focus:outline-none focus:border-yellow-500 placeholder-gray-400 bg-white";
+const inp = "input-dark text-sm px-3 py-2.5";
 const lbl = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5";
 
 export default function SubmissionForm() {
@@ -326,7 +326,7 @@ export default function SubmissionForm() {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle size={32} className="text-green-600" />
         </div>
-        <h3 className="text-gray-900 text-xl font-bold mb-2">Submission Received!</h3>
+        <h3 className="heading-h3 mb-2">Submission Received!</h3>
         <p className="text-gray-600 text-sm max-w-md mx-auto">
           Thank you! Your property has been submitted for review. Our team will verify and contact you
           within 24 hours at <strong>{form.ownerPhone}</strong>.
@@ -337,14 +337,14 @@ export default function SubmissionForm() {
   }
 
   const sec = "bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm";
-  const secTitle = "text-gray-900 font-bold text-base mb-4 flex items-center gap-2";
+  const secTitle = "font-playfair text-gray-900 font-bold text-base mb-4 flex items-center gap-2";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-0">
       {/* Property Details */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>1</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>1</span>
           Property Details
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -381,7 +381,7 @@ export default function SubmissionForm() {
       {/* Location & Price */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>2</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>2</span>
           Location &amp; Price
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -411,7 +411,7 @@ export default function SubmissionForm() {
       {/* Description */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>3</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>3</span>
           Description
         </h3>
         <div className="space-y-4">
@@ -433,14 +433,14 @@ export default function SubmissionForm() {
       {/* Photos */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>4</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>4</span>
           Photos <span className="text-gray-400 text-xs font-normal">(required, up to 5)</span>
         </h3>
 
         {photos.length < 5 && (
           <div
             onClick={() => photoRef.current?.click()}
-            className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-yellow-400 transition-colors mb-4"
+            className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-[#D6A63E] transition-colors duration-200 mb-4"
           >
             <ImageIcon size={28} className="mx-auto mb-2 text-gray-400" />
             <p className="text-gray-500 text-sm">Click to add photos ({photos.length}/5)</p>
@@ -484,7 +484,7 @@ export default function SubmissionForm() {
                   onChange={e => setPhotoCaption(p.tempId, e.target.value)}
                   placeholder="What's in this photo? (optional)"
                   maxLength={80}
-                  className="w-full mt-1.5 border border-gray-200 rounded-md px-2 py-1 text-[11px] text-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+                  className="w-full mt-1.5 border border-gray-200 rounded-md px-2 py-1 text-[11px] text-gray-700 focus:outline-none focus:border-[#D6A63E] placeholder-gray-400"
                 />
               </div>
             ))}
@@ -495,7 +495,7 @@ export default function SubmissionForm() {
       {/* Videos */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>5</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>5</span>
           Videos <span className="text-gray-400 text-xs font-normal">(optional, up to 2)</span>
         </h3>
         <p className="text-gray-400 text-xs mb-4">Upload a short clip (max 8 MB) or paste a YouTube / Google Drive link.</p>
@@ -528,12 +528,10 @@ export default function SubmissionForm() {
 
         {videos.length < 2 && (
           <div className="flex gap-3">
-            <button type="button" onClick={() => videoRef.current?.click()}
-              className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-gray-900 transition-all">
+            <button type="button" onClick={() => videoRef.current?.click()} className="btn-secondary text-sm px-4 py-2">
               <Upload size={14} /> Upload video
             </button>
-            <button type="button" onClick={addVideoUrl}
-              className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-gray-900 transition-all">
+            <button type="button" onClick={addVideoUrl} className="btn-secondary text-sm px-4 py-2">
               <LinkIcon size={14} /> Paste link
             </button>
             <input ref={videoRef} type="file" accept="video/*" className="hidden"
@@ -545,7 +543,7 @@ export default function SubmissionForm() {
       {/* Documents */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>6</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>6</span>
           Property Documents <span className="text-gray-400 text-xs font-normal">(optional)</span>
         </h3>
         <p className="text-gray-500 text-xs mb-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
@@ -572,7 +570,7 @@ export default function SubmissionForm() {
                   <span className="text-xs text-red-500 shrink-0">{doc.error}</span>
                 ) : (
                   <label className="shrink-0 cursor-pointer">
-                    <span className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-gray-900 transition-all">
+                    <span className="btn-secondary text-xs px-3 py-1.5">
                       <Plus size={11} /> Upload
                     </span>
                     <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
@@ -592,7 +590,7 @@ export default function SubmissionForm() {
       {/* Contact */}
       <div className={sec}>
         <h3 className={secTitle}>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "#C9A24B" }}>7</span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0" style={{ background: "var(--gold)" }}>7</span>
           Your Contact Details
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -628,8 +626,7 @@ export default function SubmissionForm() {
       <button
         type="submit"
         disabled={submitting || photos.some(p => p.uploading) || docs.some(d => d.uploading)}
-        className="w-full py-4 rounded-xl font-bold text-black text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        style={{ background: "#C9A24B" }}
+        className="btn-primary w-full justify-center py-4 text-base disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? <><Loader2 size={18} className="animate-spin" /> Submitting…</> : "Submit Property for Review"}
       </button>

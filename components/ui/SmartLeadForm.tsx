@@ -60,19 +60,19 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
     finally { setLoading(false); }
   };
 
-  const inp = "bg-white border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-2.5 w-full focus:outline-none focus:border-yellow-500 placeholder-gray-400 transition-colors";
+  const inp = "input-dark text-sm px-3 py-2.5";
 
   const chip = (val: string, selVal: string, setter: (v: string) => void) => (
     <button
       key={val}
       type="button"
       onClick={() => setter(val)}
-      className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-colors duration-200 ${
         selVal === val
-          ? "text-black font-semibold border-yellow-500"
+          ? ""
           : "border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-800"
       }`}
-      style={selVal === val ? { background: "#C9A24B", borderColor: "#C9A24B" } : {}}
+      style={selVal === val ? { background: "var(--gold)", borderColor: "var(--gold)", color: "var(--navy)" } : {}}
     >
       {val}
     </button>
@@ -81,18 +81,18 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <CheckCircle size={48} style={{ color: "#8a6a2e" }} className="mb-4" />
-        <h3 className="font-semibold text-xl text-gray-900 mb-2">Enquiry Received!</h3>
+        <CheckCircle size={48} style={{ color: "var(--gold-text)" }} className="mb-4" />
+        <h3 className="heading-h3 mb-2">Enquiry Received!</h3>
         <p className="text-gray-500 text-sm max-w-xs">Our team will reach out within 2 hours. You can also WhatsApp us directly.</p>
         <a
           href="https://wa.me/917013016003"
-          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors duration-200"
           style={{ background: "#25d366" }}
           target="_blank" rel="noopener noreferrer"
         >
           Chat on WhatsApp
         </a>
-        <button onClick={() => { setSuccess(false); setStep(1); }} className="mt-3 text-gray-400 text-xs hover:text-gray-600 transition-colors">
+        <button onClick={() => { setSuccess(false); setStep(1); }} className="btn-tertiary mt-3">
           Submit another enquiry
         </button>
       </div>
@@ -103,7 +103,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
     <div>
       {title && (
         <div className="mb-5">
-          <h3 className="text-gray-900 font-semibold text-xl" style={{ fontFamily: "Georgia, serif" }}>{title}</h3>
+          <h3 className="heading-h3">{title}</h3>
           {subtitle && <p className="text-gray-500 text-sm mt-1">{subtitle}</p>}
         </div>
       )}
@@ -180,9 +180,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
               </>
             )}
 
-            <button type="button" onClick={() => setStep(2)}
-              className="w-full py-3 rounded-xl font-bold text-black text-sm transition-all hover:opacity-90"
-              style={{ background: "#C9A24B" }}>
+            <button type="button" onClick={() => setStep(2)} className="btn-primary w-full justify-center">
               Next: Contact Details →
             </button>
           </div>
@@ -190,7 +188,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
         {step === 2 && (
           <div className="space-y-4">
-            <button type="button" onClick={() => setStep(1)} className="text-gray-400 text-xs hover:text-gray-600 transition-colors">
+            <button type="button" onClick={() => setStep(1)} className="btn-tertiary text-xs">
               ← Back to requirements
             </button>
 
@@ -224,11 +222,9 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
               <textarea id={`smartlead-message-${source}`} className={`${inp} resize-none`} rows={3} placeholder="Any specific requirements or questions?" value={contact.message} onChange={e => setContact(c => ({ ...c, message: e.target.value }))} />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="error-text">{error}</p>}
 
-            <button type="submit" disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-black text-sm transition-all disabled:opacity-60 hover:opacity-90"
-              style={{ background: "#C9A24B" }}>
+            <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
               {loading
                 ? <><span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> Sending...</>
                 : <><Send size={15} /> Submit Enquiry</>}
@@ -236,7 +232,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
             <p className="text-center text-gray-500 text-xs">
               Or WhatsApp directly:{" "}
-              <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "#8a6a2e" }}>
+              <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "var(--gold-text)" }}>
                 +91 70130 16003
               </a>
             </p>
