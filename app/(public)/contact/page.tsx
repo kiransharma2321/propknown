@@ -13,8 +13,8 @@ export default function ContactPage() {
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "#8a6a2e" }}>Reach Us</p>
-          <h1 className="section-heading" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color: "var(--gold-text)" }}>Reach Us</p>
+          <h1 className="heading-h1">
             Talk to a <span className="gold-text">PropKnown Expert</span>
           </h1>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">
@@ -32,11 +32,11 @@ export default function ContactPage() {
                 { icon: Clock,   label: "Business Hours",    value: "Mon–Sat 9am–7pm IST", href: null },
                 { icon: MapPin,  label: "Office",            value: COMPANY.address, href: null },
               ].map(({ icon: Icon, label, value, href }) => (
-                <div key={label} className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:border-yellow-500 transition-colors shadow-sm">
-                  <Icon size={20} className="mb-2" style={{ color: "#8a6a2e" }} />
+                <div key={label} className="card-dark bg-gray-50 p-4">
+                  <Icon size={20} className="mb-2" style={{ color: "var(--gold-text)" }} />
                   <p className="text-gray-500 text-xs mb-1">{label}</p>
                   {href ? (
-                    <a href={href} className="text-gray-900 text-sm font-medium hover:text-yellow-700 transition-colors">
+                    <a href={href} className="text-gray-900 text-sm font-medium hover:text-[#7A5C1A] transition-colors duration-200">
                       {value}
                     </a>
                   ) : (
@@ -63,8 +63,7 @@ export default function ContactPage() {
                 <a
                   href="https://maps.google.com/?q=Nizampet+Road+Hyderabad+500090"
                   target="_blank" rel="noopener noreferrer"
-                  className="text-xs font-medium whitespace-nowrap ml-4 hover:underline"
-                  style={{ color: "#8a6a2e" }}
+                  className="btn-tertiary text-xs whitespace-nowrap ml-4"
                 >
                   Open Maps →
                 </a>
@@ -73,7 +72,7 @@ export default function ContactPage() {
 
             {/* Global offices */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 shadow-sm">
-              <h2 className="text-gray-900 font-semibold mb-4">Global Presence</h2>
+              <h2 className="heading-h3 mb-4">Global Presence</h2>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { flag: "🇮🇳", label: "India", sub: "Hyderabad HQ" },
