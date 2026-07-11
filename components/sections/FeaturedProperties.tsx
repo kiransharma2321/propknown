@@ -86,8 +86,8 @@ export default function FeaturedProperties() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <p className="text-gold-400 text-sm tracking-widest uppercase mb-2">Curated Selection</p>
-            <h2 className="section-heading">
+            <p className="text-[#7A5C1A] text-sm font-semibold tracking-widest uppercase mb-2">Curated Selection</p>
+            <h2 className="heading-h2">
               Verified Properties, <span className="gold-text">Zero Guesswork</span>
             </h2>
             <p className="text-zinc-400 mt-3 max-w-md">

@@ -12,10 +12,7 @@ export default function StatsSection() {
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
         {stats.map((s) => (
           <div key={s.label} className="text-center">
-            <p
-              className="text-3xl font-bold gold-text mb-1"
-              style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}
-            >
+            <p className="font-playfair text-3xl font-bold gold-accent mb-1">
               {s.value}
             </p>
             <p className="text-white text-sm font-semibold">{s.label}</p>

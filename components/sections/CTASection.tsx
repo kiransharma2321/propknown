@@ -11,7 +11,7 @@ export default function CTASection() {
           {/* Left */}
           <div>
             <p className="text-gold-400 text-sm tracking-widest uppercase mb-3">Get Started</p>
-            <h2 className="section-heading text-white mb-4" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+            <h2 className="heading-h2-dark mb-4">
               Ready to Make Your <span className="gold-text">Best Investment?</span>
             </h2>
             <p className="text-zinc-400 leading-relaxed mb-8">
@@ -64,6 +64,7 @@ export default function CTASection() {
               source="homepage-cta"
               title="Quick Enquiry"
               subtitle="We reply within 2 hours during business hours."
+              dark
             />
           </div>
         </div>

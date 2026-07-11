@@ -11,12 +11,12 @@ const MARKETS = [
 
 export default function GlobalPresence() {
   return (
-    <section className="py-20 bg-brand-black">
+    <section className="py-20 bg-navy">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <p className="text-gold-400 text-sm tracking-widest uppercase mb-2">Global Reach</p>
-          <h2 className="section-heading-dark" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            Markets We <span className="gold-text">Serve</span>
+          <p className="gold-accent text-sm font-semibold tracking-widest uppercase mb-2">Global Reach</p>
+          <h2 className="heading-h2-dark">
+            Markets We <span className="gold-accent">Serve</span>
           </h2>
           <p className="text-zinc-400 mt-3 max-w-xl mx-auto">
             From Hyderabad to New York — our network spans the world&apos;s most dynamic real estate markets.

@@ -22,7 +22,7 @@ export default function AITeaser() {
               </div>
             </div>
 
-            <h2 className="section-heading-dark mb-6" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+            <h2 className="heading-h2-dark mb-6">
               Know Any Area&apos;s <span className="gold-text">True Value</span>
             </h2>
             <p className="text-zinc-400 leading-relaxed mb-8">
@@ -66,7 +66,7 @@ export default function AITeaser() {
                     BUY ↑
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+                <p className="font-playfair text-2xl font-bold text-white mb-1">
                   ₹1.24 Cr
                 </p>
                 <p className="text-zinc-500 text-xs">Estimated current value · 1,200 sqft</p>

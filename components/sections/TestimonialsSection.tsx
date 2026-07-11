@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
           <p className="text-gold-400 text-sm tracking-widest uppercase mb-2">Client Stories</p>
-          <h2 className="section-heading-dark" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h2 className="heading-h2-dark">
             What Our Clients <span className="gold-text">Say</span>
           </h2>
         </div>

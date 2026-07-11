@@ -44,6 +44,14 @@ body {
 
   .gold-border { border-color: var(--gold); }
 
+  /* Solid bright gold for large/bold decorative accents on DARK backgrounds (stat numbers,
+     badges) -- unlike .gold-text above, contrast here works in the opposite direction: a
+     darkened gold reads muddy on a dark surface, while --gold itself (D6A63E) clears 3:1
+     (the "large text" WCAG threshold) comfortably against near-black backgrounds. Only use
+     this on bold text >=24px/18.66px-bold; for small/body text on dark backgrounds prefer
+     plain white/cream instead of gold. */
+  .gold-accent { color: var(--gold); }
+
   /* ===== Button system: 3 variants used site-wide, nothing else. =====
      PRIMARY   -- main CTAs ("Request Consultation", "Search Properties"): solid gold, navy text.
      SECONDARY -- "Login", "Learn More": outlined navy ghost, fills navy on hover.

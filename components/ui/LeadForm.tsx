@@ -36,20 +36,21 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
     }
   };
 
-  const inputCls = dark
-    ? "input-dark"
-    : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-sm px-4 py-3 w-full focus:outline-none focus:border-gold-500 transition-colors";
-  const labelCls = dark ? "label-dark" : "text-gray-600 text-sm font-medium mb-1 block";
+  const inputCls = "input-dark";
+  const labelCls = dark ? "label-dark text-zinc-400" : "label-dark";
 
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <CheckCircle size={48} className="text-gold-400 mb-4" />
-        <h3 className={`font-semibold text-xl mb-2 ${dark ? "text-white" : "text-gray-900"}`}>Thank You!</h3>
+        <CheckCircle size={48} className="gold-accent mb-4" />
+        <h3 className={dark ? "heading-h3-dark mb-2" : "heading-h3 mb-2"}>Thank You!</h3>
         <p className={dark ? "text-zinc-400" : "text-gray-500"}>
           We&apos;ve received your enquiry. Our team will reach out within 2 hours.
         </p>
-        <button onClick={() => setSuccess(false)} className="mt-4 text-gold-400 text-sm hover:text-gold-300 transition-colors">
+        <button
+          onClick={() => setSuccess(false)}
+          className={dark ? "gold-accent hover:underline text-sm mt-4 transition-colors" : "btn-tertiary mt-4"}
+        >
           Submit another enquiry
         </button>
       </div>
@@ -60,7 +61,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
     <div>
       {title && (
         <div className="mb-6">
-          <h3 className={`font-semibold text-xl ${dark ? "text-white" : "text-gray-900"}`} style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
+          <h3 className={dark ? "heading-h3-dark" : "heading-h3"}>
             {title}
           </h3>
           {subtitle && <p className={`text-sm mt-1 ${dark ? "text-zinc-400" : "text-gray-500"}`}>{subtitle}</p>}
@@ -111,7 +112,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
             onChange={(e) => setForm({ ...form, message: e.target.value })}
           />
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className={dark ? "text-red-400 text-sm" : "error-text"}>{error}</p>}
         <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
           {loading ? (
             <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> Sending...</span>

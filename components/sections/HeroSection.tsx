@@ -47,8 +47,8 @@ export default function HeroSection() {
     router.push(`/buy?${params.toString()}`);
   };
 
-  const sel = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 appearance-none bg-white pr-8";
-  const inp = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-500 placeholder-gray-400";
+  const sel = "input-dark appearance-none px-3 py-2.5 pr-8 text-sm";
+  const inp = "input-dark px-3 py-2.5 text-sm";
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
@@ -84,22 +84,22 @@ export default function HeroSection() {
 
         {/* Badge */}
         <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/40 text-yellow-400 text-xs font-medium mb-6 backdrop-blur-sm"
-          style={{ background: "rgba(201,162,75,0.12)" }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D6A63E]/40 text-[#D6A63E] text-xs font-medium mb-6 backdrop-blur-sm"
+          style={{ background: "rgba(214,166,62,0.12)" }}
         >
-          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-[#D6A63E] animate-pulse" />
           AI-Powered Intelligence · RERA-Verified Listings · Zero Broker Spam
         </div>
 
         {/* Headline */}
         <h1
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
-          style={{ fontFamily: "var(--font-playfair, Georgia, serif)", textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
+          className="font-playfair text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-6 leading-tight"
+          style={{ textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
           India&apos;s Most Trusted
           <br />
           <span style={{
-            background: "linear-gradient(135deg,#C9A24B,#e8c97a,#C9A24B)",
+            background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
           }}>AI Real Estate Platform</span>
         </h1>
@@ -117,7 +117,7 @@ export default function HeroSection() {
               {/* Step 1 – City */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-yellow-600">①</span> City
+                  <span className="text-[#7A5C1A]">①</span> City
                 </label>
                 <div className="relative">
                   <select value={city} onChange={e => setCity(e.target.value)} className={sel}>
@@ -131,7 +131,7 @@ export default function HeroSection() {
               {/* Step 2 – Area / Locality */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-yellow-600">②</span> Area / Locality
+                  <span className="text-[#7A5C1A]">②</span> Area / Locality
                 </label>
                 <input
                   type="text" value={area} onChange={e => setArea(e.target.value)}
@@ -143,7 +143,7 @@ export default function HeroSection() {
               {/* Step 3 – Area Size */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-yellow-600">③</span> Area Size (sq.ft)
+                  <span className="text-[#7A5C1A]">③</span> Area Size (sq.ft)
                 </label>
                 <input
                   type="number" value={areaSize} onChange={e => setAreaSize(e.target.value)}
@@ -159,7 +159,7 @@ export default function HeroSection() {
               {/* Step 4 – Property Type */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-yellow-600">④</span> Property Type
+                  <span className="text-[#7A5C1A]">④</span> Property Type
                 </label>
                 <div className="relative">
                   <select value={propType} onChange={e => setPropType(e.target.value)} className={sel}>
@@ -173,7 +173,7 @@ export default function HeroSection() {
               {/* Step 5 – Budget (optional) */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-yellow-600">⑤</span> Budget <span className="normal-case text-gray-300 font-normal">(optional)</span>
+                  <span className="text-[#7A5C1A]">⑤</span> Budget <span className="normal-case text-gray-300 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
                   <select value={budget} onChange={e => setBudget(e.target.value)} className={sel}>
@@ -187,8 +187,7 @@ export default function HeroSection() {
               {/* Step 6 – Search */}
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl text-black font-bold text-sm transition-all hover:opacity-90 w-full"
-                style={{ background: "#C9A24B" }}
+                className="btn-primary justify-center text-sm py-2.5 px-6 w-full"
               >
                 <Search size={16} />
                 Search Properties
@@ -206,7 +205,7 @@ export default function HeroSection() {
             { val: "₹0", label: "Brokerage" },
           ].map(({ val, label }) => (
             <div key={label} className="text-center">
-              <p className="text-2xl font-bold" style={{ color: "#C9A24B", fontFamily: "var(--font-playfair, Georgia, serif)" }}>{val}</p>
+              <p className="font-playfair text-2xl font-bold gold-accent">{val}</p>
               <p className="text-white/70 text-xs mt-0.5">{label}</p>
             </div>
           ))}
