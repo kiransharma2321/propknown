@@ -45,7 +45,7 @@ export default function SubmissionDetailPage() {
   if (loading) {
     return (
       <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#D6A63E] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function SubmissionDetailPage() {
     return (
       <div className="pt-32 pb-20 min-h-screen text-center">
         <p className="text-gray-500 text-lg">Property not found or not yet approved.</p>
-        <Link href="/buy" className="mt-4 inline-block text-sm font-semibold" style={{ color: "#8a6a2e" }}>← Back to Buy</Link>
+        <Link href="/buy" className="btn-tertiary mt-4 inline-flex">← Back to Buy</Link>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function SubmissionDetailPage() {
               <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
                 {photoUrls.map((url, i) => (
                   <button key={i} onClick={() => setActivePhoto(i)}
-                    className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-yellow-400" : "border-transparent"}`}>
+                    className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${activePhoto === i ? "border-[#D6A63E]" : "border-transparent"}`}>
                     <Image src={url} alt={photoAlt(i)} fill sizes="64px" className="object-cover" />
                   </button>
                 ))}
@@ -114,8 +114,8 @@ export default function SubmissionDetailPage() {
             {(sub.videoIds.length > 0 || sub.videoUrls.length > 0) && (
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <Video size={16} style={{ color: "#8a6a2e" }} />
-                  <h3 className="text-gray-900 font-semibold">Videos</h3>
+                  <Video size={16} style={{ color: "var(--gold-text)" }} />
+                  <h3 className="heading-h3">Videos</h3>
                 </div>
                 <div className="space-y-4">
                   {sub.videoIds.map(vid => (
@@ -139,13 +139,13 @@ export default function SubmissionDetailPage() {
 
             {/* Description */}
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-6">
-              <h3 className="text-gray-900 font-bold mb-3">About this property</h3>
+              <h3 className="heading-h3 mb-3">About this property</h3>
               <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{sub.description}</p>
             </div>
 
             {sub.features && (
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-6">
-                <h3 className="text-gray-900 font-bold mb-3">Key Features</h3>
+                <h3 className="heading-h3 mb-3">Key Features</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{sub.features}</p>
               </div>
             )}
@@ -171,12 +171,12 @@ export default function SubmissionDetailPage() {
                 Owner Listed
               </span>
 
-              <h1 className="text-gray-900 font-bold text-xl mb-1 leading-snug">{sub.title}</h1>
+              <h1 className="heading-h3 mb-1">{sub.title}</h1>
               <div className="flex items-center gap-1 text-gray-400 text-sm mb-4">
                 <MapPin size={13} />{sub.area}, {sub.city}
               </div>
 
-              <p className="text-3xl font-bold mb-4" style={{ color: "#8a6a2e", fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+              <p className="font-playfair text-3xl font-bold mb-4" style={{ color: "var(--gold-text)" }}>
                 {sub.priceDisplay}
               </p>
 
@@ -204,12 +204,11 @@ export default function SubmissionDetailPage() {
 
               <div className="space-y-3">
                 <a href={waMsg} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-black text-sm transition-all hover:opacity-90"
-                  style={{ background: "#C9A24B" }}>
+                  className="btn-primary w-full justify-center">
                   <MessageCircle size={16} /> Enquire on WhatsApp
                 </a>
                 <a href={`tel:${sub.ownerPhone}`}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-gray-700 text-sm border border-gray-200 hover:border-gray-400 transition-all">
+                  className="btn-secondary w-full justify-center">
                   <Phone size={15} /> {sub.ownerPhone}
                 </a>
                 <RequestVideoTourButton propertyId={sub.id} title={sub.title} />

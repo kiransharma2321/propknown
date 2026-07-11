@@ -54,8 +54,7 @@ export default function RequestVideoTourButton({ propertyId, title, className }:
     return (
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm border-2 transition-all hover:bg-gray-50 ${className ?? ""}`}
-        style={{ borderColor: "rgba(201,162,75,0.5)", color: "#8a6a2e" }}
+        className={`btn-secondary w-full justify-center py-3 ${className ?? ""}`}
       >
         <Video size={16} /> Request Live Video Tour
       </button>
@@ -63,25 +62,24 @@ export default function RequestVideoTourButton({ propertyId, title, className }:
   }
 
   return (
-    <form onSubmit={submit} className={`border rounded-xl p-4 space-y-2.5 ${className ?? ""}`} style={{ borderColor: "rgba(201,162,75,0.4)" }}>
+    <form onSubmit={submit} className={`border rounded-xl p-4 space-y-2.5 ${className ?? ""}`} style={{ borderColor: "rgba(214,166,62,0.4)" }}>
       <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-        <Video size={13} style={{ color: "#8a6a2e" }} /> Request a live video tour
+        <Video size={13} style={{ color: "var(--gold-text)" }} /> Request a live video tour
       </p>
       <input
         value={form.name}
         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
         placeholder="Your Name *" required
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+        className="input-dark text-sm py-2 px-3"
       />
       <input
         value={form.phone}
         onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
         placeholder="WhatsApp Number *" required type="tel"
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+        className="input-dark text-sm py-2 px-3"
       />
       <button type="submit" disabled={submitting}
-        className="w-full py-2.5 rounded-lg font-bold text-black text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60"
-        style={{ background: "#C9A24B" }}>
+        className="btn-primary w-full justify-center disabled:opacity-60">
         {submitting ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} />}
         {submitting ? "Sending…" : "Send Request"}
       </button>

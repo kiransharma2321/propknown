@@ -5,8 +5,8 @@ import { Calculator, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { formatCurrency } from "@/lib/currency";
 
-// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
-const GOLD = "#8a6a2e";
+// --gold-text (6.2:1 on white) instead of --gold (2.2:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#7A5C1A";
 
 const STATE_RATES: Record<string, { stamp: number; registration: number }> = {
   Telangana:          { stamp: 7.0,  registration: 0.5 },
@@ -113,7 +113,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
         <div className="flex items-center gap-1.5">
           <input
             type="number" value={editVal ?? "0"} onChange={e => onEdit(e.target.value)} min={0} step="0.1"
-            className="w-16 text-right text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-yellow-400"
+            className="input-dark w-16 text-right text-sm px-2 py-1"
           />
           <span className="text-xs text-gray-400 w-4">%</span>
         </div>
@@ -127,8 +127,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-semibold transition-all hover:opacity-90"
-        style={{ borderColor: "rgba(201,162,75,0.4)", color: GOLD }}
+        className="btn-secondary w-full justify-between py-3"
       >
         <span className="flex items-center gap-2"><Calculator size={15} /> True Cost Calculator</span>
         <ChevronDown size={14} />
@@ -141,15 +140,15 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 py-4 cursor-pointer"
-        style={{ background: "linear-gradient(135deg, rgba(201,162,75,0.08), rgba(201,162,75,0.03))" }}
+        style={{ background: "linear-gradient(135deg, rgba(214,166,62,0.08), rgba(214,166,62,0.03))" }}
         onClick={() => compact && setExpanded(e => !e)}
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(201,162,75,0.12)" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(214,166,62,0.12)" }}>
             <Calculator size={18} style={{ color: GOLD }} />
           </div>
           <div>
-            <h3 className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-base"}`}>True Cost Calculator</h3>
+            <h3 className={`font-playfair font-bold text-gray-900 ${compact ? "text-sm" : "text-base"}`}>True Cost Calculator</h3>
             <p className="text-[10px] text-gray-400">Full all-in cost to own this property</p>
           </div>
         </div>
@@ -170,7 +169,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                 type="number" value={priceStr}
                 onChange={e => setPriceStr(e.target.value)}
                 placeholder="e.g. 8500000"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400"
+                className="input-dark text-sm px-3 py-2.5"
               />
               {price > 0 && <p className="text-[10px] text-gray-400 mt-1">{fmt(price)}</p>}
             </div>
@@ -178,7 +177,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">State</label>
               <select value={state} onChange={e => handleStateChange(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 bg-white">
+                className="input-dark text-sm px-3 py-2.5 appearance-none">
                 {Object.keys(STATE_RATES).map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
@@ -186,7 +185,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Property Status (for GST)</label>
               <select value={propStatus} onChange={e => setPropStatus(e.target.value as PropStatus)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 bg-white">
+                className="input-dark text-sm px-3 py-2.5 appearance-none">
                 {(Object.entries(GST_LABELS) as [PropStatus, string][]).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
@@ -244,11 +243,11 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
               </div>
 
               {/* Grand Total */}
-              <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, rgba(201,162,75,0.12), rgba(201,162,75,0.05))", border: "1.5px solid rgba(201,162,75,0.35)" }}>
+              <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, rgba(214,166,62,0.12), rgba(214,166,62,0.05))", border: "1.5px solid rgba(214,166,62,0.35)" }}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Grand Total — All-In Cost to Own</p>
-                    <p className="text-2xl font-bold" style={{ color: GOLD, fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                    <p className="font-playfair text-2xl font-bold" style={{ color: GOLD }}>
                       {fmt(breakdown.total)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
@@ -260,11 +259,7 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
 
               {/* EMI Section */}
               <div>
-                <button
-                  onClick={() => setShowEMI(e => !e)}
-                  className="flex items-center gap-2 text-sm font-semibold transition-colors hover:opacity-80"
-                  style={{ color: GOLD }}
-                >
+                <button onClick={() => setShowEMI(e => !e)} className="btn-tertiary">
                   {showEMI ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   {showEMI ? "Hide" : "Show"} Home Loan EMI Calculator
                 </button>
@@ -288,13 +283,13 @@ export default function CostCalculator({ initialPrice, compact = false }: Props)
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Interest Rate (%/yr)</label>
                         <input type="number" value={interest} onChange={e => setInterest(parseFloat(e.target.value) || 0)}
                           min={4} max={20} step={0.1}
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400" />
+                          className="input-dark text-sm px-3 py-2.5" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tenure (years)</label>
                         <input type="number" value={tenure} onChange={e => setTenure(parseInt(e.target.value) || 0)}
                           min={1} max={30}
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400" />
+                          className="input-dark text-sm px-3 py-2.5" />
                       </div>
                     </div>
                     {emiData.emi > 0 && (

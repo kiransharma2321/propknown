@@ -109,9 +109,9 @@ function fmtDist(m: number) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 }
 
-// #8a6a2e (5.02:1 on white) instead of the brand's #C9A24B (2.40:1) -- this page's
+// --gold-text (6.2:1 on white) instead of the brand's --gold (2.2:1) -- this page's
 // background is white and WCAG AA requires 4.5:1 for text.
-const GOLD = "#8a6a2e";
+const GOLD = "#7A5C1A";
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function PropertyDetailClient({
@@ -360,7 +360,7 @@ out body qt 30;`;
             {/* Title + basics */}
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
-                <span className="text-xs font-bold px-3 py-1 rounded-full border" style={{ background: "rgba(201,162,75,0.08)", borderColor: "rgba(201,162,75,0.3)", color: GOLD }}>
+                <span className="text-xs font-bold px-3 py-1 rounded-full border" style={{ background: "rgba(214,166,62,0.08)", borderColor: "rgba(214,166,62,0.3)", color: GOLD }}>
                   {listing.type}
                 </span>
                 <span className={`text-xs font-semibold px-3 py-1 rounded-full ${["Ready to Move","Ready","Available"].includes(listing.status) ? "bg-green-50 text-green-700 border border-green-200" : "bg-yellow-50 text-yellow-700 border border-yellow-200"}`}>
@@ -368,7 +368,7 @@ out body qt 30;`;
                 </span>
               </div>
               <div className="flex items-start justify-between gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+                <h1 className="heading-h3 mb-2">
                   {listing.title}
                 </h1>
                 <FavoriteButton
@@ -384,8 +384,8 @@ out body qt 30;`;
                 <MapPin size={14} />
                 <span>{listing.location}, {listing.city}</span>
               </div>
-              <p className="text-3xl font-bold mb-5" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-                <CurrencyPrice priceINR={listing.price} sourceCurrency={listing.currency} className="text-3xl font-bold text-[#8a6a2e]" />
+              <p className="font-playfair text-3xl font-bold mb-5">
+                <CurrencyPrice priceINR={listing.price} sourceCurrency={listing.currency} className="text-3xl font-bold text-[#7A5C1A]" />
               </p>
 
               {/* Key stats */}
@@ -407,7 +407,7 @@ out body qt 30;`;
             {/* Description */}
             {listing.description && (
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-3">About this property</h2>
+                <h2 className="heading-h3 mb-3">About this property</h2>
                 <p className="text-gray-600 leading-relaxed">{listing.description}</p>
               </div>
             )}
@@ -415,7 +415,7 @@ out body qt 30;`;
             {/* Features */}
             {listing.features && listing.features.length > 0 && (
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-3">Features & Amenities</h2>
+                <h2 className="heading-h3 mb-3">Features & Amenities</h2>
                 <div className="flex flex-wrap gap-2">
                   {listing.features.map(f => (
                     <span key={f} className="flex items-center gap-1.5 text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5">
@@ -447,7 +447,7 @@ out body qt 30;`;
             {/* ── MAP ── */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-lg font-bold text-gray-900">Location & Nearby</h2>
+                <h2 className="heading-h3">Location & Nearby</h2>
                 {nearbyPins.length > 0 && (
                   <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: "rgba(201,162,75,0.1)", color: GOLD }}>
                     + {nearbyPins.length} PropKnown listings nearby
@@ -493,7 +493,7 @@ out body qt 30;`;
             {/* ── AMENITIES SECTION ── */}
             {(amenitiesLoading || amenityGroups.length > 0) && (
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Nearby Places</h2>
+                <h2 className="heading-h3 mb-4">Nearby Places</h2>
                 {amenitiesLoading && amenityGroups.length === 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[1, 2, 3, 4].map(i => (
@@ -528,11 +528,11 @@ out body qt 30;`;
 
             {/* ── SIMILAR PROPERTIES NEARBY ── */}
             <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Similar PropKnown Listings Nearby</h2>
+              <h2 className="heading-h3 mb-4">Similar PropKnown Listings Nearby</h2>
               {nearbyListings.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {nearbyListings.map(p => (
-                    <div key={p.id} className="border border-gray-200 rounded-xl overflow-hidden hover:border-yellow-400 hover:shadow-md transition-all group">
+                    <div key={p.id} className="card-dark overflow-hidden group">
                       <div className="relative aspect-[16/9] overflow-hidden">
                         <Image
                           src={p.images[0]}
@@ -557,8 +557,7 @@ out body qt 30;`;
                         </div>
                         <Link
                           href={`/buy/${p.id}`}
-                          className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-lg border transition-all hover:bg-gray-50"
-                          style={{ borderColor: "rgba(201,162,75,0.4)", color: GOLD }}
+                          className="btn-secondary mt-3 w-full justify-center text-xs py-2"
                         >
                           <Building2 size={12} /> View Details
                         </Link>
@@ -574,7 +573,7 @@ out body qt 30;`;
                   <a
                     href={`https://wa.me/${COMPANY.whatsapp}?text=${encodeURIComponent("Hi PropKnown! I'm looking for properties near " + listing.location + ". Do you have any off-market options?")}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-white text-xs font-semibold px-5 py-2.5 rounded-lg"
+                    className="inline-flex items-center gap-2 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition-colors duration-200 hover:opacity-90"
                     style={{ background: "#25D366" }}
                   >
                     <MessageCircle size={14} /> Ask for Off-Market Options
@@ -593,7 +592,7 @@ out body qt 30;`;
               <a
                 href={`https://wa.me/${COMPANY.whatsapp}?text=${waText}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-bold text-white text-base shadow-lg transition-all hover:opacity-90"
+                className="flex items-center justify-center gap-3 w-full py-4 rounded-lg font-bold text-white text-base shadow-lg transition-colors duration-200 hover:opacity-90"
                 style={{ background: "#25D366" }}
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
@@ -604,8 +603,7 @@ out body qt 30;`;
 
               <a
                 href={`tel:${COMPANY.phoneTel}`}
-                className="flex items-center justify-center gap-3 w-full py-3.5 rounded-2xl font-semibold text-sm border-2 transition-all hover:bg-gray-50"
-                style={{ borderColor: "rgba(201,162,75,0.5)", color: GOLD }}
+                className="btn-secondary w-full justify-center py-3.5"
               >
                 <Phone size={16} /> Call {COMPANY.phone}
               </a>
@@ -616,7 +614,7 @@ out body qt 30;`;
               <div className="border border-gray-200 rounded-2xl p-5">
                 {/* h2, not h3 -- this sidebar card isn't a subsection of any h2 above it
                     (it sits in a separate <aside>-like column), so h3 skipped a level. */}
-                <h2 className="text-gray-900 font-bold text-base mb-1">Request a Callback</h2>
+                <h2 className="font-playfair text-gray-900 font-bold text-base mb-1">Request a Callback</h2>
                 <p className="text-gray-400 text-xs mb-4">We respond within 2 hours.</p>
 
                 {fstate === "success" ? (
@@ -634,7 +632,7 @@ out body qt 30;`;
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="Your Name *"
                       required
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+                      className="input-dark text-sm py-2.5 px-3"
                     />
                     <label className="sr-only" htmlFor="callback-phone">Phone Number</label>
                     <input
@@ -643,7 +641,7 @@ out body qt 30;`;
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="Phone Number *"
                       required type="tel"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400"
+                      className="input-dark text-sm py-2.5 px-3"
                     />
                     <label className="sr-only" htmlFor="callback-message">Message</label>
                     <textarea
@@ -652,18 +650,17 @@ out body qt 30;`;
                       onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                       placeholder="Message (optional)"
                       rows={3}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-yellow-400 placeholder-gray-400 resize-none"
+                      className="input-dark text-sm py-2.5 px-3 resize-none"
                     />
                     {fstate === "error" && (
-                      <p className="text-red-500 text-xs flex items-center gap-1">
+                      <p className="error-text flex items-center gap-1">
                         <AlertCircle size={12} /> Something went wrong. WhatsApp us instead.
                       </p>
                     )}
                     <button
                       type="submit"
                       disabled={fstate === "loading"}
-                      className="w-full py-3 rounded-xl text-black font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60"
-                      style={{ background: GOLD }}
+                      className="btn-primary w-full justify-center disabled:opacity-60"
                     >
                       {fstate === "loading" ? (
                         <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> Sending…</>
