@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
-// #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
-const GOLD = "#8a6a2e";
+// --gold-text (6.2:1 on white) instead of --gold (2.2:1) -- WCAG AA needs 4.5:1 for text.
+const GOLD = "#7A5C1A";
 const WA = "https://wa.me/917013016003";
 
 const MARKETS = [
@@ -130,11 +130,10 @@ export default function NRIPage() {
         {/* Hero */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold uppercase tracking-widest mb-6"
-            style={{ borderColor: "rgba(201,162,75,0.4)", color: GOLD, background: "rgba(201,162,75,0.07)" }}>
+            style={{ borderColor: "rgba(214,166,62,0.4)", color: GOLD, background: "rgba(214,166,62,0.07)" }}>
             <Globe size={13} /> NRI Property Investment
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-5"
-            style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h1 className="heading-h1 mb-5">
             Invest From Anywhere, <span style={{ color: GOLD }}>With Confidence</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed mb-8">
@@ -145,16 +144,14 @@ export default function NRIPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href={`${WA}?text=${encodeURIComponent("Hi Raghu, I'm an NRI interested in investing in property in India. Can you help me?")}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-lg font-bold text-sm text-white transition-colors duration-200 hover:opacity-90"
               style={{ background: "#25D366" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
               WhatsApp Raghu — Free NRI Consultation
             </a>
-            <Link href="/buy"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm border-2 transition-all"
-              style={{ borderColor: `${GOLD}80`, color: GOLD }}>
+            <Link href="/buy" className="btn-secondary px-8 py-4">
               Browse Verified Properties <ArrowRight size={15} />
             </Link>
           </div>
@@ -163,7 +160,7 @@ export default function NRIPage() {
         {/* Remote Buying Concierge — signature step-by-step tracker */}
         <div className="mb-16">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+            <h2 className="heading-h2 mb-2">
               Your Remote Buying <span style={{ color: GOLD }}>Concierge</span>
             </h2>
             <p className="text-gray-500 text-sm max-w-xl mx-auto">
@@ -175,7 +172,7 @@ export default function NRIPage() {
             {CONCIERGE_STEPS.map((s, i) => (
               <div key={s.title} className="flex gap-4">
                 <div className="flex flex-col items-center shrink-0">
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: GOLD }}>
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: "var(--gold)" }}>
                     {i + 1}
                   </span>
                   {i < CONCIERGE_STEPS.length - 1 && <span className="w-px flex-1 bg-gray-200 my-1" />}
@@ -188,7 +185,7 @@ export default function NRIPage() {
                       <RequestVideoTourButton title="a shortlisted property" />
                     </div>
                   ) : s.cta && (
-                    <Link href={s.cta.href} className="inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: GOLD }}>
+                    <Link href={s.cta.href} className="btn-tertiary text-xs">
                       {s.cta.label} <ArrowRight size={12} />
                     </Link>
                   )}
@@ -199,7 +196,7 @@ export default function NRIPage() {
           <div className="max-w-2xl mx-auto mt-2">
             <a href={`${WA}?text=${encodeURIComponent("Hi Raghu, I'm an NRI going through the remote buying process and have a question about one of the steps.")}`}
               target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg font-bold text-white text-sm transition-colors duration-200 hover:opacity-90"
               style={{ background: "#25D366" }}>
               <Phone size={15} /> Ask Raghu About Any Step
             </a>
@@ -212,7 +209,7 @@ export default function NRIPage() {
         {/* Markets served */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
           {MARKETS.map(m => (
-            <div key={m.label} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center hover:border-yellow-400 transition-colors">
+            <div key={m.label} className="card-dark bg-gray-50 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">{m.flag}</div>
               <p className="text-gray-900 font-semibold text-sm mb-1">{m.label}</p>
               <p className="text-gray-400 text-xs">{m.count}</p>
@@ -222,7 +219,7 @@ export default function NRIPage() {
 
         {/* FEMA Basics */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h2 className="heading-h2 mb-2">
             FEMA Basics — What NRIs <span style={{ color: GOLD }}>Can & Cannot Buy</span>
           </h2>
           <p className="text-gray-500 mb-6 text-sm">Under the Foreign Exchange Management Act (FEMA), NRI property rights are well-defined. Key points:</p>
@@ -246,18 +243,18 @@ export default function NRIPage() {
 
         {/* Remote Buying Process */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h2 className="heading-h2 mb-2">
             How PropKnown Handles <span style={{ color: GOLD }}>Remote Buying</span>
           </h2>
           <p className="text-gray-500 mb-8 text-sm">Our end-to-end process means you don&apos;t need to fly to India to buy property.</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {PROCESS_STEPS.map(s => (
-              <div key={s.step} className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-yellow-400 hover:shadow-md transition-all">
+              <div key={s.step} className="card-dark rounded-2xl p-5">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-black mb-4"
-                  style={{ background: GOLD }}>
+                  style={{ background: "var(--gold)" }}>
                   {s.step}
                 </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">{s.title}</h3>
+                <h3 className="heading-h3 mb-2">{s.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{s.desc}</p>
               </div>
             ))}
@@ -267,8 +264,8 @@ export default function NRIPage() {
         {/* Documents */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-5" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-              <FileText size={18} className="inline mr-2" style={{ color: GOLD }} />
+            <h2 className="heading-h2 mb-5">
+              <FileText size={26} className="inline mr-2 align-middle" style={{ color: GOLD }} />
               Documents You&apos;ll Need
             </h2>
             <div className="space-y-2.5">
@@ -282,8 +279,8 @@ export default function NRIPage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-5" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-              <Shield size={18} className="inline mr-2" style={{ color: GOLD }} />
+            <h2 className="heading-h2 mb-5">
+              <Shield size={26} className="inline mr-2 align-middle" style={{ color: GOLD }} />
               NRI Legal Safeguards
             </h2>
             <div className="space-y-2.5">
@@ -299,7 +296,7 @@ export default function NRIPage() {
 
         {/* Power of Attorney info */}
         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-16">
-          <h2 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
+          <h2 className="heading-h2 mb-4">
             Power of Attorney (PoA) — <span style={{ color: GOLD }}>Your Remote Signing Tool</span>
           </h2>
           <div className="grid sm:grid-cols-3 gap-6 text-sm text-gray-600">
@@ -319,14 +316,14 @@ export default function NRIPage() {
         </div>
 
         {/* CTA */}
-        <div className="rounded-3xl p-10 text-center text-white" style={{ background: "linear-gradient(135deg,#1a1a1a,#2d2d2d)" }}>
+        <div className="rounded-3xl p-10 text-center text-white" style={{ background: "linear-gradient(135deg,var(--navy),#1a2f5c)" }}>
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(201,162,75,0.2)", border: "2px solid rgba(201,162,75,0.4)" }}>
-              <Phone size={24} style={{ color: GOLD }} />
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(214,166,62,0.2)", border: "2px solid rgba(214,166,62,0.4)" }}>
+              <Phone size={24} className="gold-accent" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-playfair,Georgia,serif)" }}>
-            Ready to Invest from <span style={{ color: GOLD }}>Abroad?</span>
+          <h2 className="heading-h2-dark mb-3">
+            Ready to Invest from <span className="gold-accent">Abroad?</span>
           </h2>
           <p className="text-gray-300 max-w-lg mx-auto mb-6 text-sm leading-relaxed">
             Raghu personally handles all NRI clients. WhatsApp him — available 9am to 9pm IST (UTC+5:30).
@@ -335,15 +332,14 @@ export default function NRIPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href={`${WA}?text=${encodeURIComponent("Hi Raghu, I'm an NRI and want to invest in property in India. Please help me understand the options.")}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-white"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-bold text-sm text-white transition-colors duration-200 hover:opacity-90"
               style={{ background: "#25D366" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
               WhatsApp: +91 70130 16003
             </a>
-            <Link href="/ai-intelligence"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
+            <Link href="/ai-intelligence" className="btn-secondary-dark px-8 py-4">
               AI Price Intelligence
             </Link>
           </div>
