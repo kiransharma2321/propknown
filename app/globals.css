@@ -200,5 +200,8 @@ body {
 .orb-ring-inner { animation-name: orbSpinCCW; animation-timing-function: linear; animation-iteration-count: infinite; }
 .orb-core       { animation-name: orbCorePulse; animation-timing-function: ease-in-out; animation-iteration-count: infinite; transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) {
-  .orb-ring-outer, .orb-ring-inner, .orb-core { animation: none; }
+  /* Disable the spinning globe rings (the disorienting motion) but keep a slow,
+     gentle core pulse so the orb still reads as "alive" for reduced-motion users. */
+  .orb-ring-outer, .orb-ring-inner { animation: none; }
+  .orb-core { animation-duration: 4s; }
 }
