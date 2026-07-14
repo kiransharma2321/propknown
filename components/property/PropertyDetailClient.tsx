@@ -397,7 +397,16 @@ out body qt 30;`;
                   <span className="flex items-center gap-2"><Bath size={15} className="text-gray-400" />{listing.baths} Bathrooms</span>
                 )}
                 {(listing.sqft ?? 0) > 0 && (
-                  <span className="flex items-center gap-2"><Maximize size={15} className="text-gray-400" />{listing.sqft?.toLocaleString()} sqft</span>
+                  <span className="flex items-center gap-2">
+                    <Maximize size={15} className="text-gray-400" />
+                    {listing.sqft?.toLocaleString()} sqft{listing.carpetSqft ? " built-up" : ""}
+                  </span>
+                )}
+                {listing.carpetSqft != null && (
+                  <span className="flex items-center gap-2">
+                    <Maximize size={15} className="text-gray-400" />
+                    {listing.carpetSqft.toLocaleString()} sqft carpet
+                  </span>
                 )}
                 {listing.floor && <span className="flex items-center gap-2"><Building2 size={15} className="text-gray-400" />{listing.floor}</span>}
                 {listing.facing && <span className="flex items-center gap-2">🧭 {listing.facing} Facing</span>}

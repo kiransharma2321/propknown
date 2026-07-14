@@ -11,6 +11,7 @@ import ConstructionProgress from "@/components/ui/ConstructionProgress";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 import type { LegalChecklist } from "@/lib/legalShield";
 import type { ConstructionMilestone } from "@/lib/constructionProgress";
+import { formatPostedDate } from "@/lib/utils";
 
 interface SubDetail {
   id: string; title: string; propType: string; bhk?: string;
@@ -167,9 +168,12 @@ export default function SubmissionDetailPage() {
           {/* Right: Details card */}
           <div>
             <div className="sticky top-24 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 mb-4 inline-block">
-                Owner Listed
-              </span>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 inline-block">
+                  Owner Listed
+                </span>
+                <span className="text-gray-400 text-xs">{formatPostedDate(sub.createdAt)}</span>
+              </div>
 
               <h1 className="heading-h3 mb-1">{sub.title}</h1>
               <div className="flex items-center gap-1 text-gray-400 text-sm mb-4">

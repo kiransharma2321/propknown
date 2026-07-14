@@ -10,17 +10,13 @@ import { useComparison, type CompareItem } from "@/components/comparison/Compari
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import VerificationBadge from "@/components/ui/VerificationBadge";
+import { ALL_LISTINGS } from "@/lib/listings";
 
-const LISTINGS = [
-  { id:"aparna",    title:"Aparna Sarovar Grande 3BHK", location:"Nallagandla",  city:"Hyderabad",   display:"₹1.25 Cr",    price:12500000, sqft:1950, beds:3, baths:3, floor:"8th Floor",   facing:"East",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400006789", aiScore:8.4, type:"Apartment",  img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80" },
-  { id:"bhooja",    title:"My Home Bhooja 3BHK",        location:"Kokapet",      city:"Hyderabad",   display:"₹3.5 Cr",     price:35000000, sqft:2850, beds:3, baths:3, floor:"15th Floor",  facing:"West",      status:"Ready to Move",      badge:"RERA", badgeNo:"P02400008234", aiScore:9.2, type:"Apartment",  img:"https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80" },
-  { id:"prestige",  title:"Prestige Falcon City 2BHK",  location:"Gachibowli",  city:"Hyderabad",   display:"₹85 Lakhs",   price:8500000,  sqft:1250, beds:2, baths:2, floor:"4th Floor",   facing:"North",     status:"Under Construction", badge:"RERA", badgeNo:"P02400004521", aiScore:7.8, type:"Apartment",  img:"https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80" },
-  { id:"hmda-plot", title:"HMDA Prime Corner Plot",      location:"Kollur",       city:"Hyderabad",   display:"₹45 Lakhs",   price:4500000,  sqft:1800, beds:0, baths:0, floor:"Ground",      facing:"East",      status:"Ready",              badge:"HMDA", badgeNo:"LP245/2024",   aiScore:8.1, type:"Plot",       extra:"200 sqyd · 4 Guntas · 30ft Road", img:"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80" },
-  { id:"vasavi",    title:"Vasavi Signature Villa 4BHK", location:"Nallagandla", city:"Hyderabad",   display:"₹2.8 Cr",     price:28000000, sqft:3200, beds:4, baths:4, floor:"G+2",         facing:"North-East",status:"Ready to Move",      badge:"RERA", badgeNo:"P02400007123", aiScore:8.8, type:"Villa",      extra:"200 sqyd · Vastu Compliant", img:"https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600&q=80" },
-  { id:"farmland",  title:"Managed Farm Land",           location:"Shankarpally",city:"Rangareddy",  display:"₹25L/acre",   price:2500000,  sqft:87120,beds:0, baths:0, floor:"Ground",      facing:"East",      status:"Available",          badge:"PATTA",badgeNo:"Patta Available",aiScore:7.5, type:"Farm Land",  extra:"2 acres min · Borewell · Road Access", img:"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80" },
-  { id:"kompally",  title:"Commercial Shop — Kompally",  location:"Kompally",    city:"Hyderabad",   display:"₹65 Lakhs",   price:6500000,  sqft:450,  beds:0, baths:1, floor:"Ground Floor",facing:"Main Road", status:"Ready",              badge:"RERA", badgeNo:"P02400003344", aiScore:7.9, type:"Commercial", extra:"High Footfall · Corner Shop", img:"https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" },
-  { id:"rajapushpa",title:"Rajapushpa Provincia 3BHK",   location:"Kokapet",     city:"Hyderabad",   display:"₹1.95 Cr",    price:19500000, sqft:2100, beds:3, baths:3, floor:"10th Floor",  facing:"South-West",status:"Ready to Move",      badge:"RERA", badgeNo:"P02400005678", aiScore:8.6, type:"Apartment",  img:"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80" },
-];
+// Was previously its own hardcoded copy of these 8 listings (with its own drifted image URLs
+// and, at one point, a RERA number silently duplicated from prop-2) -- consolidated to read
+// from the single ALL_LISTINGS source so a fix made there doesn't also have to be made here.
+const BUY_PAGE_IDS = ["aparna", "bhooja", "prestige", "hmda-plot", "vasavi", "farmland", "kompally", "rajapushpa"];
+const LISTINGS = ALL_LISTINGS.filter(l => BUY_PAGE_IDS.includes(l.id));
 
 const CITIES  = ["All Cities","Hyderabad","Bangalore","Mumbai","Pune","Chennai","Delhi NCR","Dubai","Singapore","London","Toronto"];
 const TYPES   = ["All Types","Apartment","Villa","House","Commercial","Plot","Agriculture Land","Farm Land"];
@@ -281,23 +277,23 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
                 const added = isAdded(p.id);
                 const compareItem: CompareItem = {
                   id: p.id, title: p.title, price: p.price, priceDisplay: p.display,
-                  sqft: p.sqft, beds: p.beds > 0 ? p.beds : undefined,
+                  sqft: p.sqft, beds: (p.beds ?? 0) > 0 ? p.beds : undefined,
                   location: p.location, city: p.city, type: p.type,
-                  image: p.img, aiScore: p.aiScore,
+                  image: p.images[0], aiScore: p.aiScore,
                   reraNumber: p.badge === "RERA" ? p.badgeNo : undefined,
                   badge: p.badge, status: p.status, source: "curated",
                 };
                 return (
                   <div key={p.id} className="card-dark rounded-2xl overflow-hidden group flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image src={p.img} alt={`${p.title} — ${p.type} in ${p.location}, ${p.city}`} fill
+                      <Image src={p.images[0]} alt={`${p.title} — ${p.type} in ${p.location}, ${p.city}`} fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute top-2 left-2">
                         <span className="bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded">✓ {p.badge}</span>
                       </div>
                       <div className="absolute top-2 right-2">
-                        <span className="flex items-center gap-1 bg-black/70 text-xs font-bold px-2 py-1 rounded-full" style={{ color: scoreColor(p.aiScore) }}>
+                        <span className="flex items-center gap-1 bg-black/70 text-xs font-bold px-2 py-1 rounded-full" style={{ color: scoreColor(p.aiScore ?? 0) }}>
                           <Star size={10} fill="currentColor" /> {p.aiScore}
                         </span>
                       </div>
@@ -306,7 +302,7 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
                         title={p.title}
                         priceDisplay={p.display}
                         location={`${p.location}, ${p.city}`}
-                        image={p.img}
+                        image={p.images[0]}
                         className="absolute bottom-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm"
                       />
                     </div>
@@ -317,8 +313,8 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
                         <CurrencyPrice priceINR={p.price} className="text-xl font-bold text-[#7A5C1A]" />
                       </p>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-1">
-                        {p.beds > 0 && <span>{p.beds} BHK</span>}
-                        {p.sqft > 0 && <span>{p.sqft.toLocaleString()} sqft</span>}
+                        {(p.beds ?? 0) > 0 && <span>{p.beds} BHK</span>}
+                        {(p.sqft ?? 0) > 0 && <span>{p.sqft?.toLocaleString()} sqft</span>}
                         <span>{p.floor}</span><span>{p.facing}</span>
                       </div>
                       {"extra" in p && p.extra && <p className="text-xs text-gray-400 mb-2">{p.extra as string}</p>}

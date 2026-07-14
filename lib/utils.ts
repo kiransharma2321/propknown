@@ -21,6 +21,21 @@ export function formatPrice(price: number, currency = "INR"): string {
   return fmt.format(price);
 }
 
+// Relative freshness signal ("Posted 3 days ago") for listings with a genuine timestamp.
+// Deliberately not used on the static demo listings in lib/listings.ts, which have no real
+// per-listing post date -- fabricating one would be a false freshness claim, not a fix.
+export function formatPostedDate(createdAt: string | Date): string {
+  const created = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
+  const days = Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "Posted today";
+  if (days === 1) return "Posted 1 day ago";
+  if (days < 30) return `Posted ${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `Posted ${months} month${months > 1 ? "s" : ""} ago`;
+  const years = Math.floor(months / 12);
+  return `Posted ${years} year${years > 1 ? "s" : ""} ago`;
+}
+
 export function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
