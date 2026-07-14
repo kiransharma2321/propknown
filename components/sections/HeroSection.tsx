@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-// Self-hosted from public/videos/hero.mp4 -- see that folder's own note for the expected
-// filename/format. If the file isn't there yet (dev environment, or before it's been added),
-// the <video> tag's onError handler below falls back to the static poster image automatically
-// -- nothing breaks either way.
-const HERO_VIDEO = "/videos/hero.mp4";
+import Image from "next/image";
+import Link from "next/link";
 
 const CITIES = [
   "Hyderabad", "Bangalore", "Mumbai", "Pune", "Chennai",
@@ -29,7 +25,6 @@ const HERO_POSTER = "https://images.unsplash.com/photo-1582407947304-fd86f028f71
 
 export default function HeroSection() {
   const router = useRouter();
-  const [videoFailed, setVideoFailed] = useState(false);
 
   const [city,     setCity]     = useState("");
   const [area,     setArea]     = useState("");
@@ -51,40 +46,32 @@ export default function HeroSection() {
   const inp = "input-dark px-3 py-2.5 text-sm";
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Video background — desktop and mobile. `poster` shows instantly on slow connections
-          while the video buffers; if the video fails to load at all (missing file, unsupported
-          format, etc.) onError swaps to the plain static fallback image below so the hero can
-          never break. */}
-      {!videoFailed && (
-        <video
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay loop muted playsInline
-          poster={HERO_POSTER}
-          onError={() => setVideoFailed(true)}
-        >
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
-      )}
-
-      {/* Fallback background image — only shown if the video itself fails to load */}
-      {videoFailed && (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${HERO_POSTER}')` }}
-        />
-      )}
+    <section className="relative min-h-screen flex flex-col items-center justify-start md:justify-center overflow-hidden">
+      {/* Background — Next/Image gives us automatic AVIF/WebP + responsive srcset + a
+          fetchpriority=high preload hint via `priority`, which is what actually gets this
+          under the LCP budget (the old raw Unsplash URL shipped a flat 409KB JPEG to every
+          device regardless of screen size). `priority` also means this is intentionally NOT
+          lazy-loaded, since it's the above-the-fold LCP candidate. */}
+      <Image
+        src={HERO_POSTER}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        quality={70}
+        className="object-cover"
+      />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60" />
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/50 to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center py-32 pt-44">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center pt-24 pb-16 md:pt-44 md:pb-32">
 
-        {/* Badge */}
+        {/* Badge — hidden on mobile to keep headline/CTA above the fold; shown from sm up */}
         <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D6A63E]/40 text-[#D6A63E] text-xs font-medium mb-6 backdrop-blur-sm"
+          className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D6A63E]/40 text-[#D6A63E] text-xs font-medium mb-6 backdrop-blur-sm"
           style={{ background: "rgba(214,166,62,0.12)" }}
         >
           <span className="w-2 h-2 rounded-full bg-[#D6A63E] animate-pulse" />
@@ -93,7 +80,7 @@ export default function HeroSection() {
 
         {/* Headline */}
         <h1
-          className="font-playfair text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-6 leading-tight"
+          className="font-playfair text-3xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-3 md:mb-6 leading-tight"
           style={{ textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
           India&apos;s Most Trusted
@@ -103,9 +90,21 @@ export default function HeroSection() {
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
           }}>AI Real Estate Platform</span>
         </h1>
-        <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+        {/* Short one-line version on mobile so it never wraps within the fold; full copy from sm up */}
+        <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-5">
+          AI-Powered. RERA-Verified. Zero Spam.
+        </p>
+        <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block">
           AI-Powered Intelligence. RERA-Verified Listings. Honest Pricing — Always.
         </p>
+
+        {/* Single high-contrast CTA — above the fold on mobile, ahead of the search card */}
+        <Link
+          href="/price-check"
+          className="btn-primary inline-flex text-base px-8 py-4 mb-8 md:hidden"
+        >
+          Check Property Price Free <ArrowRight size={16} />
+        </Link>
 
         {/* Search card */}
         <div className="mx-auto max-w-5xl">
