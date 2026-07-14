@@ -191,7 +191,7 @@ export function buildApprovalHtml(opts: {
         <p style="color:#333;font-size:14px">Your property listing "<strong>${title}</strong>" has been <strong>${opts.action}</strong> by our team.</p>
         ${!isApproved && reason ? `<p style="color:#dc2626;font-size:13px;background:#fef2f2;padding:10px 14px;border-radius:8px;border:1px solid #fecaca">Reason: ${reason}</p>` : ""}
         ${isApproved ? `<p style="color:#333;font-size:13px">Your property is now live on PropKnown and visible to buyers. We will contact you shortly with next steps.</p>` : `<p style="color:#333;font-size:13px">Please make the requested changes and resubmit, or contact us for clarification.</p>`}
-        <p style="margin-top:20px;color:#555;font-size:13px">Questions? Call or WhatsApp Raghu: <a href="tel:+917013016003" style="color:#C9A24B;font-weight:700">+91 70130 16003</a></p>
+        <p style="margin-top:20px;color:#555;font-size:13px">Questions? Call or WhatsApp our team: <a href="tel:+917013016003" style="color:#C9A24B;font-weight:700">+91 70130 16003</a></p>
         <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003 · Hyderabad</p>
       </div>
     </div>`;

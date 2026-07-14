@@ -621,7 +621,7 @@ out body qt 30;`;
                   <div className="text-center py-6">
                     <CheckCircle size={36} className="text-green-500 mx-auto mb-3" />
                     <p className="font-semibold text-gray-800">Request sent!</p>
-                    <p className="text-sm text-gray-500 mt-1">Raghu will call you within 2 hours.</p>
+                    <p className="text-sm text-gray-500 mt-1">Our team will call you within 2 hours.</p>
                   </div>
                 ) : (
                   <form onSubmit={submitLead} className="space-y-3">

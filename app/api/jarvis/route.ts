@@ -67,7 +67,7 @@ For evaluating a COMMUNITY / PROJECT, tell clients to check:
    • Resale and rental potential — is this area growing? Who are the end users?
    • Occupancy level — in completed projects, how many units are occupied?
 
-3. After educating, warmly route to Raghu: "For specific verified recommendations matched to your exact budget, timeline, and needs — I'd suggest a quick chat with Raghu on WhatsApp 70130 16003. He personally visits and verifies projects and builders before listing them on PropKnown."
+3. After educating, warmly route to WhatsApp: "For specific verified recommendations matched to your exact budget, timeline, and needs — I'd suggest a quick chat with our team on WhatsApp 70130 16003. We personally visit and verify projects and builders before listing them on PropKnown."
 
 4. NEVER fabricate rankings, claim one builder is objectively best, or invent reviews or ratings.
 
@@ -78,8 +78,8 @@ GENERAL GUIDELINES:
 - Be warm, professional, and specific (3-5 sentences usually; longer when detail is needed)
 - Give REAL, USEFUL answers — if asked about an area, give genuine pricing insights and pros/cons. If asked to calculate EMI, show the actual calculation.
 - Use proper Indian currency formatting: ₹X lakhs, ₹X crores
-- When asked for live prices you cannot guarantee, give a realistic estimate range and mention: "For exact current pricing, use PropKnown's AI Intelligence tool or WhatsApp Raghu on 70130 16003"
-- For serious enquiries (buying/selling/investing), offer to connect: "WhatsApp Raghu directly on 70130 16003 for a personalised consultation"
+- When asked for live prices you cannot guarantee, give a realistic estimate range and mention: "For exact current pricing, use PropKnown's AI Intelligence tool or WhatsApp our team on 70130 16003"
+- For serious enquiries (buying/selling/investing), offer to connect: "WhatsApp our team directly on 70130 16003 for a personalised consultation"
 - For general knowledge questions unrelated to real estate, answer helpfully and concisely, then relate back if relevant
 - Never invent fake RERA numbers, fake listing prices, or fake project names
 - If you're unsure about something specific, say so honestly and offer the verified route`;
@@ -197,9 +197,9 @@ const SAFETY_FALLBACK = `Great question! When evaluating builders and communitie
 
 Every buyer's "best" depends on their budget, timeline, and location preference — there's no one-size-fits-all.
 
-For specific verified recommendations tailored to your exact needs, I'd suggest a quick chat with Raghu on WhatsApp **70130 16003**. He personally visits and verifies projects before recommending them.`;
+For specific verified recommendations tailored to your exact needs, I'd suggest a quick chat with our team on WhatsApp **70130 16003**. We personally visit and verify projects before recommending them.`;
 
-const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp Raghu on 70130 16003 — he responds within minutes!";
+const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp our team on 70130 16003 — we respond within minutes!";
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === "ADD-YOUR-GEMINI-KEY-HERE") {
     return NextResponse.json({
-      reply: "I'm having trouble connecting right now. Please WhatsApp Raghu directly on 70130 16003 — he responds within minutes!",
+      reply: "I'm having trouble connecting right now. Please WhatsApp our team directly on 70130 16003 — we respond within minutes!",
     });
   }
 
@@ -265,6 +265,6 @@ export async function POST(req: NextRequest) {
 
   // Final fallback — only reached after all 3 attempts (across 2 models) genuinely failed
   return NextResponse.json({
-    reply: "I'm having a moment of difficulty right now. For immediate help on this question, please WhatsApp Raghu on **70130 16003** — he responds within minutes and can answer any property question directly!",
+    reply: "I'm having a moment of difficulty right now. For immediate help on this question, please WhatsApp our team on **70130 16003** — we respond within minutes and can answer any property question directly!",
   });
 }

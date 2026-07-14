@@ -81,7 +81,7 @@ export default function AboutPage() {
               target="_blank" rel="noopener noreferrer"
               className="btn-primary inline-flex"
             >
-              Connect with Raghu on WhatsApp
+              Talk to an Expert Now
             </a>
           </div>
 

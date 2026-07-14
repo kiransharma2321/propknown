@@ -45,7 +45,7 @@ export default function RequestVideoTourButton({ propertyId, title, className }:
   if (done) {
     return (
       <div className={`flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3 ${className ?? ""}`}>
-        <CheckCircle size={16} /> Request sent — Raghu will WhatsApp you to schedule the tour.
+        <CheckCircle size={16} /> Request sent — our team will WhatsApp you to schedule the tour.
       </div>
     );
   }

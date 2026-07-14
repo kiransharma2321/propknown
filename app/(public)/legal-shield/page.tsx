@@ -244,7 +244,7 @@ export default function LegalShieldPage() {
                 <a href={`https://wa.me/${COMPANY.whatsapp}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg font-bold text-white text-sm transition-colors duration-200 hover:opacity-90"
                   style={{ background: "#25D366" }}>
-                  <MessageCircle size={16} /> Talk to Raghu for Professional Verification
+                  <MessageCircle size={16} /> Talk to an Expert Now for Professional Verification
                 </a>
 
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
