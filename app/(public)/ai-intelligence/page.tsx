@@ -13,17 +13,19 @@ import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/curr
 import AiIntelRegisterGate from "@/components/ui/AiIntelRegisterGate";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const HOT_MARKETS = [
-  "Kokapet, Hyderabad",
-  "Gachibowli, Hyderabad",
-  "Financial District, Hyderabad",
-  "Medchal, Hyderabad",
-  "Whitefield, Bangalore",
-  "Sarjapur Road, Bangalore",
-  "Dubai Marina",
-  "Business Bay, Dubai",
-  "Bandra West, Mumbai",
-  "Hinjewadi, Pune",
+// Split into city + area so a chip click fills both levels of the two-field search
+// correctly, instead of dumping a combined string into one field.
+const HOT_MARKETS: { city: string; area: string }[] = [
+  { city: "Hyderabad", area: "Kokapet" },
+  { city: "Hyderabad", area: "Gachibowli" },
+  { city: "Hyderabad", area: "Financial District" },
+  { city: "Hyderabad", area: "Medchal" },
+  { city: "Bangalore", area: "Whitefield" },
+  { city: "Bangalore", area: "Sarjapur Road" },
+  { city: "Dubai",     area: "Dubai Marina" },
+  { city: "Dubai",     area: "Business Bay" },
+  { city: "Mumbai",    area: "Bandra West" },
+  { city: "Pune",      area: "Hinjewadi" },
 ];
 
 const PROPERTY_TYPES = [
@@ -249,11 +251,23 @@ const TREND_STYLE: Record<string, { bg: string; border: string; text: string; do
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function AIIntelligencePage() {
   const { currency: selectedCurrency } = useCurrency();
-  const [query,       setQuery]       = useState("");
-  const [selected,    setSelected]    = useState("");
-  const [suggestions, setSuggestions] = useState<Loc[]>([]);
-  const [showDrop,    setShowDrop]    = useState(false);
-  const [loadingLoc,  setLoadingLoc]  = useState(false);
+
+  // ── Two-level location search: City/Country (Field A) + Area/Locality (Field B) ──
+  // Area is scoped to whatever's currently in the City field (via /api/location?city=),
+  // and only the exact selected AREA (when present) drives the price -- city-only still
+  // works on its own for a city-level estimate.
+  const [cityQuery,     setCityQuery]     = useState("");
+  const [citySelected,  setCitySelected]  = useState("");
+  const [citySuggestions, setCitySuggestions] = useState<Loc[]>([]);
+  const [showCityDrop,  setShowCityDrop]  = useState(false);
+  const [loadingCityLoc, setLoadingCityLoc] = useState(false);
+
+  const [areaQuery,     setAreaQuery]     = useState("");
+  const [areaSelected,  setAreaSelected]  = useState("");
+  const [areaSuggestions, setAreaSuggestions] = useState<Loc[]>([]);
+  const [showAreaDrop,  setShowAreaDrop]  = useState(false);
+  const [loadingAreaLoc, setLoadingAreaLoc] = useState(false);
+
   const [propType,    setPropType]    = useState("apartment");
   const [area,        setArea]        = useState("1200");
   const [unit,        setUnit]        = useState("sqft");
@@ -269,58 +283,109 @@ export default function AIIntelligencePage() {
   const [showEMI,    setShowEMI]    = useState(false);
   const [loadStep,   setLoadStep]   = useState(0);
 
-  const dropRef     = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const cityDropRef  = useRef<HTMLDivElement>(null);
+  const areaDropRef  = useRef<HTMLDivElement>(null);
+  const cityDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const areaDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ── Nominatim autocomplete ──────────────────────────────────────────────────
-  const fetchSuggestions = useCallback(async (q: string) => {
-    setLoadingLoc(true);
+  const cityValue = (citySelected || cityQuery).trim();
+  const areaValue = (areaSelected || areaQuery).trim();
+
+  // ── Nominatim autocomplete — City/Country field ─────────────────────────────
+  const fetchCitySuggestions = useCallback(async (q: string) => {
+    setLoadingCityLoc(true);
     try {
       const res  = await fetch(`/api/location?q=${encodeURIComponent(q)}`);
       const locs: Loc[] = await res.json();
-      setSuggestions(locs.slice(0, 8));
-      setShowDrop(locs.length > 0);
+      setCitySuggestions(locs.slice(0, 8));
+      setShowCityDrop(locs.length > 0);
     } catch {
       const fb = HOT_MARKETS
-        .filter((m) => m.toLowerCase().includes(q.toLowerCase()))
-        .map((m) => ({ name: m, hint: "Suggested" }));
-      setSuggestions(fb);
-      setShowDrop(fb.length > 0);
+        .filter((m) => m.city.toLowerCase().includes(q.toLowerCase()))
+        .map((m) => ({ name: m.city, hint: "Suggested" }));
+      setCitySuggestions(fb);
+      setShowCityDrop(fb.length > 0);
     } finally {
-      setLoadingLoc(false);
+      setLoadingCityLoc(false);
     }
   }, []);
 
-  const handleQuery = (val: string) => {
-    setQuery(val);
-    setSelected("");
-    if (!val.trim() || val.length < 2) { setSuggestions([]); setShowDrop(false); return; }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchSuggestions(val), 350);
+  const handleCityQuery = (val: string) => {
+    setCityQuery(val);
+    setCitySelected("");
+    // Changing the city invalidates whatever area was picked for the previous city.
+    setAreaQuery(""); setAreaSelected("");
+    if (!val.trim() || val.length < 2) { setCitySuggestions([]); setShowCityDrop(false); return; }
+    if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+    cityDebounceRef.current = setTimeout(() => fetchCitySuggestions(val), 350);
   };
 
-  const pickLocation = (loc: Loc) => {
-    setQuery(`${loc.name}${loc.hint ? ` · ${loc.hint}` : ""}`);
-    setSelected(loc.name);
-    setShowDrop(false);
-    setSuggestions([]);
+  const pickCity = (loc: Loc) => {
+    setCityQuery(`${loc.name}${loc.hint ? ` · ${loc.hint}` : ""}`);
+    setCitySelected(loc.name);
+    setShowCityDrop(false);
+    setCitySuggestions([]);
+  };
+
+  // ── Nominatim autocomplete — Area/Locality field, scoped to the selected city ────
+  const fetchAreaSuggestions = useCallback(async (q: string, city: string) => {
+    setLoadingAreaLoc(true);
+    try {
+      const res  = await fetch(`/api/location?q=${encodeURIComponent(q)}&city=${encodeURIComponent(city)}`);
+      const locs: Loc[] = await res.json();
+      setAreaSuggestions(locs.slice(0, 8));
+      setShowAreaDrop(locs.length > 0);
+    } catch {
+      const fb = HOT_MARKETS
+        .filter((m) => m.city.toLowerCase() === city.toLowerCase() && m.area.toLowerCase().includes(q.toLowerCase()))
+        .map((m) => ({ name: m.area, hint: "Suggested" }));
+      setAreaSuggestions(fb);
+      setShowAreaDrop(fb.length > 0);
+    } finally {
+      setLoadingAreaLoc(false);
+    }
+  }, []);
+
+  const handleAreaQuery = (val: string) => {
+    setAreaQuery(val);
+    setAreaSelected("");
+    if (!val.trim() || val.length < 2 || !cityValue) { setAreaSuggestions([]); setShowAreaDrop(false); return; }
+    if (areaDebounceRef.current) clearTimeout(areaDebounceRef.current);
+    areaDebounceRef.current = setTimeout(() => fetchAreaSuggestions(val, cityValue), 350);
+  };
+
+  const pickArea = (loc: Loc) => {
+    setAreaQuery(loc.name);
+    setAreaSelected(loc.name);
+    setShowAreaDrop(false);
+    setAreaSuggestions([]);
+  };
+
+  const pickHotMarket = (m: { city: string; area: string }) => {
+    setCityQuery(m.city);   setCitySelected(m.city);
+    setAreaQuery(m.area);   setAreaSelected(m.area);
+    setShowCityDrop(false); setShowAreaDrop(false);
   };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setShowDrop(false);
+      if (cityDropRef.current && !cityDropRef.current.contains(e.target as Node)) setShowCityDrop(false);
+      if (areaDropRef.current && !areaDropRef.current.contains(e.target as Node)) setShowAreaDrop(false);
     };
     document.addEventListener("mousedown", handler);
     return () => {
       document.removeEventListener("mousedown", handler);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+      if (areaDebounceRef.current) clearTimeout(areaDebounceRef.current);
     };
   }, []);
 
   // ── Analyze ─────────────────────────────────────────────────────────────────
   const analyze = async () => {
-    const loc = (selected || query.split("·")[0]).trim();
-    if (!loc) { setError("Please enter a location to analyze."); return; }
+    if (!cityValue) { setError("Please enter a city or country to analyze."); return; }
+    // The exact selected AREA drives the price when present; city-only still works on its
+    // own for a city-level estimate.
+    const loc = areaValue ? `${areaValue}, ${cityValue}` : cityValue;
     setLoading(true); setError(""); setResult(null); setShowEMI(false); setLoadStep(0); setLimitReached(false);
 
     // Progressive loading messages
@@ -429,29 +494,31 @@ export default function AIIntelligencePage() {
 
             {/* Search card */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
 
-                {/* Location — 5 cols (was 6; 1 col given to Unit so it can show "sq.yard" fully) */}
-                <div className="sm:col-span-5 relative" ref={dropRef}>
-                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "var(--gold-text)" }} />Location</label>
+              {/* Two-level location: City/Country + Area/Locality (scoped to the chosen city) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+
+                {/* City / Country */}
+                <div className="relative" ref={cityDropRef}>
+                  <label className="label-dark"><MapPin size={11} className="inline mr-1" style={{ color: "var(--gold-text)" }} />City / Country</label>
                   <div className="relative">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
                       type="text"
-                      value={query}
-                      onChange={(e) => handleQuery(e.target.value)}
-                      onFocus={() => suggestions.length > 0 && setShowDrop(true)}
-                      placeholder="Kokapet, Dubai Marina, Whitefield, Manhattan…"
+                      value={cityQuery}
+                      onChange={(e) => handleCityQuery(e.target.value)}
+                      onFocus={() => citySuggestions.length > 0 && setShowCityDrop(true)}
+                      placeholder="Dubai, Hyderabad, London…"
                       className="input-dark pl-9 pr-8 text-sm"
                     />
-                    {loadingLoc && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin pointer-events-none" />}
+                    {loadingCityLoc && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin pointer-events-none" />}
                   </div>
-                  {showDrop && suggestions.length > 0 && (
+                  {showCityDrop && citySuggestions.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                      {suggestions.map((s, i) => (
+                      {citySuggestions.map((s, i) => (
                         <button
                           key={`${s.name}-${i}`}
-                          onMouseDown={() => pickLocation(s)}
+                          onMouseDown={() => pickCity(s)}
                           className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(214,166,62,0.08)] transition-colors duration-200 text-left border-b border-gray-100 last:border-0"
                         >
                           <span className="text-gray-900 text-sm">{s.name}</span>
@@ -462,8 +529,47 @@ export default function AIIntelligencePage() {
                   )}
                 </div>
 
+                {/* Area / Locality — scoped to whatever's in the City field above */}
+                <div className="relative" ref={areaDropRef}>
+                  <label className="label-dark">
+                    <MapPin size={11} className="inline mr-1" style={{ color: "var(--gold-text)" }} />
+                    Area / Locality <span className="normal-case text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={areaQuery}
+                      disabled={!cityValue}
+                      onChange={(e) => handleAreaQuery(e.target.value)}
+                      onFocus={() => areaSuggestions.length > 0 && setShowAreaDrop(true)}
+                      placeholder={cityValue ? "Business Bay, Kokapet, Mayfair…" : "Select a city first"}
+                      className="input-dark pl-9 pr-8 text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    />
+                    {loadingAreaLoc && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin pointer-events-none" />}
+                  </div>
+                  {showAreaDrop && areaSuggestions.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                      {areaSuggestions.map((s, i) => (
+                        <button
+                          key={`${s.name}-${i}`}
+                          onMouseDown={() => pickArea(s)}
+                          className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(214,166,62,0.08)] transition-colors duration-200 text-left border-b border-gray-100 last:border-0"
+                        >
+                          <span className="text-gray-900 text-sm">{s.name}</span>
+                          <span className="text-gray-400 text-xs">{s.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[9px] text-gray-400 mt-0.5">Leave blank for a city-level estimate, or pick an exact area for area-specific pricing.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
                 {/* Property type */}
-                <div className="sm:col-span-3">
+                <div>
                   <label className="label-dark">Property Type</label>
                   <div className="relative">
                     <select value={propType} onChange={(e) => {
@@ -479,7 +585,7 @@ export default function AIIntelligencePage() {
                 </div>
 
                 {/* Area (for EMI) */}
-                <div className="sm:col-span-2">
+                <div>
                   <label className="label-dark">Area <span className="normal-case text-gray-400 font-normal">(EMI)</span></label>
                   <input
                     type="number" value={area} min="1"
@@ -490,14 +596,14 @@ export default function AIIntelligencePage() {
                 </div>
 
                 {/* Unit — region-aware local land units for plot/agriculture */}
-                <div className="sm:col-span-2">
+                <div>
                   <label className="label-dark">Unit</label>
                   <div className="relative">
                     <select value={unit} onChange={(e) => setUnit(e.target.value)}
                       className="input-dark appearance-none pr-7 text-sm" style={{ minWidth: "90px" }}>
                       {BASE_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
                       {PLOT_LAND_TYPES.includes(propType) && (() => {
-                        const localUnits = getRegionUnits(query || selected);
+                        const localUnits = getRegionUnits(`${areaValue} ${cityValue}`);
                         if (!localUnits.length) return null;
                         return (
                           <>
@@ -510,7 +616,7 @@ export default function AIIntelligencePage() {
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                   {PLOT_LAND_TYPES.includes(propType) && (() => {
-                    const localUnits = getRegionUnits(query || selected);
+                    const localUnits = getRegionUnits(`${areaValue} ${cityValue}`);
                     const currentLocal = localUnits.find(u => u.value === unit);
                     return currentLocal
                       ? <p className="text-[9px] text-amber-600 mt-0.5">★ Local unit: 1 {currentLocal.label} {currentLocal.note}</p>
@@ -524,7 +630,7 @@ export default function AIIntelligencePage() {
               {limitReached ? (
                 <div className="mt-4">
                   <AiIntelRegisterGate
-                    searchContext={`${(selected || query).trim()} (${PROPERTY_TYPES.find(t => t.value === propType)?.label ?? propType})`}
+                    searchContext={`${areaValue ? `${areaValue}, ${cityValue}` : cityValue} (${PROPERTY_TYPES.find(t => t.value === propType)?.label ?? propType})`}
                     onUnlocked={() => { setLimitReached(false); analyze(); }}
                   />
                 </div>
@@ -822,30 +928,33 @@ export default function AIIntelligencePage() {
                 <Star size={13} fill="#7A5C1A" style={{ color: "var(--gold-text)" }} /> Popular Markets
               </p>
               <div className="flex flex-wrap gap-2">
-                {HOT_MARKETS.map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => { setQuery(loc); setSelected(loc); }}
-                    className="text-xs px-2.5 py-1.5 rounded-full border transition-all"
-                    style={selected === loc
-                      ? { background: "var(--gold)", color: "var(--navy)", borderColor: "var(--gold)", fontWeight: "600" }
-                      : { borderColor: "#d1d5db", color: "#6b7280" }}
-                    onMouseEnter={(e) => {
-                      if (selected !== loc) {
-                        (e.currentTarget as HTMLElement).style.borderColor = "#7A5C1A";
-                        (e.currentTarget as HTMLElement).style.color = "#7A5C1A";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selected !== loc) {
-                        (e.currentTarget as HTMLElement).style.borderColor = "#d1d5db";
-                        (e.currentTarget as HTMLElement).style.color = "#6b7280";
-                      }
-                    }}
-                  >
-                    {loc}
-                  </button>
-                ))}
+                {HOT_MARKETS.map((m) => {
+                  const isActive = citySelected === m.city && areaSelected === m.area;
+                  return (
+                    <button
+                      key={`${m.city}-${m.area}`}
+                      onClick={() => pickHotMarket(m)}
+                      className="text-xs px-2.5 py-1.5 rounded-full border transition-all"
+                      style={isActive
+                        ? { background: "var(--gold)", color: "var(--navy)", borderColor: "var(--gold)", fontWeight: "600" }
+                        : { borderColor: "#d1d5db", color: "#6b7280" }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLElement).style.borderColor = "#7A5C1A";
+                          (e.currentTarget as HTMLElement).style.color = "#7A5C1A";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLElement).style.borderColor = "#d1d5db";
+                          (e.currentTarget as HTMLElement).style.color = "#6b7280";
+                        }
+                      }}
+                    >
+                      {m.area}, {m.city}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

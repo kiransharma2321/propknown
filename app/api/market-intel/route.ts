@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getGateStatus, consumeSearch } from "@/lib/aiIntelGate";
 import { getClientIp } from "@/lib/clientIp";
 
-const GEMINI_MODEL = "gemini-2.5-flash";
+// Quota is tracked per-model on the free tier -- when the primary model's daily quota is
+// exhausted, retrying the same model is pointless, but a different model has its own separate
+// quota bucket and can genuinely still succeed. flash-lite as fallback (not primary) here:
+// this route needs reliable structured JSON extraction from real search context, where
+// flash's extra capability is worth it as the first attempt.
+const GEMINI_MODEL_PRIMARY  = "gemini-2.5-flash";
+const GEMINI_MODEL_FALLBACK = "gemini-2.5-flash-lite";
 
 // ─── Country / currency ────────────────────────────────────────────────────────
 
@@ -844,20 +850,27 @@ function normalise(
 ): Record<string, unknown> {
   const y = new Date().getFullYear();
   // This only ever runs for genuinely live-grounded data now (Bayut or Tavily-backed
-  // "real_data") — the caller never invokes normalise() otherwise. Displayed exactly as
-  // returned, with no clamping or range-checking against BENCHMARKS.
-  const now = dataSource === "bayut_data" && bayutPricePsf
+  // "real_data") — the caller never invokes normalise() otherwise.
+  let now = dataSource === "bayut_data" && bayutPricePsf
     ? bayutPricePsf
     : (Number(raw.currentPricePerSqft) || 5500);
-  const range = deriveRange(now, raw, bayutRange);
 
-  // Flag (log only) when a live-grounded price falls notably outside its historical
-  // BENCHMARKS entry, if one exists — signals that entry may be stale and worth reviewing
-  // for other features that still reference it. Never alters what's shown to the user.
-  const b = findBenchmark(location, propertyType, unit);
-  if (b && (now < b.min * 0.85 || now > b.max * 1.15)) {
-    console.warn(`[market-intel] BENCHMARK MISMATCH: live-grounded price for "${location}" (${propertyType}) is ${now}, outside BENCHMARKS range ${b.min}-${b.max} -- this table entry may need reviewing.`);
+  // "Live-grounded" is a claim about the SOURCE, not a guarantee the number is sane -- Tavily
+  // search results can surface a wrong/irrelevant locality's page, and Gemini has no way to
+  // know that. Hard-clamping into the locality+type-specific BENCHMARKS range (already
+  // computed per-type by findBenchmark -- villa/house/commercial get their own multiplier
+  // applied over the apartment baseline) is what actually makes the two guarantees the product
+  // depends on -- "realistic" and "apartment/villa/plot differ" -- hold regardless of what the
+  // live search happened to return. Bayut's own computed median is never clamped: it's already
+  // a real number derived directly from live listings, not something Gemini extracted/guessed.
+  const b = dataSource === "bayut_data" ? null : findBenchmark(location, propertyType, unit);
+  if (b && (now < b.min || now > b.max)) {
+    const clamped = Math.min(Math.max(now, b.min), b.max);
+    console.warn(`[market-intel] clamped out-of-range price for "${location}" (${propertyType}, ${unit}): raw=${now} -> ${clamped} (benchmark ${b.min}-${b.max})`);
+    now = clamped;
   }
+
+  const range = deriveRange(now, raw, bayutRange);
 
   const rate = (Number(raw.growthRate) || 8) / 100;
 
@@ -904,8 +917,8 @@ function normalise(
 
 class GeminiQuotaError extends Error {}
 
-async function callGemini(apiKey: string, prompt: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+async function callGemini(apiKey: string, prompt: string, model: string): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1073,23 +1086,50 @@ export async function POST(req: NextRequest) {
   // ── Step 2: Build Gemini prompt ──────────────────────────────────────────
   const prompt = getPrompt(loc, propType, resolvedUnit, currency, countryCode, realDataBlock, dataType, bayutPricePsf);
 
-  // ── Step 3: Call Gemini (2 attempts) ─────────────────────────────────────
+  // ── Step 3: Call Gemini — primary model, retry, then fallback model on quota exhaustion ──
+  // A quota error means retrying the SAME model is pointless, but the fallback model has its
+  // own separate daily quota bucket and can genuinely still succeed where the primary can't.
+  // Plan: primary attempt -> (if quota-exhausted) fallback attempt, done.
+  //       primary attempt -> (if a transient non-quota error) retry primary once -> (if that
+  //       also hits quota) fallback attempt, done.
+  async function attemptGemini(model: string): Promise<Record<string, unknown>> {
+    return parseGemini(await callGemini(geminiKey!, prompt, model));
+  }
+
   let raw: Record<string, unknown> | undefined;
+  let lastError: unknown;
   try {
-    raw = parseGemini(await callGemini(geminiKey, prompt));
+    raw = await attemptGemini(GEMINI_MODEL_PRIMARY);
   } catch (e1) {
-    console.error("Gemini attempt 1 failed:", e1);
-    if (e1 instanceof GeminiQuotaError) {
-      // Retrying won't help — quota is exhausted for the window.
-      return respond(unavailableResponse(`Gemini quota exhausted for "${loc}": ${e1.message}`));
+    console.error(`Gemini ${GEMINI_MODEL_PRIMARY} attempt 1 failed:`, e1);
+    lastError = e1;
+    if (!(e1 instanceof GeminiQuotaError)) {
+      // Transient (network/parse/etc.) failure — worth one same-model retry.
+      try {
+        raw = await attemptGemini(GEMINI_MODEL_PRIMARY);
+        lastError = undefined;
+      } catch (e2) {
+        console.error(`Gemini ${GEMINI_MODEL_PRIMARY} attempt 2 failed:`, e2);
+        lastError = e2;
+      }
     }
-    try {
-      raw = parseGemini(await callGemini(geminiKey, prompt));
-    } catch (e2) {
-      console.error("Gemini attempt 2 failed:", e2);
-      const reason = e2 instanceof Error ? e2.message : String(e2);
-      return respond(unavailableResponse(`Gemini call failed for "${loc}": ${reason}`));
+    if (!raw && lastError instanceof GeminiQuotaError) {
+      try {
+        raw = await attemptGemini(GEMINI_MODEL_FALLBACK);
+        lastError = undefined;
+      } catch (e3) {
+        console.error(`Gemini fallback ${GEMINI_MODEL_FALLBACK} also failed:`, e3);
+        lastError = e3;
+      }
     }
+  }
+
+  if (!raw) {
+    const reason = lastError instanceof Error ? lastError.message : String(lastError);
+    const isQuota = lastError instanceof GeminiQuotaError;
+    return respond(unavailableResponse(
+      isQuota ? `Gemini quota exhausted on all models for "${loc}": ${reason}` : `Gemini call failed for "${loc}": ${reason}`
+    ));
   }
 
   try {

@@ -21,13 +21,20 @@ interface NomItem {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") ?? "").trim();
+  const q    = (searchParams.get("q") ?? "").trim();
+  // Optional city/country scope for the two-level search's Area field -- appending it to the
+  // query both biases Nominatim's free-text geocoder toward that city and (combined with the
+  // post-filter below) keeps a locality name that exists in multiple cities (e.g. a "Marina")
+  // from leaking in from the wrong one.
+  const city = (searchParams.get("city") ?? "").trim();
 
   if (q.length < 2) return NextResponse.json([]);
 
+  const searchQuery = city ? `${q}, ${city}` : q;
+
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=12&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=12&addressdetails=1`,
       {
         headers: {
           "Accept-Language": "en",
@@ -37,9 +44,20 @@ export async function GET(req: NextRequest) {
       }
     );
     const data: NomItem[] = await res.json();
+    const cityLower = city.toLowerCase();
 
     const seen = new Set<string>();
     const results = data
+      .filter((item) => {
+        // When scoped to a city, require the result to actually belong to it -- Nominatim's
+        // free-text bias isn't a hard filter on its own, so without this a query for an area
+        // name that also exists elsewhere can still surface the wrong city's match.
+        if (!city) return true;
+        const a = item.address ?? {};
+        const haystack = [a.city, a.town, a.village, a.county, a.state, item.display_name]
+          .filter(Boolean).join(" ").toLowerCase();
+        return haystack.includes(cityLower);
+      })
       .map((item) => {
         const a = item.address ?? {};
         // Pick the most specific name available
@@ -48,13 +66,13 @@ export async function GET(req: NextRequest) {
           a.city ?? a.town ?? a.village ?? q;
 
         // Build a meaningful hint: city + state/country
-        const city    = a.city ?? a.town ?? a.county ?? "";
-        const state   = a.state ?? "";
-        const country = a.country ?? "";
+        const cityPart = a.city ?? a.town ?? a.county ?? "";
+        const state    = a.state ?? "";
+        const country  = a.country ?? "";
         const hintParts: string[] = [];
-        if (city && city !== name)    hintParts.push(city);
-        if (state && state !== city)  hintParts.push(state);
-        if (country)                   hintParts.push(country);
+        if (cityPart && cityPart !== name) hintParts.push(cityPart);
+        if (state && state !== cityPart)   hintParts.push(state);
+        if (country)                        hintParts.push(country);
         const hint = hintParts.slice(0, 2).join(", ");
 
         return { name, hint, full: item.display_name };
