@@ -196,3 +196,107 @@ export function buildApprovalHtml(opts: {
       </div>
     </div>`;
 }
+
+// ─── Admin/CRM account recovery (/admin + /crm, all roles) ──────────────────────
+// Separate from sendAdminEmail: that function is fire-and-forget (logs internally, returns
+// void) for notification-style mail where nothing downstream needs to know if it worked. These
+// two are the actual delivery mechanism for account recovery -- the caller needs the real
+// success/failure and Resend message id back, both to log clearly server-side and so this was
+// independently verifiable during setup.
+interface SendResult { ok: boolean; id?: string; error?: unknown; }
+
+function buildResetPasswordHtml(name: string, resetLink: string): string {
+  const safeName = escapeHtml(name);
+  return `
+    <div style="font-family:sans-serif;max-width:520px;background:#fff;border-radius:12px;border:1px solid #e5e5e5;overflow:hidden">
+      <div style="background:#0a0a0a;padding:20px 24px">
+        <span style="color:#C9A24B;font-size:20px;font-weight:800">PROP</span>
+        <span style="color:#fff;font-size:20px;font-weight:800">KNOWN</span>
+        <p style="color:#999;font-size:11px;margin:4px 0 0">Admin / CRM Password Reset</p>
+      </div>
+      <div style="padding:24px">
+        <p style="color:#333;font-size:14px">Hi ${safeName},</p>
+        <p style="color:#333;font-size:14px">We received a request to reset your PropKnown admin/CRM password. Click below to set a new one:</p>
+        <div style="text-align:center;margin:28px 0">
+          <a href="${resetLink}" style="display:inline-block;background:#C9A24B;color:#000;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Set New Password</a>
+        </div>
+        <p style="color:#777;font-size:12px">Or paste this link into your browser:</p>
+        <p style="color:#0a66c2;font-size:12px;word-break:break-all">${resetLink}</p>
+        <p style="color:#dc2626;font-size:12px;background:#fef2f2;padding:10px 14px;border-radius:8px;border:1px solid #fecaca;margin-top:16px">This link expires in 45 minutes and can only be used once.</p>
+        <p style="color:#777;font-size:12px;margin-top:16px">If you didn't request this, you can safely ignore this email — your password won't change.</p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003 · Hyderabad</p>
+      </div>
+    </div>`;
+}
+
+function buildUsernameRecoveryHtml(name: string, email: string): string {
+  const safeName = escapeHtml(name);
+  return `
+    <div style="font-family:sans-serif;max-width:520px;background:#fff;border-radius:12px;border:1px solid #e5e5e5;overflow:hidden">
+      <div style="background:#0a0a0a;padding:20px 24px">
+        <span style="color:#C9A24B;font-size:20px;font-weight:800">PROP</span>
+        <span style="color:#fff;font-size:20px;font-weight:800">KNOWN</span>
+        <p style="color:#999;font-size:11px;margin:4px 0 0">Admin / CRM Username Recovery</p>
+      </div>
+      <div style="padding:24px">
+        <p style="color:#333;font-size:14px">Hi ${safeName},</p>
+        <p style="color:#333;font-size:14px">You (or someone using this email address) asked to recover your PropKnown admin/CRM login. Your username is your email address:</p>
+        <div style="text-align:center;margin:24px 0">
+          <span style="display:inline-block;background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:12px 24px;font-weight:700;font-size:15px;color:#0a0a0a">${escapeHtml(email)}</span>
+        </div>
+        <p style="color:#333;font-size:13px">Use it to log in at <a href="https://www.propknown.com/admin" style="color:#C9A24B">propknown.com/admin</a> or <a href="https://www.propknown.com/crm" style="color:#C9A24B">propknown.com/crm</a>.</p>
+        <p style="color:#777;font-size:12px;margin-top:16px">If you didn't request this, you can safely ignore this email.</p>
+        <p style="color:#aaa;font-size:10px;margin-top:20px;border-top:1px solid #e5e5e5;padding-top:12px">PropKnown Infra Pvt Ltd · kiranpropservices@gmail.com · +91 70130 16003 · Hyderabad</p>
+      </div>
+    </div>`;
+}
+
+export async function sendPasswordResetEmail(to: string, name: string, resetLink: string): Promise<SendResult> {
+  const client = getResend();
+  if (!client) {
+    console.warn(`[email] Skipped password reset to ${to} — Resend client unavailable (no/invalid API key)`);
+    return { ok: false, error: "no_resend_client" };
+  }
+  try {
+    const result = await client.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "Reset your PropKnown admin/CRM password",
+      html: buildResetPasswordHtml(name, resetLink),
+    });
+    if (result.error) {
+      console.error(`[email] Password reset FAILED → ${to}:`, result.error);
+      return { ok: false, error: result.error };
+    }
+    console.log(`[email] Password reset SENT OK → ${to} — id: ${result.data?.id}`);
+    return { ok: true, id: result.data?.id };
+  } catch (err) {
+    console.error(`[email] Password reset THREW → ${to}:`, err);
+    return { ok: false, error: err };
+  }
+}
+
+export async function sendUsernameRecoveryEmail(to: string, name: string): Promise<SendResult> {
+  const client = getResend();
+  if (!client) {
+    console.warn(`[email] Skipped username recovery to ${to} — Resend client unavailable (no/invalid API key)`);
+    return { ok: false, error: "no_resend_client" };
+  }
+  try {
+    const result = await client.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "Your PropKnown admin/CRM username",
+      html: buildUsernameRecoveryHtml(name, to),
+    });
+    if (result.error) {
+      console.error(`[email] Username recovery FAILED → ${to}:`, result.error);
+      return { ok: false, error: result.error };
+    }
+    console.log(`[email] Username recovery SENT OK → ${to} — id: ${result.data?.id}`);
+    return { ok: true, id: result.data?.id };
+  } catch (err) {
+    console.error(`[email] Username recovery THREW → ${to}:`, err);
+    return { ok: false, error: err };
+  }
+}

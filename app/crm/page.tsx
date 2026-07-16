@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Lock, Eye, EyeOff, Activity } from "lucide-react";
 
 export default function CRMLoginPage() {
@@ -68,6 +69,10 @@ export default function CRMLoginPage() {
             <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3 disabled:opacity-60">
               {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />Signing in...</span> : <span className="flex items-center gap-2"><Lock size={16} />Sign In to CRM</span>}
             </button>
+            <div className="flex items-center justify-between text-xs pt-1">
+              <Link href="/forgot-username" className="text-zinc-500 hover:text-gold-400 transition-colors">Forgot Username?</Link>
+              <Link href="/forgot-password" className="text-zinc-500 hover:text-gold-400 transition-colors">Forgot Password?</Link>
+            </div>
           </form>
         </div>
       </div>

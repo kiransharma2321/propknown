@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
@@ -16,8 +16,16 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
   agent:   ["leads_assigned", "crm_assigned"],
 };
 
-export function hashPassword(pw: string): string {
-  return createHash("sha256").update(pw + (process.env.NEXTAUTH_SECRET ?? "pk-salt")).digest("hex");
+// bcrypt, cost factor 12 -- replaces the previous single-round SHA-256+static-salt scheme,
+// which was fast enough to brute-force offline and used the same "pepper" for every password.
+const BCRYPT_ROUNDS = 12;
+
+export async function hashPassword(pw: string): Promise<string> {
+  return bcrypt.hash(pw, BCRYPT_ROUNDS);
+}
+
+export async function verifyPassword(pw: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(pw, hash);
 }
 
 export function canRole(role: Role, permission: string): boolean {
@@ -29,12 +37,6 @@ export async function getAdminSession(): Promise<{ role: "master" | Role; name: 
   try {
     const cookieStore = await cookies();
 
-    // Legacy master admin check
-    if (cookieStore.get("admin_auth")?.value === "true") {
-      return { role: "master", name: "Raghu Kiran", email: "kiranpropservices@gmail.com" };
-    }
-
-    // RBAC user check
     const rbacToken = cookieStore.get("rbac_auth")?.value;
     if (!rbacToken) return null;
 

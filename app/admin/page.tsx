@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Lock, Eye, EyeOff, Shield } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -98,6 +99,11 @@ export default function AdminLoginPage() {
                 <span className="flex items-center gap-2"><Lock size={16} /> Sign In</span>
               )}
             </button>
+
+            <div className="flex items-center justify-between text-xs pt-1">
+              <Link href="/forgot-username" className="text-zinc-500 hover:text-gold-400 transition-colors">Forgot Username?</Link>
+              <Link href="/forgot-password" className="text-zinc-500 hover:text-gold-400 transition-colors">Forgot Password?</Link>
+            </div>
           </form>
         </div>
 

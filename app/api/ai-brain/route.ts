@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/db";
-import { cookies } from "next/headers";
+import { getAdminSession } from "@/lib/rbac";
 
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOOL_ROUNDS = 8;
@@ -304,9 +304,8 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
 // ─── POST Handler ──────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   // Auth gate — admin only
-  const cookieStore = cookies();
-  const adminAuth = cookieStore.get("admin_auth");
-  if (!adminAuth?.value) {
+  const session = await getAdminSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized — please log in as admin." }, { status: 401 });
   }
 
