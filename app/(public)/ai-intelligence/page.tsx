@@ -126,12 +126,15 @@ interface MarketIntelResult {
   currentPricePerSqft: number;
   priceRangeMin?:     number;
   priceRangeMax?:     number;
+  rangeNote?:         string;
   typicalListings?:   string;
   pricePerSqftUnit:   string;
   priceHistory5yr:    { year: number; value: number }[];
   priceForecast5yr:   { year: number; value: number }[];
   dataSource?:        "bayut_data" | "real_data" | "ai_only";
   dataSourceLabel?:   string;
+  groundedBy?:        "bayut" | "search_data" | "gemini";
+  sourceUrls?:        string[];
   growthRate:         number;
   trend:              "Bullish" | "Stable" | "Cautious";
   rentalYield:        number;
@@ -731,9 +734,29 @@ export default function AIIntelligencePage() {
                         <span className="font-semibold text-gray-900 ml-1">{fmtPrice(propValue, sym, dispCurr)}</span>
                       </p>
                     )}
+                    {r.rangeNote && (
+                      <p className="text-amber-700 text-xs mt-2 leading-relaxed max-w-lg bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        {r.rangeNote}
+                      </p>
+                    )}
                     {r.typicalListings && (
                       <p className="text-gray-400 text-xs mt-2 leading-relaxed max-w-lg">
                         <span className="font-semibold text-gray-500">Typical listings: </span>{r.typicalListings}
+                      </p>
+                    )}
+                    {r.sourceUrls && r.sourceUrls.length > 0 && (
+                      <p className="text-gray-400 text-[10px] mt-2 leading-relaxed max-w-lg">
+                        <span className="font-semibold text-gray-500">Sources: </span>
+                        {r.sourceUrls.map((u, i) => {
+                          let host = u;
+                          try { host = new URL(u).hostname.replace(/^www\./, ""); } catch { /* keep raw url */ }
+                          return (
+                            <span key={u}>
+                              {i > 0 && ", "}
+                              <a href={u} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{host}</a>
+                            </span>
+                          );
+                        })}
                       </p>
                     )}
                   </div>
@@ -757,14 +780,21 @@ export default function AIIntelligencePage() {
                 </div>
 
                 {/* Charts */}
+                <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-1">
+                  <AlertCircle size={13} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-amber-700 text-[11px] leading-relaxed">
+                    <span className="font-semibold">Illustrative AI projection — not a verified historical record or a guaranteed forecast.</span>{" "}
+                    Only today&apos;s current price (above) is grounded in live search data; the 5-year trend lines below are Gemini&apos;s modelled trajectory off that figure, for directional context only.
+                  </p>
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                     <h3 className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-normal flex items-center gap-2">
                       <Activity size={13} className="text-gray-400" />
                       5-Year Price History
-                      <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
+                      <span className="ml-auto text-[10px] text-amber-600 flex items-center gap-1">
                         <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#7A5C1A" strokeWidth="2.5" /></svg>
-                        AI Estimated
+                        Illustrative, not historical record
                       </span>
                     </h3>
                     <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} />
@@ -774,14 +804,14 @@ export default function AIIntelligencePage() {
                     <h3 className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-normal flex items-center gap-2">
                       <ArrowUpRight size={13} style={{ color: "var(--gold-text)" }} />
                       5-Year Forecast
-                      <span className="ml-auto text-[10px] text-gray-400 flex items-center gap-1">
+                      <span className="ml-auto text-[10px] text-amber-600 flex items-center gap-1">
                         <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#7A5C1A" strokeWidth="2.5" strokeDasharray="5 3" /></svg>
-                        Projected
+                        Illustrative projection
                       </span>
                     </h3>
                     <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} dashed />
                     <p className="text-center text-gray-400 text-xs mt-1">
-                      {r.priceForecast5yr[4]?.year} forecast:
+                      {r.priceForecast5yr[4]?.year} illustrative projection:
                       <span className="text-green-600 font-semibold ml-1">
                         {sym}{Math.round(toDisplay((r.priceForecast5yr[4]?.value ?? 0) * unitConvFactor)).toLocaleString()}/{displayUnitLabel}
                       </span>

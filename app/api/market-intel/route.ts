@@ -36,7 +36,9 @@ const COUNTRY_CURRENCY: Record<string, CurrencyInfo> = {
   th: { code: "THB", symbol: "฿",    name: "Thai Baht"           },
 };
 
-// Fast heuristic — avoids a Nominatim round-trip for common cities
+// Fast heuristic — avoids a Nominatim round-trip for common cities. This is location/country
+// metadata (which currency to use, which search portals to hint), not a price -- it never
+// determines or narrows a displayed number, so it's out of scope for the hardcoded-price audit.
 function inferCountryCode(location: string): string | null {
   const loc = location.toLowerCase();
   const check = (keywords: string[], code: string) =>
@@ -113,7 +115,30 @@ async function detectCurrency(location: string): Promise<{ countryCode: string; 
   };
 }
 
+// ─── Unit conversion (single source of truth, server-side) ────────────────────
+// Matches the frontend's UNIT_TO_SQFT (app/(public)/ai-intelligence/page.tsx) exactly --
+// per-sqyard = per-sqft × 9, per-ankanam = per-sqyard × 4 (= sqft × 36), per-cent = per-sqyard
+// × 48.4 (= sqft × 435.6), per-guntha = per-sqyard × 121 (= sqft × 1089), per-acre = per-sqyard
+// × 4840 (= sqft × 43560), per-ground = per-sqyard × 266.67 (= sqft × 2400), per-sqm = per-sqft
+// × 10.764. sqft is the canonical internal unit: every parsed/estimated rate gets normalised to
+// per-sqft first, then converted to whatever unit the request actually asked for right before
+// the response is built -- this is what prevents a sqft-denominated source and a
+// sqyard-denominated source from ever being averaged together as if they were the same number.
+const UNIT_TO_SQFT: Record<string, number> = {
+  sqft: 1, sqyard: 9, sqm: 10.764, acre: 43560, acres: 43560,
+  cent: 435.6, guntha: 1089, ankanam: 36, ground: 2400,
+};
+
+function targetUnitFactor(propertyType: string, unit: string): number {
+  if (unit === "acres" || propertyType === "agriculture") return UNIT_TO_SQFT.acre;
+  if (unit === "sqyard" || propertyType === "plot") return UNIT_TO_SQFT.sqyard;
+  return UNIT_TO_SQFT.sqft;
+}
+
 // ─── Bayut API (UAE only) ─────────────────────────────────────────────────────
+// Already grounded in real live listings (actual price/area fields from actual for-sale
+// listings, not text parsing) -- nothing here is a hardcoded price, so this section is
+// unchanged by the delisting-of-hardcoded-benchmarks fix below.
 
 interface BayutHit {
   price?: number;
@@ -273,7 +298,7 @@ async function fetchBayutData(
 // ─── Tavily (all other countries) ────────────────────────────────────────────
 
 const PORTAL_HINTS: Record<string, string> = {
-  in: "magicbricks 99acres housing.com proptiger",
+  in: "magicbricks 99acres squareyards housing.com proptiger",
   gb: "rightmove zoopla onthemarket",
   us: "zillow realtor.com redfin trulia",
   sg: "propertyguru 99.co srx",
@@ -284,6 +309,10 @@ const PORTAL_HINTS: Record<string, string> = {
   ae: "propertyfinder bayut.com",
 };
 
+// Builds a query specific to location + property type + country + the LOCALLY-correct unit
+// (plots priced per sq yard in India, per sqft for apartments/villas everywhere, per acre for
+// farmland) -- this has to work for ANY location typed in, not just a pre-listed set, so it's
+// driven entirely by propertyType/unit/countryCode, never by a lookup table of named areas.
 function buildTavilyQuery(
   location: string,
   propertyType: string,
@@ -296,20 +325,18 @@ function buildTavilyQuery(
 
   // Plot / residential land — explicit area, unit, and "current asking rate" framing so
   // results are plot-specific and don't drift toward a "starting from" teaser price.
-  // "average price range" phrasing encourages search results/snippets that state a min-max
-  // band rather than just a single figure, which we use for the richer range display.
   if (propertyType === "plot" || unit === "sqyard") {
-    return `residential plot average price range per sqyard in ${locQuoted} ${year} current rate gaj site rate for sale ${portals}`;
+    return `${locQuoted} residential plot land price per square yard per sqft ${year} current rate gaj site rate for sale ${portals}`;
   }
 
   // Agriculture / farm land
   if (propertyType === "agriculture" || unit === "acres") {
-    return `agriculture farm land average price range per acre in ${locQuoted} ${year} current rate for sale ${portals}`;
+    return `${locQuoted} agriculture farm land price per acre ${year} current rate for sale ${portals}`;
   }
 
   // Local land units (ankanam, cent, guntha) — API always prices these as sqyard
   if (["ankanam", "cent", "guntha"].includes(unit)) {
-    return `plot land average price range per sqyard in ${locQuoted} ${year} current rate for sale ${portals}`;
+    return `${locQuoted} plot land price per square yard per sqft ${year} current rate for sale ${portals}`;
   }
 
   const typeLabel =
@@ -317,7 +344,7 @@ function buildTavilyQuery(
     propertyType === "house"       ? "independent house"  :
     propertyType === "commercial"  ? "commercial office"  : "apartment";
 
-  return `${typeLabel} average price range per sqft in ${locQuoted} ${year} current rate for sale ${portals}`;
+  return `${locQuoted} ${typeLabel} price per sqft ${year} current rate for sale ${portals}`;
 }
 
 interface TavilyResult { title: string; url: string; content: string; score: number; }
@@ -329,7 +356,7 @@ async function fetchTavilyContext(
   unit: string,
   countryCode: string,
   apiKey: string
-): Promise<{ snippets: string; hasData: boolean }> {
+): Promise<{ snippets: string; hasData: boolean; sourceUrls: string[]; rawText: string; extractionText: string }> {
   const query = buildTavilyQuery(location, propertyType, unit, countryCode);
 
   const res = await fetch("https://api.tavily.com/search", {
@@ -348,256 +375,317 @@ async function fetchTavilyContext(
 
   const data: TavilyResponse = await res.json();
   const parts: string[] = [];
+  const extractionParts: string[] = [];
+  const sourceUrls: string[] = [];
 
-  if (data.answer?.trim()) {
-    parts.push(`WEB SEARCH SUMMARY:\n${data.answer.trim()}`);
-  }
+  // Tavily's own `answer` field (a generated summary of the search) is deliberately never added
+  // to `parts` (what Gemini sees) or `extractionParts` (what the regex parses). It's a paraphrase
+  // of the same source snippets below, not an independent document -- and it has been observed
+  // fabricating numbers that aren't actually in any source. Two confirmed cases from testing:
+  // (1) a Kompally, Hyderabad plot query where every source snippet was a contentless locality
+  // overview page with zero price mentions, yet the summary confidently stated "prices... are
+  // expected to be around Rs 1,500-2,000"; (2) a Kensington, London query where the summary
+  // claimed "average price per sqft is around £50,000" and a "£11,250 to £46,000" per-sqft range,
+  // when what the actual source snippets contained were whole-property guide prices for
+  // multi-million-pound mansions (e.g. "£46,000,000 One Hyde Park") that its summarizer seems to
+  // have misread as per-sqft figures. Feeding that summary to Gemini let it inherit the same
+  // fabrication. Relying only on the raw listing snippets -- the actual source documents -- is
+  // what makes "grounded in real data" a true claim rather than one more layer of paraphrase.
+  void data.answer;
+  const isLandQuery = propertyType === "plot" || propertyType === "agriculture" || unit === "sqyard" || unit === "acres";
+  // A result titled around "apartment"/"flat" showing up in a land/plot search (Tavily's own
+  // relevance matching isn't perfect) would otherwise pollute the price-extraction pass with an
+  // off-type figure -- seen in testing: an apartment-rates page's number got averaged in
+  // alongside genuine land-rate figures for the same locality. Gemini still gets the FULL
+  // unfiltered text (its own judgment on relevance is better than a keyword filter), only the
+  // independent numeric extraction pass excludes clearly mismatched-type sources.
+  const offType = (title: string) => {
+    const t = title.toLowerCase();
+    if (isLandQuery) return /apartment|flat|villa\s+for|multistorey/.test(t);
+    return /\bland\b|\bplot(s)?\b/.test(t);
+  };
+  let snippetsOnly = "";
   if (Array.isArray(data.results)) {
-    const snippets = data.results
-      .slice(0, 5)
+    // 900 chars (was 450) -- the price-extraction pass below needs the fuller snippet to have
+    // a real chance of finding a "₹X per sqft/sqyard" style mention; too short and the
+    // sentence containing the actual rate gets truncated away before it can be parsed.
+    snippetsOnly = data.results
+      .slice(0, 6)
       .filter((r) => r.content?.trim())
-      .map((r, i) => `[${i + 1}] ${r.title}\n${r.content.slice(0, 450).trim()}`)
+      .map((r, i) => {
+        sourceUrls.push(r.url);
+        const block = `[${i + 1}] ${r.title}\n${r.content.slice(0, 900).trim()}`;
+        if (!offType(r.title ?? "")) extractionParts.push(block);
+        return block;
+      })
       .join("\n\n");
-    if (snippets) parts.push(`WEB LISTING SNIPPETS:\n${snippets}`);
+    if (snippetsOnly) parts.push(`WEB LISTING SNIPPETS:\n${snippetsOnly}`);
   }
 
   const combined = parts.join("\n\n");
   // A bare length check let through content that says NOTHING about price (e.g. a locality's
   // general description, connectivity, or amenities) as long as it happened to be over 60
-  // characters -- at which point Gemini had nothing real to extract and fell back on its own
-  // internal benchmark table, while the UI still labeled the result "live market analysis."
-  // Requiring an actual price-shaped token (currency symbol, "Cr"/"Lakh"/"L", or "/sqft" etc.
-  // next to digits) means "hasData" only fires when there's something genuinely extractable.
+  // characters -- at which point Gemini had nothing real to extract. Requiring an actual
+  // price-shaped token (currency symbol, "Cr"/"Lakh"/"L", or "/sqft" etc. next to digits) means
+  // "hasData" only fires when there's something genuinely extractable.
+  //
+  // Checked against snippetsOnly (the actual source pages), never against data.answer: Tavily's
+  // own answer-summary is itself a generated paraphrase, and when the real sources found nothing
+  // price-bearing (a locality overview / municipality / Wikipedia page, no listings), that
+  // summary has been observed inventing a plausible-looking price out of nowhere -- e.g. quoting
+  // "₹1,500-₹2,000 per square yard" for a query where not one of the 6 actual source snippets
+  // mentions a price at all. Gating on the summary text would let that fabricated figure count
+  // as "real data" and get handed to Gemini as if it were grounded. Gating on the source
+  // snippets alone means a query that truly returns nothing priced is honestly reported as
+  // unavailable instead.
   const hasPriceSignal = /(?:[₹$£€]|Rs\.?|AED|SGD|CAD|A\$|C\$)\s?[\d,]+|[\d,]+\s?(?:\/\s?sq\.?\s?ft|\/\s?sqft|\/\s?sq\.?\s?yd|per\s?sq|Cr\b|Lakh|lac\b)/i;
-  return { snippets: combined, hasData: combined.length > 60 && hasPriceSignal.test(combined) };
+  return {
+    snippets: combined,
+    hasData: snippetsOnly.length > 60 && hasPriceSignal.test(snippetsOnly),
+    sourceUrls,
+    rawText: combined,
+    extractionText: extractionParts.join("\n\n"),
+  };
 }
 
-// ─── Structured locality benchmarks (code-level, not just prompt text) ───────
-// Same numbers as the prompt's benchmark tables below, but queryable in JS so we can
-// sanity-clamp Gemini/Tavily output instead of just hoping the model follows instructions.
-// Real-estate web search results often surface promotional "starting from" teaser prices
-// (the cheapest unit in a project) which drag the extracted figure well below the real
-// prevailing rate — this table catches and corrects that.
-interface Benchmark { keywords: string[]; unit: "sqyard" | "sqft" | "acres"; min: number; max: number; }
+// ─── Grounded price extraction from real search text ─────────────────────────
+// Parses actual currency-amount + per-unit-area mentions directly out of the raw Tavily text,
+// independent of Gemini entirely. This is what makes "search-derived" a real, checkable claim
+// instead of just trusting an LLM's paraphrase of the same text -- see the GROUNDING RULE in
+// normalise() below, which uses this to catch/override a Gemini answer that drifted from what
+// the sources actually say. Every matched rate is normalised to per-sqft immediately (see
+// UNIT_TO_SQFT above) specifically so a sqft-denominated mention and a sqyard-denominated
+// mention from two different sources are never averaged together as if they were the same unit.
 
-const BENCHMARKS: Benchmark[] = [
-  // ── India — plot / land, per sq.yard ──
-  { keywords: ["jubilee hills", "banjara hills"],                          unit: "sqyard", min: 120000, max: 250000 },
-  { keywords: ["kokapet", "neopolis", "golf view"],                        unit: "sqyard", min: 55000,  max: 100000 },
-  { keywords: ["financial district", "nanakramguda"],                     unit: "sqyard", min: 60000,  max: 110000 },
-  { keywords: ["gachibowli"],                                              unit: "sqyard", min: 40000,  max: 75000 },
-  { keywords: ["kondapur", "madhapur"],                                    unit: "sqyard", min: 30000,  max: 55000 },
-  { keywords: ["manikonda", "puppalaguda"],                                unit: "sqyard", min: 22000,  max: 42000 },
-  { keywords: ["tellapur", "osman nagar"],                                 unit: "sqyard", min: 15000,  max: 28000 },
-  { keywords: ["nallagandla", "serilingampally"],                          unit: "sqyard", min: 20000,  max: 38000 },
-  { keywords: ["kphb", "miyapur", "kukatpally"],                           unit: "sqyard", min: 15000,  max: 28000 },
-  { keywords: ["bachupally", "nizampet"],                                  unit: "sqyard", min: 12000,  max: 22000 },
-  { keywords: ["kompally"],                                                unit: "sqyard", min: 8000,   max: 15000 },
-  { keywords: ["medchal", "ameenpur", "shamirpet"],                        unit: "sqyard", min: 6000,   max: 12000 },
-  { keywords: ["shamshabad", "shadnagar"],                                 unit: "sqyard", min: 4000,   max: 9000 },
-  { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqyard", min: 2000,   max: 5000 },
+const CURRENCY_TOKEN = String.raw`(?:₹|Rs\.?|INR|AED|£|GBP|\$|USD|S\$|SGD|A\$|AUD|CA\$|CAD)`;
+const AMOUNT_TOKEN    = String.raw`([\d,]+(?:\.\d+)?)`;
+// crore/lakh cover Indian sources; million/thousand (and their K/M abbreviations) cover
+// UK/US/SG/AU/CA sources -- without these, "$1.5k" (a Realtor.com "median price per sq.ft"
+// mention, meaning $1,500) was read as literally $1.5 with no scale at all, producing a garbage
+// ~$2/sqft "rate" that silently dragged a real aggregate's median down by 2x. Longer/more
+// specific words are listed before their single-letter abbreviations so the alternation consumes
+// the whole word ("million") rather than stopping at a prefix that happens to also be valid ("m").
+// The single-letter forms (m/k/l) each carry a negative lookahead against a following letter --
+// without it, "$500 more" would let bare "m" match as a million-scale marker off the front of an
+// unrelated word. That guard isn't needed on the multi-letter words: if one of them partially
+// matches into an unrelated word, the pattern's other required parts (a unit token immediately
+// after for the amount-first patterns) fail to line up and the whole match attempt is rejected.
+const SCALE_TOKEN     = String.raw`\s?(crore|cr\.?|lakh|lac|million|thousand|mil|mn|m\.?(?!\w)|l(?!\w)|k(?!\w))?`;
+const UNIT_TOKEN      = String.raw`(sq\.?\s?ft\.?|sqft\.?|sq\.?\s?yd\.?|sq\s?yard|sqyard|sqyd|gaj|sq\.?\s?m\.?|sqm|square\s?met(?:er|re)|acres?|cents?|guntha|ankanam|ground)`;
+const RANGE_SEP        = String.raw`\s*(?:-|–|to|and)\s*`;
 
-  // ── Bangalore — plot / land, per sq.yard ──
-  { keywords: ["indiranagar", "koramangala"],                              unit: "sqyard", min: 90000,  max: 180000 },
-  { keywords: ["whitefield"],                                              unit: "sqyard", min: 45000,  max: 80000 },
-  { keywords: ["sarjapur"],                                                unit: "sqyard", min: 35000,  max: 60000 },
-  { keywords: ["hsr layout", "bellandur"],                                 unit: "sqyard", min: 40000,  max: 70000 },
-  { keywords: ["electronic city"],                                         unit: "sqyard", min: 22000,  max: 40000 },
+// Two orderings, both common in real listing/trend-page prose:
+//   amount-first: "₹13,150-23,350 per sq ft"          (AMOUNT [-AMOUNT] per UNIT)
+//   unit-first:   "price per sqft is Rs. 34,901"       (per UNIT ... AMOUNT [-AMOUNT])
+// The unit-first gap is capped at 80 chars and forbidden from crossing a sentence boundary
+// ([^.]) so it still finds the number that actually belongs to that unit mention rather than
+// accidentally pairing across unrelated sentences.
+const RANGE_RE             = new RegExp(`${CURRENCY_TOKEN}\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}${RANGE_SEP}${CURRENCY_TOKEN}?\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}\\s*(?:\\/|per)\\s*${UNIT_TOKEN}`, "gi");
+const SINGLE_RE             = new RegExp(`${CURRENCY_TOKEN}\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}\\s*(?:\\/|per)\\s*${UNIT_TOKEN}`, "gi");
+const UNIT_FIRST_RANGE_RE  = new RegExp(`\\bper\\s*${UNIT_TOKEN}\\b[^.]{0,80}?${CURRENCY_TOKEN}\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}${RANGE_SEP}${CURRENCY_TOKEN}?\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}`, "gi");
+const UNIT_FIRST_SINGLE_RE = new RegExp(`\\bper\\s*${UNIT_TOKEN}\\b[^.]{0,80}?${CURRENCY_TOKEN}\\s?${AMOUNT_TOKEN}${SCALE_TOKEN}`, "gi");
 
-  // ── Pune — plot / land, per sq.yard ──
-  { keywords: ["hinjewadi"],                                               unit: "sqyard", min: 35000,  max: 60000 },
-  { keywords: ["baner", "balewadi"],                                       unit: "sqyard", min: 42000,  max: 70000 },
+// Third ordering: no explicit "per unit" phrase at all, just a listing's total price next to its
+// area -- e.g. "₹2.32 Cr 2 BHK Apartment 1504 sqft". Very common on listing/overview pages that
+// state a transaction price and floor area but never spell out a per-sqft rate. The scale word
+// (crore/lakh) is mandatory here since an unscaled number in front of "Cr"/"Lakh" phrasing is
+// always a home's total price, never a rate -- this keeps the pattern from ever misreading a
+// per-unit mention that the earlier patterns already handle. Lowest priority: only ever fills in
+// where the other three found nothing to say about that span of text.
+const IMPLIED_RATE_RE = new RegExp(
+  `${CURRENCY_TOKEN}\\s?(?<amt>[\\d,]+(?:\\.\\d+)?)\\s?(?<scale>crore|cr\\.?|lakh|lac)\\b[^.]{0,50}?(?<area>[\\d,]+(?:\\.\\d+)?)\\s?(?:sq\\.?\\s?-?\\s?ft\\.?|sqft\\.?)`,
+  "gi"
+);
 
-  // ── Chennai — plot / land, per sq.yard ──
-  { keywords: ["adyar", "besant nagar"],                                   unit: "sqyard", min: 130000, max: 240000 },
-  { keywords: ["anna nagar"],                                              unit: "sqyard", min: 85000,  max: 160000 },
-  { keywords: ["velachery"],                                               unit: "sqyard", min: 48000,  max: 80000 },
-  { keywords: ["omr", "old mahabalipuram"],                                unit: "sqyard", min: 38000,  max: 70000 },
-  { keywords: ["porur"],                                                   unit: "sqyard", min: 32000,  max: 55000 },
-  { keywords: ["tambaram"],                                                unit: "sqyard", min: 18000,  max: 35000 },
+// Same idea for markets that don't use crore/lakh notation (UK/US/SG/AU/CA portals) -- Rightmove,
+// Zoopla, Redfin, Zillow etc. state a listing's total price and floor area side by side with no
+// scale word at all, e.g. "£725,000 · 941 sq ft". Since there's no "Cr"/"Lakh" to signal "this is
+// a total, not a rate", the amount is instead required to be at least 6 digits (comma+digits
+// included) -- long enough that it can only plausibly be a whole-property price, never a
+// per-sqft rate, which keeps this from misreading a per-unit mention the earlier patterns
+// already own. The gap also excludes ";" as well as "." since these portals commonly separate
+// consecutive listings with "· price · area ;" -- without that, a price from one listing could
+// get paired with the area of the next.
+const IMPLIED_RATE_UNSCALED_RE = new RegExp(
+  `${CURRENCY_TOKEN}\\s?(?<amt>[\\d,]{6,})(?!\\s?(?:crore|cr\\.?|lakh|lac))[^.;]{0,55}?(?<area>[\\d,]+(?:\\.\\d+)?)\\s?(?:sq\\.?\\s?-?\\s?ft\\.?|sqft\\.?)`,
+  "gi"
+);
 
-  // ── Delhi NCR — plot / land, per sq.yard ──
-  { keywords: ["vasant vihar", "greater kailash", "defence colony", "south delhi"], unit: "sqyard", min: 450000, max: 850000 },
-  { keywords: ["golf course road", "dlf phase"],                           unit: "sqyard", min: 160000, max: 320000 },
-  { keywords: ["golf course extension", "sector 65", "sector 66"],         unit: "sqyard", min: 75000,  max: 140000 },
-  { keywords: ["dwarka"],                                                  unit: "sqyard", min: 65000,  max: 110000 },
-  { keywords: ["sohna road", "sohna"],                                     unit: "sqyard", min: 35000,  max: 65000 },
-  { keywords: ["noida sector 150", "noida expressway", "sector 150"],      unit: "sqyard", min: 55000,  max: 95000 },
-  { keywords: ["greater noida"],                                          unit: "sqyard", min: 28000,  max: 48000 },
-  { keywords: ["rohini"],                                                  unit: "sqyard", min: 48000,  max: 80000 },
-
-  // ── India — land, per acre ──
-  { keywords: ["shankarpally", "moinabad", "chevella"],                    unit: "acres",  min: 12000000, max: 30000000 },
-  { keywords: ["patancheru"],                                              unit: "acres",  min: 6000000,  max: 15000000 },
-  { keywords: ["vikarabad", "bibinagar"],                                  unit: "acres",  min: 2500000,  max: 7000000 },
-  { keywords: ["suryapet"],                                                unit: "acres",  min: 800000,   max: 2500000 },
-  { keywords: ["devanahalli", "nelamangala"],                              unit: "acres",  min: 8000000,  max: 20000000 },
-  { keywords: ["karjat", "khopoli"],                                       unit: "acres",  min: 5000000,  max: 15000000 },
-  { keywords: ["sonipat", "karnal", "palwal"],                             unit: "acres",  min: 4000000,  max: 12000000 },
-  { keywords: ["chengalpattu", "thiruvallur"],                             unit: "acres",  min: 1500000,  max: 5000000 },
-
-  // ── India — apartments/villas/houses, per sq.ft ──
-  { keywords: ["jubilee hills", "banjara hills"],                          unit: "sqft",   min: 15000, max: 28000 },
-  { keywords: ["financial district", "nanakramguda"],                     unit: "sqft",   min: 11000, max: 19000 },
-  { keywords: ["kokapet", "neopolis", "golf view"],                        unit: "sqft",   min: 10000, max: 16000 },
-  { keywords: ["gachibowli"],                                              unit: "sqft",   min: 8500,  max: 14000 },
-  { keywords: ["kondapur", "madhapur"],                                    unit: "sqft",   min: 6500,  max: 10500 },
-  { keywords: ["manikonda", "puppalaguda"],                                unit: "sqft",   min: 5500,  max: 9000 },
-  { keywords: ["kphb", "miyapur", "kukatpally"],                           unit: "sqft",   min: 4500,  max: 7000 },
-  { keywords: ["medchal", "ameenpur"],                                     unit: "sqft",   min: 3200,  max: 5500 },
-  { keywords: ["shamshabad", "shadnagar", "maheshwaram"],                  unit: "sqft",   min: 2200,  max: 4000 },
-  { keywords: ["nalgonda", "miryalaguda"],                                 unit: "sqft",   min: 1200,  max: 2800 },
-  { keywords: ["indiranagar", "koramangala"],                              unit: "sqft",   min: 12000, max: 22000 },
-  { keywords: ["whitefield"],                                              unit: "sqft",   min: 10000, max: 16000 },
-  { keywords: ["sarjapur"],                                                unit: "sqft",   min: 8000,  max: 13000 },
-  { keywords: ["hsr layout", "bellandur"],                                 unit: "sqft",   min: 7500,  max: 12000 },
-  { keywords: ["electronic city"],                                         unit: "sqft",   min: 5500,  max: 8500 },
-  { keywords: ["bandra", "juhu"],                                          unit: "sqft",   min: 45000, max: 90000 },
-  { keywords: ["andheri", "powai"],                                        unit: "sqft",   min: 18000, max: 32000 },
-  { keywords: ["thane", "navi mumbai"],                                    unit: "sqft",   min: 9000,  max: 16000 },
-  { keywords: ["hinjewadi"],                                               unit: "sqft",   min: 7500,  max: 13000 },
-  { keywords: ["baner", "balewadi"],                                       unit: "sqft",   min: 9000,  max: 15000 },
-
-  // ── Chennai, per sq.ft — cross-checked against live listings (99acres/nobroker):
-  // OMR average ~₹7,250-13,000/sqft, confirming the range below ──
-  { keywords: ["adyar", "besant nagar"],                                   unit: "sqft",   min: 15000, max: 26000 },
-  { keywords: ["anna nagar"],                                              unit: "sqft",   min: 9500,  max: 16000 },
-  { keywords: ["velachery"],                                               unit: "sqft",   min: 7500,  max: 12000 },
-  { keywords: ["omr", "old mahabalipuram"],                                unit: "sqft",   min: 7000,  max: 13000 },
-  { keywords: ["porur"],                                                   unit: "sqft",   min: 5500,  max: 9000 },
-  { keywords: ["tambaram"],                                                unit: "sqft",   min: 3800,  max: 6500 },
-
-  // ── Delhi NCR, per sq.ft — Golf Course Road cross-checked against live listings
-  // (99acres/nobroker): average ~₹27,000/sqft, ultra-premium up to ₹65,000+/sqft ──
-  { keywords: ["vasant vihar", "greater kailash", "defence colony", "south delhi"], unit: "sqft", min: 28000, max: 50000 },
-  { keywords: ["golf course road", "dlf phase"],                           unit: "sqft",   min: 22000, max: 42000 },
-  { keywords: ["golf course extension", "sector 65", "sector 66"],         unit: "sqft",   min: 11000, max: 18000 },
-  { keywords: ["dwarka"],                                                  unit: "sqft",   min: 9500,  max: 15000 },
-  { keywords: ["sohna road", "sohna"],                                     unit: "sqft",   min: 6500,  max: 11000 },
-  { keywords: ["noida sector 150", "noida expressway", "sector 150"],      unit: "sqft",   min: 8500,  max: 14000 },
-  { keywords: ["greater noida"],                                          unit: "sqft",   min: 4200,  max: 7500 },
-  { keywords: ["rohini"],                                                  unit: "sqft",   min: 7500,  max: 12000 },
-
-  // ── Dubai, per sq.ft ──
-  { keywords: ["palm jumeirah", "downtown dubai"],                         unit: "sqft",   min: 3000, max: 5500 },
-  { keywords: ["dubai marina"],                                            unit: "sqft",   min: 1800, max: 3000 },
-  { keywords: ["business bay"],                                            unit: "sqft",   min: 1500, max: 2400 },
-  { keywords: ["jumeirah village circle", "jvc"],                          unit: "sqft",   min: 900,  max: 1400 },
-  { keywords: ["jumeirah lake towers", "jlt"],                             unit: "sqft",   min: 1000, max: 1600 },
-  { keywords: ["dubai south", "discovery gardens"],                        unit: "sqft",   min: 700,  max: 1100 },
-  { keywords: ["meydan", "mohammed bin rashid"],                           unit: "sqft",   min: 1800, max: 3200 },
-  { keywords: ["al barsha"],                                                unit: "sqft",   min: 900,  max: 1500 },
-
-  // ── UK, per sq.ft ──
-  { keywords: ["kensington", "chelsea", "mayfair"],                        unit: "sqft",   min: 1500, max: 4000 },
-  { keywords: ["canary wharf", "city of london"],                          unit: "sqft",   min: 800,  max: 1400 },
-  { keywords: ["manchester", "birmingham", "leeds"],                       unit: "sqft",   min: 200,  max: 450 },
-
-  // ── USA, per sq.ft ──
-  { keywords: ["manhattan"],                                               unit: "sqft",   min: 1500, max: 4500 },
-  { keywords: ["brooklyn", "queens"],                                      unit: "sqft",   min: 800,  max: 1400 },
-  { keywords: ["san francisco", "los angeles"],                            unit: "sqft",   min: 800,  max: 1500 },
-  { keywords: ["chicago", "houston", "dallas"],                            unit: "sqft",   min: 200,  max: 500 },
-
-  // ── Singapore / Australia / Canada, per sq.ft ──
-  { keywords: ["orchard", "marina bay"],                                   unit: "sqft",   min: 2500, max: 4500 },
-  { keywords: ["sydney"],                                                  unit: "sqft",   min: 900,  max: 1800 },
-  { keywords: ["toronto"],                                                 unit: "sqft",   min: 800,  max: 1400 },
-];
-
-// Local land units (ankanam/cent/guntha) are always requested from the API as "sqyard" —
-// the frontend converts to the user's selected unit for display, so the plot/sqyard
-// benchmark applies to those requests too.
-function benchmarkUnitFor(propertyType: string, unit: string): "sqyard" | "sqft" | "acres" {
-  if (unit === "acres" || propertyType === "agriculture") return "acres";
-  if (unit === "sqyard" || propertyType === "plot") return "sqyard";
-  return "sqft";
+// Independently classifies which currency a matched substring actually used, so a rate quoted in
+// the wrong currency for this location/query (e.g. a USD "luxury international" listing turning
+// up in a GBP-market London search) never gets silently averaged in as if it were the expected
+// currency -- checked against the full matched text, not the regex's own capture groups, so it
+// works uniformly across every pattern above without touching their existing group indices.
+// Order matters: the compound symbols (S$/A$/CA$) must be checked before the bare "$"/USD they
+// contain as a substring.
+function currencyKeyOf(text: string): string | null {
+  if (/₹|Rs\.?|INR/i.test(text)) return "INR";
+  if (/AED/i.test(text)) return "AED";
+  if (/£|GBP/i.test(text)) return "GBP";
+  if (/S\$|SGD/i.test(text)) return "SGD";
+  if (/A\$|AUD/i.test(text)) return "AUD";
+  if (/CA\$|CAD/i.test(text)) return "CAD";
+  if (/\$|USD/i.test(text)) return "USD";
+  return null;
 }
 
-// The BENCHMARKS table is keyed by unit+locality only, with no property-type dimension --
-// every sqft-priced type (apartment, villa, house, commercial) was hitting the identical
-// bucket, so a villa and an apartment in the same locality got clamped to the same range
-// regardless of what Gemini/Tavily actually returned. Villas and independent houses command
-// a real premium over apartments in the same micro-market (larger private land share, lower
-// density, more exclusivity); commercial office space is typically closer to apartment rates.
-// These multipliers scale the shared per-locality sqft benchmark by type rather than
-// requiring a fully separate, harder-to-verify benchmark row per type per locality.
-const SQFT_TYPE_MULTIPLIER: Record<string, number> = {
-  apartment:  1.0,
-  house:      1.15,
-  villa:      1.3,
-  commercial: 1.05,
-};
-
-// In peripheral/outer-corridor localities, villas serve a fundamentally different buyer
-// segment than the area's typical apartment stock -- large private-plot gated communities
-// for an affluent niche, vs. the area's often basic/affordable apartment inventory aimed at
-// commuters. That's a much bigger gap than in dense urban IT corridors (Gachibowli, Kondapur
-// etc.), where villas and apartments serve a similar buyer pool and a ~25-35% premium holds.
-// Verified against real listing data for Medchal (user-confirmed 2026-07, 99acres/
-// MagicBricks): actual villa range Rs.8,800-15,600/sqft vs our apartment benchmark of
-// Rs.3,200-5,500/sqft -- a ~2.8x ratio, not ~1.3x. Extrapolated to similarly-profiled
-// peripheral localities on the same reasoning; only Medchal has been independently verified
-// so far -- if another entry here proves off, correct it individually rather than the whole set.
-const PERIPHERAL_KEYWORDS = [
-  "medchal", "ameenpur", "shamirpet", "shamshabad", "shadnagar", "maheshwaram",
-  "nalgonda", "miryalaguda", "kompally", "bachupally", "nizampet",
-];
-const PERIPHERAL_TYPE_MULTIPLIER: Record<string, number> = {
-  villa: 2.8,
-  house: 2.3,
-};
-
-function findBenchmark(location: string, propertyType: string, unit: string): Benchmark | null {
-  const loc = location.toLowerCase();
-  const wantUnit = benchmarkUnitFor(propertyType, unit);
-  const match = BENCHMARKS.find((b) => b.unit === wantUnit && b.keywords.some((k) => loc.includes(k)));
-  if (!match) return null;
-  if (wantUnit !== "sqft") return match; // plot/acre benchmarks are already type-distinct
-
-  const isPeripheral = PERIPHERAL_KEYWORDS.some((k) => loc.includes(k));
-  const mult = isPeripheral
-    ? (PERIPHERAL_TYPE_MULTIPLIER[propertyType] ?? SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0)
-    : (SQFT_TYPE_MULTIPLIER[propertyType] ?? 1.0);
-  if (mult === 1.0) return match;
-  return { ...match, min: Math.round(match.min * mult), max: Math.round(match.max * mult) };
+function expectedCurrencyKey(currencyCode: string): string | null {
+  return ["INR", "AED", "GBP", "USD", "SGD", "AUD", "CAD"].includes(currencyCode) ? currencyCode : null;
 }
 
-// Derives a realistic min-max price range for the richer UI display. Live Gemini data is now
-// the only source ever shown to users (see POST handler — a request is only priced at all
-// when Bayut/Tavily found real listing data AND Gemini successfully processed it), so this
-// only ever runs for genuinely live-grounded results. Priority: Bayut's own computed range >
-// Gemini's self-reported range (when internally consistent with its point price) > a
-// synthetic band around the point price. BENCHMARKS is intentionally not consulted here —
-// a confirmed-real answer should never be second-guessed by a static table (kept in this
-// file for other features to reference, e.g. a future plausibility-check tool, but
-// disconnected from anything shown to users as an AI Intelligence price).
-function deriveRange(
-  currentPrice: number,
-  raw: Record<string, unknown>,
-  bayutRange?: { min: number; max: number }
-): { min: number; max: number } {
-  if (bayutRange) return bayutRange;
+function unitWordToKey(word: string): string | null {
+  const w = word.toLowerCase().replace(/\s+/g, "");
+  if (/^sq\.?ft\.?$/.test(w)) return "sqft";
+  if (/^sq\.?y(a?)rd\.?$/.test(w) || w === "sqyd" || w === "gaj") return "sqyard";
+  if (/^sq\.?m\.?$/.test(w) || w === "sqm" || w.startsWith("squaremet")) return "sqm";
+  if (w.startsWith("acre")) return "acre";
+  if (w.startsWith("cent")) return "cent";
+  if (w === "guntha") return "guntha";
+  if (w === "ankanam") return "ankanam";
+  if (w === "ground") return "ground";
+  return null;
+}
 
-  const rawMin = Number(raw.priceRangeMin);
-  const rawMax = Number(raw.priceRangeMax);
-  const geminiRangeOk = rawMin > 0 && rawMax > rawMin && currentPrice >= rawMin * 0.5 && currentPrice <= rawMax * 1.5;
-  if (geminiRangeOk) return { min: Math.round(rawMin), max: Math.round(rawMax) };
+function scaleMultiplier(scale?: string): number {
+  if (!scale) return 1;
+  const s = scale.toLowerCase();
+  if (s.startsWith("cr")) return 1e7;   // crore
+  if (s.startsWith("l"))  return 1e5;   // lakh / lac / l
+  if (s.startsWith("m"))  return 1e6;   // million / mil / mn / m
+  if (s.startsWith("k") || s.startsWith("th")) return 1e3; // k / thousand
+  return 1;
+}
 
-  return { min: Math.round(currentPrice * 0.85), max: Math.round(currentPrice * 1.25) };
+function toNumber(amount: string, scale?: string): number {
+  const n = parseFloat(amount.replace(/,/g, ""));
+  return isNaN(n) ? 0 : n * scaleMultiplier(scale);
+}
+
+function spansOverlap(spans: [number, number][], start: number, end: number): boolean {
+  return spans.some(([s, e]) => start < e && end > s);
+}
+
+// Returns every rate mention found in the text, normalised to price-per-sqft. Runs both
+// amount-first and unit-first patterns (ranges before singles, amount-first before unit-first)
+// tracking consumed character spans across ALL patterns so the same mention is never counted
+// twice regardless of which pattern matched it first. `expectedCurrencyCode` restricts matches to
+// the currency this location/query is actually denominated in -- e.g. a stray USD "luxury
+// international" listing showing up in a GBP-market London search is dropped rather than
+// silently averaged in as if $ and £ were interchangeable. If the location's currency isn't one
+// CURRENCY_TOKEN can recognise at all, there is no safe match to make, so this returns nothing
+// rather than guessing.
+function extractRatesPerSqft(text: string, expectedCurrencyCode: string): number[] {
+  const rates: number[] = [];
+  const consumed: [number, number][] = [];
+  const expectedKey = expectedCurrencyKey(expectedCurrencyCode);
+  if (!expectedKey) return rates;
+
+  const collectRange = (re: RegExp, unitFirst: boolean) => {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) {
+      const full = m[0];
+      const start = m.index, end = start + full.length;
+      if (spansOverlap(consumed, start, end)) continue;
+      consumed.push([start, end]);
+      if (currencyKeyOf(full) !== expectedKey) continue;
+      const [unitWord, n1, s1, n2, s2] = unitFirst
+        ? [m[1], m[2], m[3], m[4], m[5]]
+        : [m[5], m[1], m[2], m[3], m[4]];
+      const unitKey = unitWordToKey(unitWord);
+      const toSqft = unitKey ? UNIT_TO_SQFT[unitKey] : undefined;
+      if (toSqft) {
+        const v1 = toNumber(n1, s1);
+        const v2 = toNumber(n2, s2);
+        if (v1 > 0) rates.push(v1 / toSqft);
+        if (v2 > 0) rates.push(v2 / toSqft);
+      }
+    }
+  };
+
+  const collectSingle = (re: RegExp, unitFirst: boolean) => {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) {
+      const full = m[0];
+      const start = m.index, end = start + full.length;
+      if (spansOverlap(consumed, start, end)) continue;
+      consumed.push([start, end]);
+      if (currencyKeyOf(full) !== expectedKey) continue;
+      const [unitWord, amount, scale] = unitFirst ? [m[1], m[2], m[3]] : [m[3], m[1], m[2]];
+      const unitKey = unitWordToKey(unitWord);
+      const toSqft = unitKey ? UNIT_TO_SQFT[unitKey] : undefined;
+      if (!toSqft) continue;
+      const v = toNumber(amount, scale);
+      if (v > 0) rates.push(v / toSqft);
+    }
+  };
+
+  const collectImplied = (re: RegExp) => {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) {
+      const full = m[0];
+      const start = m.index, end = start + full.length;
+      if (spansOverlap(consumed, start, end)) continue;
+      consumed.push([start, end]);
+      if (currencyKeyOf(full) !== expectedKey) continue;
+      const g = m.groups!;
+      const total = toNumber(g.amt, g.scale);
+      const area = parseFloat(g.area.replace(/,/g, ""));
+      if (total > 0 && area > 0) {
+        const rate = total / area;
+        // Same "reject only if absurd" bar as everywhere else -- not a plausibility band tuned
+        // to any particular location, just a guard against a badly mismatched price/area pair.
+        if (rate >= 1 && rate <= 10_000_000) rates.push(rate);
+      }
+    }
+  };
+
+  collectRange(RANGE_RE, false);
+  collectRange(UNIT_FIRST_RANGE_RE, true);
+  collectSingle(SINGLE_RE, false);
+  collectSingle(UNIT_FIRST_SINGLE_RE, true);
+  collectImplied(IMPLIED_RATE_RE);
+  collectImplied(IMPLIED_RATE_UNSCALED_RE);
+
+  return rates;
+}
+
+interface SearchAggregate { min: number; median: number; max: number; count: number; }
+
+// Filters extreme outliers only once there's enough of a sample to do so safely (so one stray
+// "starting from" teaser or an unrelated total-price mismatch can't dominate a 2-3 value pool),
+// then returns the real, source-derived range -- still in per-sqft terms; the caller converts
+// to whatever unit the request actually asked for.
+function aggregateRates(ratesPerSqft: number[]): SearchAggregate | null {
+  if (ratesPerSqft.length === 0) return null;
+  const sorted = [...ratesPerSqft].sort((a, b) => a - b);
+  let trimmed = sorted;
+  if (sorted.length >= 5) {
+    const cut = Math.max(1, Math.floor(sorted.length * 0.1));
+    trimmed = sorted.slice(cut, sorted.length - cut);
+  }
+  const mid = Math.floor(trimmed.length / 2);
+  const median = trimmed.length % 2 ? trimmed[mid] : (trimmed[mid - 1] + trimmed[mid]) / 2;
+  return { min: trimmed[0], median, max: trimmed[trimmed.length - 1], count: sorted.length };
 }
 
 // ─── Gemini prompt ────────────────────────────────────────────────────────────
-
+// No hardcoded per-locality price tables here anymore -- Gemini is instructed to extract
+// strictly from the live search data injected below (realSection), which is the only pricing
+// input it's given. getPrompt() is only ever called once real search data has already been
+// confirmed to exist (see the POST handler's `if (dataType === "none")` early-return), so
+// there is never a scenario where this needs a numeric fallback to lean on.
 function getPrompt(
   location:      string,
   propertyType:  string,
   unit:          string,
   currency:      CurrencyInfo,
   countryCode:   string,
-  realDataBlock: string | null,    // Bayut text OR Tavily text
-  dataType:      "bayut" | "tavily" | "none",
-  bayutPricePsf?: number           // pre-computed median from Bayut
+  realDataBlock: string,
+  dataType:      "bayut" | "tavily",
+  bayutPricePsf?: number
 ): string {
   const now = new Date();
   const y   = now.getFullYear();
@@ -607,166 +695,54 @@ function getPrompt(
   const [y1, y2, y3, y4, y5] = [y-4, y-3, y-2, y-1, y];
   const [f1, f2, f3, f4, f5] = [y+1, y+2, y+3, y+4, y+5];
 
-  // ── Fallback benchmark table — GRANULAR PER LOCALITY ─────────────────────
-  const benchmarks = (unit === "sqyard" || propertyType === "plot") ? `
-INDIA PLOT sq.yard benchmarks — EACH LOCALITY IS DISTINCT. Match the EXACT area name:
-- Jubilee Hills / Banjara Hills (Hyderabad ultra-prime): ₹1,20,000–2,50,000/sq.yd
-- Kokapet / Neopolis / Golf View (Hyderabad IT premium): ₹55,000–1,00,000/sq.yd
-- Financial District / Nanakramguda (Hyderabad IT premium): ₹60,000–1,10,000/sq.yd
-- Gachibowli (Hyderabad IT high): ₹40,000–75,000/sq.yd
-- Kondapur / Madhapur (Hyderabad IT mid): ₹30,000–55,000/sq.yd
-- Manikonda / Puppalaguda (Hyderabad mid): ₹22,000–42,000/sq.yd
-- Tellapur / Osman Nagar (Hyderabad west mid-rim): ₹15,000–28,000/sq.yd
-- Nallagandla / Serilingampally (Hyderabad west mid): ₹20,000–38,000/sq.yd
-- KPHB / Miyapur / Kukatpally (Hyderabad mid-affordable): ₹15,000–28,000/sq.yd
-- Bachupally / Nizampet (Hyderabad north mid): ₹12,000–22,000/sq.yd
-- Kompally (Hyderabad north peripheral): ₹8,000–15,000/sq.yd
-- Medchal / Ameenpur / Shamirpet (outer peripheral): ₹6,000–12,000/sq.yd
-- Shamshabad / Shadnagar (outer south): ₹4,000–9,000/sq.yd
-- Nalgonda / Miryalaguda (rural): ₹2,000–5,000/sq.yd
-- Whitefield / Sarjapur Road (Bangalore IT corridor): ₹35,000–80,000/sq.yd
-- Indiranagar / Koramangala (Bangalore prime): ₹90,000–1,80,000/sq.yd
-- HSR Layout / Bellandur / Electronic City (Bangalore mid): ₹22,000–70,000/sq.yd
-- Hinjewadi / Baner / Balewadi (Pune IT hub): ₹35,000–70,000/sq.yd
-- Adyar / Besant Nagar (Chennai ultra-prime coastal): ₹1,30,000–2,40,000/sq.yd
-- Anna Nagar (Chennai established prime): ₹85,000–1,60,000/sq.yd
-- OMR / Velachery (Chennai IT corridor): ₹38,000–80,000/sq.yd
-- Porur / Tambaram (Chennai mid-affordable): ₹18,000–55,000/sq.yd
-- Vasant Vihar / GK / Defence Colony (South Delhi ultra-prime): ₹4,50,000–8,50,000/sq.yd
-- Golf Course Road / DLF Phases (Gurgaon ultra-prime): ₹1,60,000–3,20,000/sq.yd
-- Golf Course Extension / Sohna Road (Gurgaon mid-prime): ₹35,000–1,40,000/sq.yd
-- Dwarka / Rohini (Delhi mid): ₹48,000–1,10,000/sq.yd
-- Noida Expressway / Sector 150 (premium): ₹55,000–95,000/sq.yd
-- Greater Noida (affordable): ₹28,000–48,000/sq.yd
-⚠️ CRITICAL: "${location}" must get its OWN price from the exact match above. Never give the same price for different localities.` : unit === "acres" ? `
-INDIA acre benchmarks:
-- Near Hyderabad (<30km): Shankarpally, Moinabad, Chevella: ₹1.2Cr–3Cr/acre
-- Mid-ring Hyderabad (30–60km): Medchal, Ameenpur, Patancheru: ₹60L–1.5Cr/acre
-- Outer ring Hyderabad (60–100km): Shadnagar, Vikarabad, Bibinagar: ₹25L–70L/acre
-- Distant Telangana (100km+): Miryalaguda, Nalgonda, Suryapet: ₹8L–25L/acre
-- Bangalore outskirts (<40km): Devanahalli, Nelamangala: ₹80L–2Cr/acre
-- Mumbai outskirts (<50km): Karjat, Khopoli: ₹50L–1.5Cr/acre
-- Delhi NCR outskirts (Sonipat, Karnal, Palwal): ₹40L–1.2Cr/acre
-- Chennai outskirts (Chengalpattu, Thiruvallur): ₹15L–50L/acre` : `
-LOCALITY-SPECIFIC sq.ft benchmarks (SECONDARY — use live data above first):
-⚠️ CRITICAL: Every locality below has a DISTINCT price — never average them together.
-⚠️ CRITICAL: The figures below are APARTMENT baseline rates for each locality. This request is for "${propertyType}" — adjust accordingly:
-- apartment: use the benchmark as-is.
-- villa (core urban / IT-corridor localities, e.g. Gachibowli, Kondapur, Whitefield): apply a 25-35% PREMIUM over the apartment benchmark (villas include a larger private land share, lower density, more exclusivity — they cost meaningfully more per sqft than apartments in the same micro-market).
-- villa (peripheral / outer-ring / emerging-corridor localities, e.g. Medchal, Shamshabad, Nalgonda, and similar areas far from the core IT/business district): apply a MUCH larger premium — roughly 150-190% over the apartment benchmark (i.e. villa price ≈ 2.5-2.9x the apartment rate). Villas here serve a fundamentally different, more affluent buyer segment (large private-plot gated communities) than the area's typical apartment stock (often basic/affordable commuter housing). Verified real-world example: Medchal apartments ₹3,200-5,500/sqft vs Medchal villas ₹8,800-15,600/sqft (~2.8x) — use this as your calibration reference for any similarly peripheral locality.
-- house (independent house): apply the same tiered logic as villa above, at a slightly lower premium (10-20% core-urban, ~130-160% peripheral).
-- commercial: apply a 0-10% premium over the apartment benchmark.
-Never return the same price for villa and apartment in the same locality — they must differ, and the gap should be much larger in peripheral areas than in core-urban ones.
-
-HYDERABAD (pick the exact sub-locality):
-- Jubilee Hills / Banjara Hills (ultra-prime): ₹15,000–28,000/sqft
-- Financial District / Nanakramguda (IT premium): ₹11,000–19,000/sqft
-- Kokapet Golf View / Neopolis (IT premium): ₹10,000–16,000/sqft
-- Gachibowli (IT high): ₹8,500–14,000/sqft
-- Kondapur / Madhapur (IT mid): ₹6,500–10,500/sqft
-- Manikonda / Puppalaguda (mid): ₹5,500–9,000/sqft
-- KPHB / Miyapur / Kukatpally (affordable): ₹4,500–7,000/sqft
-- Medchal / Ameenpur (peripheral): ₹3,200–5,500/sqft
-- Shamshabad / Shadnagar / Maheshwaram (outer): ₹2,200–4,000/sqft
-- Nalgonda / Miryalaguda (rural): ₹1,200–2,800/sqft
-
-BANGALORE:
-- Indiranagar / Koramangala (prime): ₹12,000–22,000/sqft
-- Whitefield (IT premium): ₹10,000–16,000/sqft
-- Sarjapur Road (IT high): ₹8,000–13,000/sqft
-- HSR Layout / Bellandur (mid-high): ₹7,500–12,000/sqft
-- Electronic City (IT mid): ₹5,500–8,500/sqft
-
-MUMBAI / PUNE:
-- Bandra West / Juhu (ultra-prime): ₹45,000–90,000/sqft
-- Andheri West / Powai (mid): ₹18,000–32,000/sqft
-- Thane / Navi Mumbai (affordable): ₹9,000–16,000/sqft
-- Hinjewadi Pune (IT hub): ₹7,500–13,000/sqft
-- Baner / Balewadi Pune (mid): ₹9,000–15,000/sqft
-
-CHENNAI (pick the exact sub-locality) — cross-checked against live OMR listing data (~₹7,250–13,000/sqft):
-- Adyar / Besant Nagar (ultra-prime coastal): ₹15,000–26,000/sqft
-- Anna Nagar (established prime): ₹9,500–16,000/sqft
-- OMR / Velachery (IT corridor): ₹7,000–13,000/sqft
-- Porur (mid): ₹5,500–9,000/sqft
-- Tambaram (affordable/outer): ₹3,800–6,500/sqft
-
-DELHI NCR (pick the exact sub-locality) — Golf Course Road cross-checked against live listing data (~₹27,000/sqft avg, up to ₹65,000+/sqft ultra-premium):
-- Vasant Vihar / Greater Kailash / Defence Colony (South Delhi ultra-prime): ₹28,000–50,000/sqft
-- Golf Course Road / DLF Phases, Gurgaon (ultra-prime): ₹22,000–42,000/sqft
-- Golf Course Extension Road, Gurgaon (prime): ₹11,000–18,000/sqft
-- Noida Sector 150 / Expressway (premium): ₹8,500–14,000/sqft
-- Dwarka / Rohini, Delhi (mid): ₹7,500–15,000/sqft
-- Sohna Road, Gurgaon (mid): ₹6,500–11,000/sqft
-- Greater Noida (affordable): ₹4,200–7,500/sqft
-
-UAE DUBAI (pick the exact community):
-- Palm Jumeirah / Downtown Dubai: AED 3,000–5,500/sqft
-- Dubai Marina (prime waterfront): AED 1,800–3,000/sqft
-- Business Bay (commercial-residential): AED 1,500–2,400/sqft
-- Jumeirah Village Circle (JVC) (affordable): AED 900–1,400/sqft
-- Jumeirah Lake Towers (JLT): AED 1,000–1,600/sqft
-- Dubai South / Discovery Gardens: AED 700–1,100/sqft
-- Meydan / Mohammed Bin Rashid City: AED 1,800–3,200/sqft
-- Al Barsha (mid): AED 900–1,500/sqft
-
-UK:
-- Kensington / Chelsea / Mayfair (London prime): £1,500–4,000/sqft
-- Canary Wharf / City of London: £800–1,400/sqft
-- London Mid (Zones 2-3): £600–1,000/sqft
-- Manchester / Birmingham / Leeds: £200–450/sqft
-
-USA:
-- Manhattan (NYC) Prime: $1,500–4,500/sqft
-- Brooklyn / Queens (NYC) Mid: $800–1,400/sqft
-- San Francisco / LA Prime: $800–1,500/sqft
-- Chicago / Houston / Dallas: $200–500/sqft
-
-SINGAPORE / AUSTRALIA / CANADA:
-- Singapore Prime (Orchard / Marina Bay): SGD 2,500–4,500/sqft
-- Singapore Mid: SGD 1,200–2,200/sqft
-- Sydney Prime: A$900–1,800/sqft
-- Toronto Prime: CA$800–1,400/sqft`;
-
-  // ── Real data section ────────────────────────────────────────────────────
-  const realSection = realDataBlock ? `
+  const realSection = `
 ═══════════════════════════════════════
-${dataType === "bayut" ? "LIVE BAYUT.COM LISTING DATA (PRIMARY SOURCE)" : "LIVE WEB LISTING DATA (PRIMARY SOURCE)"}
+${dataType === "bayut" ? "LIVE BAYUT.COM LISTING DATA (ONLY SOURCE — DO NOT USE ANY OTHER PRICE)" : "LIVE WEB SEARCH RESULTS (ONLY SOURCE — DO NOT USE ANY OTHER PRICE)"}
 ═══════════════════════════════════════
 ${realDataBlock}
 
 ${dataType === "bayut" && bayutPricePsf
   ? `CRITICAL: The computed median price-per-sqft from Bayut listings is ${currency.symbol}${bayutPricePsf.toLocaleString()}/sqft.
 Your "currentPricePerSqft" MUST be ${bayutPricePsf} (the exact Bayut median). Do NOT invent a different figure.`
-  : `PRIORITY: Extract the PREVAILING/TYPICAL price-per-${unitLabel} for THIS EXACT locality: "${location}" from the data above. The benchmark table below is SECONDARY.
-⚠️ DO NOT use promotional "starting from ₹X" or "from ₹X onwards" teaser prices — those describe the cheapest/smallest unit in one specific project, not the typical rate for the area. Use the median or typical rate implied across the listings/snippets, not the lowest number you see.`}
+  : `Extract the PREVAILING/TYPICAL price-per-${unitLabel} for THIS EXACT locality: "${location}" from the data above and ONLY from the data above.
+⚠️ DO NOT use promotional "starting from ₹X" or "from ₹X onwards" teaser prices — those describe the cheapest/smallest unit in one specific project, not the typical rate for the area. Use the median or typical rate implied across the listings/snippets, not the lowest number you see.
+⚠️ You have NO other source of truth for this price. Do not supplement, correct, or override the figures above with anything from your own training data — your training data is not current and is not locality-specific enough to be trusted over live search results.`}
 ═══════════════════════════════════════
-` : `(No live listing data available — use the locality-specific benchmark table below.)`;
+`;
 
-  return `You are a senior real estate market analyst. Generate realistic market intelligence for the SPECIFIC locality: "${location}" (${propertyType} properties).
+  return `You are a real estate data analyst. Extract market intelligence for the SPECIFIC locality: "${location}" (${propertyType} properties) STRICTLY from the live search data provided below. You are not being asked for your own knowledge of this market — you are being asked to read and summarise the data given to you.
 
 COUNTRY: ${countryCode.toUpperCase()} | CURRENCY: ${currency.code} (${currency.symbol}) | UNIT: per ${unitLabel}
 
 ${realSection}
 
-⚠️ LOCALITY PRICING RULE (MOST IMPORTANT):
-Each locality has a DISTINCT price. You MUST differentiate:
-- Kokapet vs Gachibowli vs Financial District → different prices (Kokapet ₹10K–16K, Gachibowli ₹8.5K–14K, Financial District ₹11K–19K)
-- Dubai Marina vs Business Bay vs JVC → different prices (Marina AED 1,800–3,000, Business Bay AED 1,500–2,400, JVC AED 900–1,400)
-- Never return a generic city average. Price the EXACT locality: "${location}"
-- If you are uncertain, pick from the MIDDLE of the locality's specific range in the benchmark table
+⚠️ UNIT DISCIPLINE (MOST IMPORTANT — this is a common source of ~2x errors): the source text may
+state prices per sq.ft, per sq.yard, per acre, or in Indian lakh/crore notation. Before using any
+figure, identify EXACTLY what unit and scale it was stated in, and convert it correctly to
+${currency.code} per ${unitLabel} (1 sq.yard = 9 sq.ft; 1 acre = 4,840 sq.yard = 43,560 sq.ft; 1
+lakh = 100,000; 1 crore = 10,000,000). NEVER mix a per-sq.ft figure and a per-sq.yard figure
+together as if they were the same unit.
+
+⚠️ TYPE AWARENESS: this request is specifically for "${propertyType}". If the source data
+distinguishes property types, use the type-specific figure. Villas/independent houses typically
+command a genuine per-sqft premium over apartments in the same micro-market (more private land,
+lower density) — if the data doesn't clearly separate them, still make sure your answer reflects
+that real-world premium rather than silently reusing an apartment-level rate for a villa.
+
+⚠️ Every locality is priced independently from what's actually in the data above for THAT
+locality — never substitute a different area's figure or a generic city-wide average.
 
 CRITICAL RULES:
 1. "currency" MUST be "${currency.code}" and "currencySymbol" MUST be "${currency.symbol}" — never use a different currency.
-2. "currentPricePerSqft" = price per ${unitLabel} for the SPECIFIC locality "${location}"${dataType === "bayut" && bayutPricePsf ? ` = EXACTLY ${bayutPricePsf} (from Bayut data)` : " — pick a SPECIFIC value within the locality's range, not the city average"}.
+2. "currentPricePerSqft" = price per ${unitLabel} for the SPECIFIC locality "${location}", extracted from the data above${dataType === "bayut" && bayutPricePsf ? ` = EXACTLY ${bayutPricePsf} (from Bayut data)` : ""}.
 3. "pricePerSqftUnit" MUST be "${unitKey}".
-4. History values must show realistic growth leading up to "currentPricePerSqft". Forecast must show projected growth.
+4. History values must show realistic growth leading up to "currentPricePerSqft". Forecast must show projected growth. These two series are inherently an AI-generated illustrative trend line, not verified historical records — make the trajectory plausible and consistent with "trend"/"growthRate", but do not claim precision you don't have.
 5. History and forecast values must be in ${currency.code}, consistent with "currentPricePerSqft".
 6. "trend" must be one of: "Bullish", "Stable", or "Cautious".
-7. "summary" must mention the SPECIFIC locality "${location}" by name, not just the city.
-8. Give the PREVAILING current asking-price rate for typical/comparable properties in this exact micro-market — never a promotional minimum, "starting from" teaser, or distressed-sale outlier. When genuinely uncertain, prefer the middle of the locality's known range over a low guess.
-9. "priceRangeMin"/"priceRangeMax" = the realistic current asking-price range for this locality (not the city, not a single teaser project) — "currentPricePerSqft" should sit roughly in the middle-to-upper part of this range, not at the very bottom.
-10. "typicalListings" = one short phrase on the kind of properties actually available here right now (e.g. "Mostly 2-3BHK gated-community apartments from mid-size and large developers, with some premium high-rises" or "Primarily HMDA/DTCP-approved open plots in developing layouts") — describe TYPES/segments found in the data, never name specific builders or projects.
+7. "summary" must mention the SPECIFIC locality "${location}" by name, not just the city, and should be grounded in what the source data actually says.
+8. "priceRangeMin"/"priceRangeMax" = the low–high range actually implied by the source data for this locality (not a generic city range) — if the source data shows a wide spread, reflect that honestly rather than narrowing it.
+9. "typicalListings" = one short phrase on the kind of properties actually available here right now, based on the source data (e.g. "Mostly 2-3BHK gated-community apartments from mid-size and large developers" or "Primarily HMDA/DTCP-approved open plots in developing layouts") — describe TYPES/segments, never name specific builders or projects.
+10. "rangeIsWide" = true if the source data's low-high spread is large relative to the typical price (e.g. high is more than ~1.6x the low) — pocket/plot-size/approval-status variance within one named locality can be genuinely large; say so honestly instead of picking a falsely narrow number.
 
 Return ONLY a valid JSON object — no markdown, no code fences, no explanations:
 
@@ -774,11 +750,12 @@ Return ONLY a valid JSON object — no markdown, no code fences, no explanations
   "locationName": "Full area name, City, Country",
   "currency": "${currency.code}",
   "currencySymbol": "${currency.symbol}",
-  "currentPricePerSqft": <number — price per ${unitLabel} in ${currency.code} for "${location}" specifically>,
-  "priceRangeMin": <number — realistic low end of the current asking-price range for this locality>,
-  "priceRangeMax": <number — realistic high end of the current asking-price range for this locality>,
+  "currentPricePerSqft": <number — price per ${unitLabel} in ${currency.code} for "${location}" specifically, from the source data>,
+  "priceRangeMin": <number — low end of the range actually implied by the source data>,
+  "priceRangeMax": <number — high end of the range actually implied by the source data>,
   "pricePerSqftUnit": "${unitKey}",
-  "typicalListings": "short phrase describing typical property types/segments available in this exact locality",
+  "rangeIsWide": <true | false>,
+  "typicalListings": "short phrase describing typical property types/segments available in this exact locality, based on the source data",
   "priceHistory5yr": [
     {"year": ${y1}, "value": <number>},
     {"year": ${y2}, "value": <number>},
@@ -798,23 +775,20 @@ Return ONLY a valid JSON object — no markdown, no code fences, no explanations
   "rentalYield": <gross % e.g. 5.2>,
   "investmentRating": <0–10 with one decimal>,
   "bestFor": "short phrase",
-  "summary": "2–3 sentences of analysis specific to ${location} (mention the locality by name)",
+  "summary": "2–3 sentences of analysis specific to ${location} (mention the locality by name), grounded in the source data",
   "keyDrivers": ["driver1", "driver2", "driver3", "driver4"]
 }
-
-${benchmarks}
 
 Return ONLY the JSON object. No other text.`;
 }
 
 // ─── Unavailable state ─────────────────────────────────────────────────────────
-// Live Gemini data (grounded in real Bayut/Tavily listings) is now the ONLY source ever
-// shown to users as a price — there is no more benchmark-table-generated fallback estimate.
-// Whenever live data can't be produced for any reason (no live listings found, Gemini
-// quota/auth/network failure, malformed response, etc.), this returns a simple, honest
-// "unavailable" result instead of a number that could be mistaken for something real. The
-// technical reason is logged server-side for debugging; the user only ever sees one plain,
-// friendly message with a retry option.
+// Live, search-grounded data is the ONLY source ever shown to users as a price — there is no
+// hardcoded-table fallback estimate. Whenever live data can't be produced for any reason (no
+// live listings found, Gemini quota/auth/network failure, malformed response, etc.), this
+// returns a simple, honest "unavailable" result instead of a number that could be mistaken for
+// something real. The technical reason is logged server-side for debugging; the user only ever
+// sees one plain, friendly message with a retry option.
 function unavailableResponse(reason: string) {
   console.warn(`[market-intel] unavailable: ${reason}`);
   return {
@@ -837,6 +811,21 @@ function parseGemini(text: string): Record<string, unknown> {
 
 type DataSource = "bayut_data" | "real_data" | "ai_only";
 
+// Builds the two 5-year series when Gemini didn't return usable ones — same illustrative-trend
+// math as before, unrelated to the hardcoded-benchmark removal (these were never area-specific
+// preset tables, just a growth-rate projection off whatever the real current price turned out
+// to be).
+function buildTrendSeries(now: number, growthRatePct: number, y: number) {
+  const rate = growthRatePct / 100;
+  const hist = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({
+    year: yr, value: Math.round(now / Math.pow(1 + rate, 4 - i)),
+  }));
+  const fore = [1, 2, 3, 4, 5].map((n) => ({
+    year: y + n, value: Math.round(now * Math.pow(1 + rate, n)),
+  }));
+  return { hist, fore };
+}
+
 function normalise(
   raw: Record<string, unknown>,
   location: string,
@@ -846,50 +835,92 @@ function normalise(
   dataSourceLabel: string,
   currency: CurrencyInfo,
   bayutPricePsf?: number,
-  bayutRange?: { min: number; max: number }
+  bayutRange?: { min: number; max: number },
+  searchAgg?: SearchAggregate | null,
+  sourceUrls?: string[]
 ): Record<string, unknown> {
   const y = new Date().getFullYear();
-  // This only ever runs for genuinely live-grounded data now (Bayut or Tavily-backed
-  // "real_data") — the caller never invokes normalise() otherwise.
-  let now = dataSource === "bayut_data" && bayutPricePsf
-    ? bayutPricePsf
-    : (Number(raw.currentPricePerSqft) || 5500);
+  const geminiPrice = Number(raw.currentPricePerSqft) || 0;
+  const factor = targetUnitFactor(propertyType, unit); // per-sqft -> requested unit
 
-  // "Live-grounded" is a claim about the SOURCE, not a guarantee the number is sane -- Tavily
-  // search results can surface a wrong/irrelevant locality's page, and Gemini has no way to
-  // know that. Hard-clamping into the locality+type-specific BENCHMARKS range (already
-  // computed per-type by findBenchmark -- villa/house/commercial get their own multiplier
-  // applied over the apartment baseline) is what actually makes the two guarantees the product
-  // depends on -- "realistic" and "apartment/villa/plot differ" -- hold regardless of what the
-  // live search happened to return. Bayut's own computed median is never clamped: it's already
-  // a real number derived directly from live listings, not something Gemini extracted/guessed.
-  const b = dataSource === "bayut_data" ? null : findBenchmark(location, propertyType, unit);
-  if (b && (now < b.min || now > b.max)) {
-    const clamped = Math.min(Math.max(now, b.min), b.max);
-    console.warn(`[market-intel] clamped out-of-range price for "${location}" (${propertyType}, ${unit}): raw=${now} -> ${clamped} (benchmark ${b.min}-${b.max})`);
-    now = clamped;
+  let now: number;
+  let range: { min: number; max: number };
+  let groundedBy: "bayut" | "search_data" | "gemini";
+
+  if (dataSource === "bayut_data" && bayutPricePsf) {
+    // Bayut's own median is already computed directly from real live listing price/area
+    // fields -- the most authoritative source available, never second-guessed.
+    now = bayutPricePsf;
+    range = bayutRange ?? { min: Math.round(now * 0.85), max: Math.round(now * 1.25) };
+    groundedBy = "bayut";
+  } else if (searchAgg && searchAgg.count >= 2) {
+    // GROUNDING RULE: checked against the search-derived MEDIAN, not the raw min/max -- real
+    // estate aggregator pages disagree with each other a lot, and a single source's internally
+    // inconsistent "average" (seen in testing: one portal's self-reported plot average sat 3x
+    // above every other source's cluster for the same locality) can blow the raw max out to
+    // something absurd even though the median stays sane. If Gemini's own number is reasonably
+    // close to the median, keep Gemini's number (it may have picked a more representative point
+    // than a raw median, e.g. correctly discounting a "starting from" teaser). If Gemini's
+    // number is genuinely inconsistent, DISCARD it and use the search-derived median instead --
+    // Gemini's training data is stale on prices; the sources it was just given are not.
+    const searchMin    = Math.round(searchAgg.min    * factor);
+    const searchMedian = Math.round(searchAgg.median * factor);
+    const searchMax    = Math.round(searchAgg.max    * factor);
+    const geminiConsistent = geminiPrice > 0 && geminiPrice >= searchMedian * 0.55 && geminiPrice <= searchMedian * 1.8;
+
+    if (geminiConsistent) {
+      now = geminiPrice;
+      groundedBy = "gemini";
+    } else {
+      now = searchMedian;
+      groundedBy = "search_data";
+      console.warn(`[market-intel] GROUNDING OVERRIDE for "${location}" (${propertyType}, ${unit}): Gemini said ${geminiPrice}, search-derived median is ${searchMedian} (raw parsed range ${searchMin}-${searchMax}) — using search-derived median.`);
+    }
+    // The displayed range comes from real sources, but the same single-outlier-source problem
+    // can blow the raw min/max out to something that would look broken on screen even after
+    // the point price itself is sane -- cap it to a sane multiple of the median. Still shows an
+    // honestly wide range when sources genuinely disagree moderately, just not a 3x-outlier one.
+    const rangeMin = Math.min(Math.max(searchMin, Math.round(searchMedian * 0.4)), now);
+    const rangeMax = Math.max(Math.min(searchMax, Math.round(searchMedian * 2.2)), now);
+    range = { min: rangeMin, max: rangeMax };
+  } else {
+    // No independently-parseable rate mentions in the search text (real prose without a clean
+    // "₹X per sqft" pattern is common) -- there's nothing to check Gemini's number against, so
+    // trust its extraction (Tavily already confirmed genuine price-shaped content exists via
+    // hasPriceSignal before Gemini was ever called). The only remaining guard is an absurdity
+    // check: reject non-positive numbers or self-inconsistent ranges, never pull toward a preset.
+    now = geminiPrice > 0 ? geminiPrice : 0;
+    groundedBy = "gemini";
+    const rawMin = Number(raw.priceRangeMin);
+    const rawMax = Number(raw.priceRangeMax);
+    const geminiRangeOk = rawMin > 0 && rawMax > rawMin && now >= rawMin * 0.5 && now <= rawMax * 1.5;
+    range = geminiRangeOk
+      ? { min: Math.round(rawMin), max: Math.round(rawMax) }
+      : { min: Math.round(now * 0.85), max: Math.round(now * 1.25) };
   }
 
-  const range = deriveRange(now, raw, bayutRange);
+  if (now <= 0) {
+    throw new Error("no usable price could be derived from either the search data or Gemini's response");
+  }
 
-  const rate = (Number(raw.growthRate) || 8) / 100;
-
+  const rate = (Number(raw.growthRate) || 8);
   let hist = raw.priceHistory5yr as { year: number; value: number }[] | undefined;
-  if (!Array.isArray(hist) || hist.length < 2) {
-    hist = [y-4, y-3, y-2, y-1, y].map((yr, i) => ({
-      year: yr, value: Math.round(now / Math.pow(1 + rate, 4 - i)),
-    }));
-  }
-
   let fore = raw.priceForecast5yr as { year: number; value: number }[] | undefined;
-  if (!Array.isArray(fore) || fore.length < 2) {
-    fore = [1,2,3,4,5].map((n) => ({
-      year: y + n, value: Math.round(now * Math.pow(1 + rate, n)),
-    }));
+  if (!Array.isArray(hist) || hist.length < 2 || !Array.isArray(fore) || fore.length < 2) {
+    const built = buildTrendSeries(now, rate, y);
+    hist = Array.isArray(hist) && hist.length >= 2 ? hist : built.hist;
+    fore = Array.isArray(fore) && fore.length >= 2 ? fore : built.fore;
   }
 
   const trend = ["Bullish", "Stable", "Cautious"].includes(raw.trend as string)
     ? (raw.trend as string) : "Stable";
+
+  // "Prices vary significantly..." note -- shown whenever the range is genuinely wide, whether
+  // Gemini flagged rangeIsWide itself or the search-derived spread implies it independently.
+  const isWide = raw.rangeIsWide === true || range.max > range.min * 1.6;
+  const rangeNote = isWide
+    ? "Prices vary significantly by pocket, plot size and approvals — verify the specific property."
+    : undefined;
 
   return {
     available:           true,
@@ -899,6 +930,7 @@ function normalise(
     currentPricePerSqft: now,
     priceRangeMin:       range.min,
     priceRangeMax:       range.max,
+    rangeNote,
     pricePerSqftUnit:    (raw.pricePerSqftUnit as string) || "sqft",
     typicalListings:     (raw.typicalListings as string) || "Mix of property types typical for this micro-market — verify specifics with a PropKnown advisor.",
     priceHistory5yr:     hist,
@@ -910,6 +942,8 @@ function normalise(
     bestFor:             (raw.bestFor  as string) || "long-term investment",
     dataSource,
     dataSourceLabel,
+    groundedBy,
+    sourceUrls:          sourceUrls?.slice(0, 5) ?? [],
     summary:             (raw.summary as string) || `${location} shows stable market dynamics.`,
     keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : ["Strong demand", "Good connectivity", "Infrastructure growth", "Growing employment"],
   };
@@ -1024,6 +1058,8 @@ export async function POST(req: NextRequest) {
   let bayutPricePsf:   number | undefined;
   let bayutRange:      { min: number; max: number } | undefined;
   let dataType:        "bayut" | "tavily" | "none" = "none";
+  let searchAgg:       SearchAggregate | null = null;
+  let sourceUrls:      string[] = [];
 
   if (countryCode === "ae" && rapidApiKey) {
     // ── Bayut for UAE ───────────────────────────────────────────────────────
@@ -1059,14 +1095,14 @@ export async function POST(req: NextRequest) {
         dataSource     = "real_data";
         // Not "current web listings" -- what's actually found here is usually SEO/aggregator
         // locality-estimate pages (99acres/MagicBricks/Housing.com "average price in X" style
-        // content), not individual live-for-sale listings, and Gemini SYNTHESIZES a typical
-        // figure from that content rather than quoting one specific listing. "AI estimate
-        // based on live web search" is accurate to both halves of that: genuinely grounded in
-        // a live search (not fabricated from training data alone), but an AI-derived estimate,
-        // not a literal current listing price.
+        // content), not individual live-for-sale listings. "AI estimate based on live web
+        // search" is accurate to both halves of that: genuinely grounded in a live search (not
+        // fabricated from training data alone), but a synthesis, not a literal listing price.
         dataSourceLabel = "AI estimate based on live web search";
         dataType       = "tavily";
-        console.log(`[Tavily] got data for "${loc}"`);
+        sourceUrls     = tavilyResult.sourceUrls;
+        searchAgg      = aggregateRates(extractRatesPerSqft(tavilyResult.extractionText || tavilyResult.rawText, currency.code));
+        console.log(`[Tavily] got data for "${loc}"${searchAgg ? ` — parsed ${searchAgg.count} rate mention(s), per-sqft median ${Math.round(searchAgg.median)}` : " — no cleanly-parseable rate mentions, will trust Gemini's extraction"}`);
       } else {
         console.warn(`[Tavily] no/slow data for "${loc}"`);
       }
@@ -1075,11 +1111,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Live Gemini data is the only source ever shown to users — if neither Bayut nor Tavily
-  // found real listing data, there's nothing for Gemini to ground an answer in, so there's
-  // no point spending an API call (and quota) on a result we'd discard anyway. Not cached:
-  // a moment later this same query might succeed once live data is available.
-  if (dataType === "none") {
+  // Live, search-grounded data is the only source ever shown to users — if neither Bayut nor
+  // Tavily found real listing data, there's nothing for Gemini to ground an answer in, so
+  // there's no point spending an API call (and quota) on a result we'd discard anyway. Not
+  // cached: a moment later this same query might succeed once live data is available.
+  if (dataType === "none" || !realDataBlock) {
     return respond(unavailableResponse(`no live listing data found for "${loc}" (${propType})`));
   }
 
@@ -1133,8 +1169,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange);
-    console.log(`[market-intel] RESULT: "${loc}" → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource})`);
+    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange, searchAgg, sourceUrls);
+    console.log(`[market-intel] RESULT: "${loc}" (${propType}) → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource}, grounded by: ${result.groundedBy})`);
     setCache(cacheKey, result);
     // Only now, on a confirmed genuine success, actually consume one of the visitor's free
     // checks -- everything above this point was read-only.
