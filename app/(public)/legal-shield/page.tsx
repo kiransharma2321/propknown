@@ -101,7 +101,7 @@ export default function LegalShieldPage() {
             fetch/re-display listing data from third-party real-estate sites either. The
             honest, safe answer is to send the user to check the number themselves, directly
             on the source -- Google, or their state's official RERA authority below. */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-10">
+        <div id="rera-verification" className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-10 scroll-mt-24">
           <div className="flex items-center gap-2 mb-1">
             <Shield size={20} style={{ color: GOLD }} />
             <h2 className="heading-h3">RERA Verification</h2>
@@ -123,7 +123,7 @@ export default function LegalShieldPage() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Form */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm h-fit">
+          <div id="fraud-checker" className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm h-fit scroll-mt-24">
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Location / Area *</label>

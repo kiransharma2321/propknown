@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import HeroSection from "@/components/sections/HeroSection";
 import StatsSection from "@/components/sections/StatsSection";
+import ProtectionSection from "@/components/sections/ProtectionSection";
+import NRITeaser from "@/components/sections/NRITeaser";
+import PropertySearchSection from "@/components/sections/PropertySearchSection";
 import FeaturedProperties from "@/components/sections/FeaturedProperties";
 import ServicesSection from "@/components/sections/ServicesSection";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
@@ -21,6 +24,9 @@ export default function HomePage() {
     <>
       <HeroSection />
       <StatsSection />
+      <ProtectionSection />
+      <NRITeaser />
+      <PropertySearchSection />
       <FeaturedProperties />
       <ServicesSection />
       <WhyChooseUs />

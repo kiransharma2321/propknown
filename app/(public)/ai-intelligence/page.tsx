@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Bot, TrendingUp, AlertCircle, Loader2, Search,
   Calculator, MapPin, Star, Activity, ChevronDown,
@@ -252,7 +253,10 @@ const TREND_STYLE: Record<string, { bg: string; border: string; text: string; do
 };
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
-export default function AIIntelligencePage() {
+// Wrapped in Suspense below (Next.js requires this around any useSearchParams() usage) --
+// renamed to an inner component so the actual default export can provide that boundary.
+function AIIntelligenceInner() {
+  const searchParams = useSearchParams();
   const { currency: selectedCurrency } = useCurrency();
 
   // ── Two-level location search: City/Country (Field A) + Area/Locality (Field B) ──
@@ -381,6 +385,19 @@ export default function AIIntelligencePage() {
       if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
       if (areaDebounceRef.current) clearTimeout(areaDebounceRef.current);
     };
+  }, []);
+
+  // Pre-fill from ?area=&city=, e.g. arriving from the homepage hero's lightweight
+  // "Check Any Location's Real Price" input. Reuses the exact same state-setting path
+  // pickHotMarket() already uses for a "Popular Markets" chip click -- just sourced from the
+  // URL instead of a click. Does not touch fetchMarket, the usage gate, or any pricing logic;
+  // the user still presses Analyze themselves to run a real check.
+  useEffect(() => {
+    const areaParam = searchParams.get("area");
+    const cityParam = searchParams.get("city");
+    if (cityParam) { setCityQuery(cityParam); setCitySelected(cityParam); }
+    if (areaParam) { setAreaQuery(areaParam); setAreaSelected(areaParam); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Analyze ─────────────────────────────────────────────────────────────────
@@ -1045,5 +1062,13 @@ export default function AIIntelligencePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AIIntelligencePage() {
+  return (
+    <Suspense fallback={null}>
+      <AIIntelligenceInner />
+    </Suspense>
   );
 }

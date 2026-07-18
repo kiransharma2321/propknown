@@ -1,48 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronDown, ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
-
-const CITIES = [
-  "Hyderabad", "Bangalore", "Mumbai", "Pune", "Chennai",
-  "Delhi NCR", "Dubai", "Singapore", "London", "Toronto",
-];
-
-const PROP_TYPES = [
-  "Apartment", "Villa", "Independent House", "Commercial", "Plot",
-  "Agriculture Land", "Farm Land",
-];
-
-const BUDGETS = [
-  "Under ₹30L", "₹30L – ₹50L", "₹50L – ₹1 Crore",
-  "₹1Cr – ₹2Cr", "₹2Cr – ₹5Cr", "₹5 Crore+",
-];
 
 const HERO_POSTER = "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1920&q=80";
 
 export default function HeroSection() {
   const router = useRouter();
 
-  const [city,     setCity]     = useState("");
-  const [area,     setArea]     = useState("");
-  const [areaSize, setAreaSize] = useState("");
-  const [propType, setPropType] = useState("");
-  const [budget,   setBudget]   = useState("");
+  const [area, setArea] = useState("");
+  const [city, setCity] = useState("");
 
-  const handleSearch = () => {
+  // Lightweight handoff only -- no fetch happens on the homepage. The actual AI Intelligence
+  // engine, its 3-free-check gate, and its pricing/grounding logic all live untouched on
+  // /ai-intelligence; this just pre-fills the same two fields a "Popular Markets" chip click
+  // already fills there today.
+  const handleCheckPrice = () => {
     const params = new URLSearchParams();
-    if (city)     params.set("city",    city);
-    if (area)     params.set("area",    area);
-    if (areaSize) params.set("size",    areaSize);
-    if (propType) params.set("type",    propType);
-    if (budget)   params.set("budget",  budget);
-    router.push(`/buy?${params.toString()}`);
+    if (area) params.set("area", area);
+    if (city) params.set("city", city);
+    router.push(`/ai-intelligence?${params.toString()}`);
   };
 
-  const sel = "input-dark appearance-none px-3 py-2.5 pr-8 text-sm";
   const inp = "input-dark px-3 py-2.5 text-sm";
 
   return (
@@ -67,7 +48,7 @@ export default function HeroSection() {
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/50 to-transparent" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center pt-24 pb-16 md:pt-44 md:pb-32">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center pt-24 pb-16 md:pt-36 md:pb-28">
 
         {/* Badge — hidden on mobile to keep headline/CTA above the fold; shown from sm up */}
         <div
@@ -80,117 +61,71 @@ export default function HeroSection() {
 
         {/* Headline */}
         <h1
-          className="font-playfair text-3xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-3 md:mb-6 leading-tight"
+          className="font-playfair text-3xl sm:text-5xl md:text-6xl lg:text-[58px] font-bold text-white mb-4 md:mb-6 leading-tight max-w-4xl mx-auto"
           style={{ textShadow: "0 2px 40px rgba(0,0,0,0.5), 0 0 80px rgba(0,0,0,0.3)" }}
         >
-          India&apos;s Most Trusted
+          Know What It&apos;s Really Worth
           <br />
           <span style={{
             background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
-          }}>AI Real Estate Platform</span>
+          }}>— Before You Buy</span>
         </h1>
-        {/* Short one-line version on mobile so it never wraps within the fold; full copy from sm up */}
-        <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-5">
-          AI-Powered. RERA-Verified. Zero Spam.
+        <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-6">
+          AI-verified prices. RERA-checked listings. The honest truth about any property.
         </p>
-        <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block">
-          AI-Powered Intelligence. RERA-Verified Listings. Honest Pricing — Always.
+        <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block leading-relaxed">
+          AI-verified prices. RERA-checked listings. The honest truth about any property —
+          even when it&apos;s not what the seller wants you to hear.
         </p>
 
-        {/* Single high-contrast CTA — above the fold on mobile, ahead of the search card */}
-        <Link
-          href="/price-check"
-          className="btn-primary inline-flex text-base px-8 py-4 mb-8 md:hidden"
-        >
-          Check Property Price Free <ArrowRight size={16} />
-        </Link>
+        {/* Check-price card: lightweight input (left) + static example (right) */}
+        <div className="mx-auto max-w-4xl">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-2xl grid sm:grid-cols-2 gap-5 text-left">
 
-        {/* Search card */}
-        <div className="mx-auto max-w-5xl">
-          <div className="bg-white rounded-2xl p-5 shadow-2xl">
-
-            {/* Row 1: City, Area, Area Size */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-
-              {/* Step 1 – City */}
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-[#7A5C1A]">①</span> City
-                </label>
-                <div className="relative">
-                  <select value={city} onChange={e => setCity(e.target.value)} className={sel}>
-                    <option value="">Select City</option>
-                    {CITIES.map(c => <option key={c}>{c}</option>)}
-                  </select>
-                  <ChevronDown size={13} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Step 2 – Area / Locality */}
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-[#7A5C1A]">②</span> Area / Locality
-                </label>
+            {/* Lightweight input -- no autocomplete, no fetch, just a handoff to the real tool */}
+            <div className="flex flex-col">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Check Any Location&apos;s Real Price
+              </p>
+              <div className="space-y-2 mb-3">
                 <input
                   type="text" value={area} onChange={e => setArea(e.target.value)}
-                  placeholder="e.g. Kokapet, Gachibowli…"
+                  placeholder="Area, e.g. Kokapet"
                   className={inp}
                 />
-              </div>
-
-              {/* Step 3 – Area Size */}
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-[#7A5C1A]">③</span> Area Size (sq.ft)
-                </label>
                 <input
-                  type="number" value={areaSize} onChange={e => setAreaSize(e.target.value)}
-                  placeholder="e.g. 1200"
+                  type="text" value={city} onChange={e => setCity(e.target.value)}
+                  placeholder="City, e.g. Hyderabad"
                   className={inp}
                 />
               </div>
+              <button
+                onClick={handleCheckPrice}
+                className="btn-primary justify-center text-sm py-2.5 px-6 w-full mt-auto"
+              >
+                Check Real Price <ArrowRight size={15} />
+              </button>
             </div>
 
-            {/* Row 2: Property Type, Budget, Search */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-
-              {/* Step 4 – Property Type */}
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-[#7A5C1A]">④</span> Property Type
-                </label>
-                <div className="relative">
-                  <select value={propType} onChange={e => setPropType(e.target.value)} className={sel}>
-                    <option value="">All Types</option>
-                    {PROP_TYPES.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                  <ChevronDown size={13} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
-                </div>
+            {/* Static example result -- hardcoded, zero API cost, proves the tool works */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col">
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--gold-text)" }}>
+                Example Result
+              </p>
+              <p className="text-gray-900 font-bold text-sm">Kokapet, Hyderabad · Apartment</p>
+              <p className="font-playfair text-2xl font-bold mt-1" style={{ color: "var(--gold-text)" }}>
+                ₹11,250<span className="text-sm font-normal text-gray-400">/sqft</span>
+              </p>
+              <p className="text-gray-500 text-xs mt-1">Realistic range: ₹10,340 – ₹17,000/sqft</p>
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-2">
+                <CheckCircle2 size={12} className="text-green-600 shrink-0" />
+                Sources: 99acres, MagicBricks, Housing.com
               </div>
-
-              {/* Step 5 – Budget (optional) */}
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                  <span className="text-[#7A5C1A]">⑤</span> Budget <span className="normal-case text-gray-300 font-normal">(optional)</span>
-                </label>
-                <div className="relative">
-                  <select value={budget} onChange={e => setBudget(e.target.value)} className={sel}>
-                    <option value="">Any Budget</option>
-                    {BUDGETS.map(b => <option key={b}>{b}</option>)}
-                  </select>
-                  <ChevronDown size={13} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Step 6 – Search */}
-              <button
-                onClick={handleSearch}
-                className="btn-primary justify-center text-sm py-2.5 px-6 w-full"
-              >
-                <Search size={16} />
-                Search Properties
-              </button>
+              <p className="text-gray-400 text-[11px] leading-relaxed mt-2 italic">
+                &quot;AI estimate based on live web search — verify the specific property before deciding.&quot;
+              </p>
+              <p className="text-gray-300 text-[10px] mt-auto pt-2">Example only · not live data · captured July 2026</p>
             </div>
           </div>
         </div>
