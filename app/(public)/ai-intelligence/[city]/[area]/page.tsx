@@ -35,8 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Refreshed by the cron job every ~6 hours; this is a CDN-cache safety net on top of that so a
-// stale edge cache entry doesn't outlive the underlying DB row by too much.
+// Refreshed by the cron job once daily (Vercel Hobby plan caps cron frequency at once/day --
+// upgrading to Pro would allow a shorter cycle); this is a CDN-cache safety net on top of that
+// so a stale edge cache entry doesn't outlive the underlying DB row by too much.
 export const revalidate = 3600;
 
 export default async function HotMarketOverviewPage({ params }: Props) {
