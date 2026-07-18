@@ -239,3 +239,24 @@ model AiIntelUsageByIp {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
+// Precomputed AI Intelligence results for the "hot market" locations (lib/hotMarkets.ts) x all
+// property types, refreshed every few hours by app/api/cron/refresh-hot-markets. Lets the
+// server-rendered /ai-intelligence/[city]/[area] overview pages render instantly with zero live
+// Gemini/Tavily calls and be crawled by Google without any JS or gate involved, and lets
+// app/api/market-intel/overview serve a full multi-type location overview for free on a cache
+// hit. `id` is a deterministic composite key so refreshing is always a plain upsert, never a
+// duplicate row. `data` stores the exact same normalised shape computeMarketIntel() always
+// returns (lib/marketIntel.ts) -- this table is a cache of that function's output, not a
+// separately-shaped summary.
+model HotMarketCache {
+  id           String   @id // `${city}|${area}|${propertyType}`
+  city         String
+  area         String
+  propertyType String
+  unit         String
+  data         Json
+  updatedAt    DateTime @updatedAt
+
+  @@index([city, area])
+}
