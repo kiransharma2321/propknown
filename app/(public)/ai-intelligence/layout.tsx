@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
 export const metadata: Metadata = {
-  title: "AI Real Estate Market Intelligence",
+  title: "AI Property Price Intelligence for India",
   description:
     "Get AI-powered real estate price estimates for any location in India — price per sqft, growth trend, investment outlook. Powered by Gemini AI and live web data.",
   alternates: { canonical: "https://www.propknown.com/ai-intelligence" },

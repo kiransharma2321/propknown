@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
-const TITLE = "Price Reality Check — Is That Property Overpriced?";
+const TITLE = "Price Reality Check — Overpriced or Fair?";
 const DESC =
   "Find out instantly if a property is overpriced or underpriced. Compare the asking price against PropKnown live AI market analysis — free to try.";
 

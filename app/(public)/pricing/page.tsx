@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Pricing — Simple, Fair Real Estate Fees",
-  description: "PropKnown pricing: Free for buyers, 1-2% commission for sellers on success only. Custom plans for investors. No hidden charges.",
+  description: "PropKnown pricing: always free for buyers, 1-2% success-only commission for sellers, custom investor plans. Transparent real estate fees, no hidden charges.",
 };
 
 const PLANS = [
@@ -86,9 +86,9 @@ export default function PricingPage() {
               }`}
               style={p.highlight ? { background: "#C9A24B" } : {}}
             >
-              <p className={`text-sm font-bold tracking-widest uppercase mb-2 ${p.highlight ? "text-black/60" : "text-gray-400"}`}>
+              <h2 className={`text-sm font-bold tracking-widest uppercase mb-2 ${p.highlight ? "text-black/60" : "text-gray-400"}`}>
                 {p.name}
-              </p>
+              </h2>
               <p className="text-4xl font-bold mb-1 text-gray-900" style={{ fontFamily: "var(--font-playfair, Georgia, serif)", color: p.highlight ? "#000" : undefined }}>
                 {p.price}
               </p>

@@ -4,7 +4,7 @@ import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import SubmissionForm from "@/components/property/SubmissionForm";
 
 export const metadata: Metadata = {
-  title: "Sell Property — Get Maximum Value",
+  title: "Sell Your Property — Free AI Valuation",
   description: "Sell your property with PropKnown. Upload photos, videos & documents for direct listing, or get free valuation + professional support. RERA-compliant.",
 };
 

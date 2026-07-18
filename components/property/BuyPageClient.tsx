@@ -268,9 +268,7 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
         {/* Curated Listings */}
         {filtered.length > 0 && (
           <div>
-            {filteredSubs.length > 0 && (
-              <h2 className="heading-h3 mb-5">Curated Listings</h2>
-            )}
+            <h2 className="heading-h3 mb-5">{filteredSubs.length > 0 ? "Curated Listings" : "Verified Listings"}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filtered.map(p => {
                 const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'm interested in "${p.title}" at ${p.location}. RERA/Badge: ${p.badgeNo}`)}`;

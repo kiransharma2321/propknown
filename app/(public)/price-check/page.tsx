@@ -192,6 +192,45 @@ export default function PriceCheckPage() {
           </div>
         )}
 
+        {/* Always-rendered explainer -- the tool itself only shows real output after a user
+            submits a price, which left this page almost entirely UI chrome with no static text
+            for search engines to index. This section gives it real, permanent substance. */}
+        <div className="mt-10 border-t border-gray-200 pt-10">
+          <h2 className="heading-h3 mb-5">How the Price Reality Check Works</h2>
+          <p className="text-gray-600 text-sm leading-relaxed mb-6 max-w-2xl">
+            Enter any property&apos;s location, type, size, and asking price — whether it&apos;s a PropKnown
+            listing or one you found elsewhere — and we compare it against the same live market data that
+            powers PropKnown AI Intelligence: current listings and price trends pulled from real sources for
+            that exact area and property type, not a fixed rate card. You get an honest verdict in seconds,
+            with the realistic price range behind it.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: "#16a34a" }}>
+                <CheckCircle2 size={15} /> Fair Price
+              </div>
+              <p className="text-gray-500 text-xs leading-relaxed">The asking price sits within the realistic range for that area and property type.</p>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: "#dc2626" }}>
+                <TrendingUp size={15} /> Overpriced
+              </div>
+              <p className="text-gray-500 text-xs leading-relaxed">The asking price is meaningfully above what comparable properties are actually going for.</p>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: "#0891b2" }}>
+                <TrendingDown size={15} /> Underpriced
+              </div>
+              <p className="text-gray-500 text-xs leading-relaxed">The asking price is below the realistic range — worth a closer look before you assume it&apos;s a bargain.</p>
+            </div>
+          </div>
+          <p className="text-gray-400 text-xs leading-relaxed max-w-2xl">
+            This is an AI-generated, indicative estimate for informational purposes only — not a certified
+            valuation. Always verify RERA registration and independently confirm any price before making a
+            decision. See our <a href="/disclaimer" className="underline hover:text-gray-600">disclaimer</a> for details.
+          </p>
+        </div>
+
         {result && (
           <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-6 shadow-md">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Your Price Reality Check Result</h2>

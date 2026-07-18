@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "Disclaimer";
+const description = "Disclaimer: AI valuations and investment scores are indicative estimates only, not certified advice. RERA numbers should be independently verified before any decision.";
 
 export const metadata: Metadata = {
-  title: "Disclaimer",
-  description: "Disclaimer: AI valuations and investment scores are indicative estimates only, not certified advice. RERA numbers should be independently verified before any decision.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/disclaimer" },
+  // Without its own openGraph/twitter, this page silently inherited the homepage's real-estate
+  // marketing copy and image on any share -- see the same note on privacy/page.tsx.
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 export default function DisclaimerPage() {

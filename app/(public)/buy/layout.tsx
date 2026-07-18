@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { OG_IMAGE } from "@/app/layout";
 
-const TITLE = "Buy RERA-Verified Properties";
+const TITLE = "Buy RERA-Verified Properties in Hyderabad";
 const DESC =
-  "Browse RERA-verified properties in Hyderabad — apartments, villas, HMDA plots, farmland, commercial. AI-scored listings, WhatsApp enquiry. Kokapet, Gachibowli & more.";
+  "Browse RERA-verified apartments, villas, HMDA plots & farmland in Hyderabad. AI-scored listings, WhatsApp enquiry. Kokapet, Gachibowli & more.";
 
 export const metadata: Metadata = {
   title: TITLE,

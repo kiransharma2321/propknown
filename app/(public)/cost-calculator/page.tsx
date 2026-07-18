@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Calculator, Info } from "lucide-react";
 import { OG_IMAGE } from "@/app/layout";
 
-const title = "True Cost Calculator — India Property Purchase Cost";
+const title = "True Cost Calculator — Property Buying Costs";
 const description = "Calculate the true all-in cost of buying property in India. Stamp duty, registration, GST, legal fees, brokerage, EMI — accurate state-wise estimates.";
 
 export const metadata: Metadata = {

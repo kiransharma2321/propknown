@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     template: "%s | PropKnown",
   },
   description:
-    "PropKnown — India's AI-powered, fully verified real estate platform. Buy, sell, and invest in RERA-registered properties across Hyderabad, Bangalore, Dubai & globally. AI valuations, HMDA plots, farm land, and NRI investment support.",
+    "India's AI-powered, RERA-verified real estate platform. Buy, sell & invest across Hyderabad, Bangalore, Dubai & beyond. AI valuations, HMDA plots, NRI support.",
   keywords: [
     "real estate Hyderabad", "RERA verified properties", "property investment Hyderabad",
     "AI property valuation", "buy flat Hyderabad", "HMDA plots", "Kokapet", "Gachibowli",

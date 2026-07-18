@@ -3,7 +3,7 @@ import { Mic2, PlayCircle, Clock } from "lucide-react";
 import { OG_IMAGE } from "@/app/layout";
 
 const BASE_URL = "https://www.propknown.com";
-const title = "Podcast — Real Estate Intelligence";
+const title = "Podcast — Real Estate Market Intelligence";
 const description = "PropKnown Podcast: real conversations on Hyderabad market trends, NRI investment (Dubai vs Hyderabad), RERA buyer rights, and AI in real estate.";
 
 export const metadata: Metadata = {

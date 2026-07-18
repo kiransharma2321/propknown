@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "Privacy Policy";
+const description = "PropKnown privacy policy: what data we collect (name, phone, email, enquiries), how we use it, our security measures, cookie use, and how to request access or deletion.";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "PropKnown privacy policy: what data we collect (name, phone, email, enquiries), how we use it, our security measures, cookie use, and how to request access or deletion.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/privacy" },
+  // Without its own openGraph/twitter, this page silently inherited the homepage's real-estate
+  // marketing copy and image on any share -- a Privacy Policy link should show as a Privacy
+  // Policy link, not as "PropKnown | AI-Verified Real Estate...".
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 export default function PrivacyPage() {

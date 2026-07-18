@@ -11,7 +11,7 @@ import SmartLeadForm from "@/components/ui/SmartLeadForm";
 
 export const metadata: Metadata = {
   title: "Real Estate Services — Legal, RERA & Management",
-  description: "Complete real estate services — Marketplace, Property Management, Land & Plot, Intelligence, Construction, and Legal. Enquire on WhatsApp.",
+  description: "Complete real estate services in Hyderabad — Marketplace, Property Management, Land & Plot, AI Intelligence, Construction & Legal. WhatsApp enquiry.",
 };
 
 interface Service {

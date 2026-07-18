@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
+import { OG_IMAGE } from "@/app/layout";
+
+const title = "Terms of Use";
+const description = "Terms of use for PropKnown: acceptance, use of listings and AI valuations, intellectual property, liability limits, and governing law under Indian jurisdiction.";
 
 export const metadata: Metadata = {
-  title: "Terms of Use",
-  description: "Terms of use for PropKnown: acceptance, use of listings and AI valuations, intellectual property, liability limits, and governing law under Indian jurisdiction.",
+  title,
+  description,
   alternates: { canonical: "https://www.propknown.com/terms" },
+  // Without its own openGraph/twitter, this page silently inherited the homepage's real-estate
+  // marketing copy and image on any share -- see the same note on privacy/page.tsx.
+  openGraph: { title, description, images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE.url] },
 };
 
 export default function TermsPage() {
