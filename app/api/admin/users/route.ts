@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/rbac";
+import { hashPassword, ROLE_LABELS } from "@/lib/rbac";
 import { cookies } from "next/headers";
 
 async function isMasterAdmin(): Promise<boolean> {
@@ -31,7 +31,9 @@ export async function POST(req: NextRequest) {
   if (!name || !email || !password) {
     return NextResponse.json({ error: "name, email, password required" }, { status: 400 });
   }
-  const validRoles = ["master", "manager", "agent"];
+  // Was a hardcoded ["master","manager","agent"] array, duplicating lib/rbac.ts's Role type and
+  // silently rejecting any role added there. Derives from ROLE_LABELS now so the two can't drift.
+  const validRoles = Object.keys(ROLE_LABELS);
   if (!validRoles.includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }

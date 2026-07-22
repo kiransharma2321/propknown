@@ -50,6 +50,20 @@ model Property {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   leads         Lead[]
+
+  // Enterprise CRM: AI scoring (Section 5 / Section G-Q) -- aiScore above is reused as the
+  // headline investment score; these are the supporting figures computeMarketIntel() and the
+  // legal-heuristic scorer produce alongside it. All nullable -- unset until "Score this
+  // property" is run, never fabricated.
+  aiPricePrediction Json?
+  legalScore        Float?
+  roiAnalysis       Json?
+  aiScoredAt        DateTime?
+
+  siteVisits    SiteVisit[]
+  bookings      Booking[]
+
+  @@index([status])
 }
 
 model Lead {
@@ -70,6 +84,32 @@ model Lead {
   timeline     Json      @default("[]")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  // Enterprise CRM: AI Lead Scoring (Section 3). All nullable, all written only by the
+  // "Score this lead" action -- never auto-populated, never fabricated. recommendedPropertyId
+  // is a soft reference (Property IDs live in a separate space from PropertySubmission's, same
+  // caveat as propertyId above), resolved for display, not a DB-enforced FK.
+  leadScore              Float?
+  buyingIntent           String?
+  financialStrength      String?
+  urgencyLevel           String?
+  conversionProbability  Float?
+  bestFollowUpTime       String?
+  recommendedPropertyId  String?
+  nextBestAction         String?
+  aiSummary              String?
+  aiScoredAt             DateTime?
+
+  // Channel Partner attribution (Section 9) -- optional, only set when a lead was shared by
+  // a registered partner.
+  partnerId    String?
+  partner      ChannelPartner? @relation(fields: [partnerId], references: [id])
+
+  siteVisits   SiteVisit[]
+  bookings     Booking[]
+
+  @@index([status])
+  @@index([assignedTo])
 }
 
 model AdminUser {
@@ -259,4 +299,181 @@ model HotMarketCache {
   updatedAt    DateTime @updatedAt
 
   @@index([city, area])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enterprise CRM extension (feature/crm-enterprise-full) -- everything below this line is
+// additive: new tables only, plus the nullable fields added to Property/Lead above. Nothing
+// existing was changed or removed.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Site Visit Module (Section 6) -- basic scheduling/status/feedback tonight. Deliberately no
+// live GPS tracking field (mapsLink is a plain "open in Google Maps" deep link, not a tracked
+// device location) and no aiSummary field yet -- both deferred per the plan.
+model SiteVisit {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id])
+  scheduledAt DateTime
+  assignedTo  String?
+  status      String    @default("scheduled") // scheduled | completed | cancelled | no_show
+  feedback    String?
+  rating      Int?
+  mapsLink    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([leadId])
+  @@index([scheduledAt])
+}
+
+// Booking Module (Section 7) -- basic record + status/timeline tonight. Deliberately no
+// agreement/cancellation/refund fields -- that's real financial workflow logic, excluded from
+// tonight's scope on purpose (see plan).
+model Booking {
+  id         String    @id @default(cuid())
+  leadId     String
+  lead       Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+  amount     Float?
+  status     String    @default("initiated") // initiated | confirmed | cancelled
+  timeline   Json      @default("[]")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([leadId])
+}
+
+// Channel Partner Module (Section 9) -- registration + lead attribution tonight. Commission
+// model exists for the future payout-tracking feature but nothing writes to it yet -- no
+// commission calculation logic is built in this pass (financial logic, deliberately excluded).
+model ChannelPartner {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  company   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  leads       Lead[]
+  commissions Commission[]
+}
+
+model Commission {
+  id        String         @id @default(cuid())
+  partnerId String
+  partner   ChannelPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  leadId    String?
+  amount    Float?
+  status    String         @default("pending")
+  createdAt DateTime       @default(now())
+}
+
+// Marketing (Section 10) -- real campaign records with manually-entered spend, so cost-per-lead
+// can be computed from real numbers (spend ÷ real Lead.source-attributed count) rather than
+// fabricated. No landing-page builder or automated spend tracking.
+model Campaign {
+  id        String    @id @default(cuid())
+  name      String
+  channel   String // "meta" | "google_ads" | "youtube" | "other"
+  spend     Float?
+  startDate DateTime?
+  endDate   DateTime?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Audit Trail (Section 14) -- scoped to new Enterprise CRM mutations only tonight (Settings
+// changes, AI scoring runs, new role/user creation). Deliberately not retrofitted onto every
+// pre-existing route -- see plan for why.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actorName String?
+  action    String
+  entity    String?
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// ─── Settings (Section 15) -- real, persisted, editable config, replacing the previously
+// static/hardcoded admin Settings tab. ───────────────────────────────────────────────────────
+
+model CompanySettings {
+  id          String   @id @default("singleton")
+  companyName String?
+  founderName String?
+  whatsapp    String?
+  email       String?
+  address     String?
+  updatedAt   DateTime @updatedAt
+}
+
+model LeadSource {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  builder   String?
+  city      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Builder {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  contact   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Bank {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model PropertyTypeConfig {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  subject   String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// API Keys (Section 15) -- Meta/Google Ads/etc credentials. encryptedValue is AES-encrypted
+// JSON (see lib/apiCredentials.ts), never the raw secret -- the API route that reads this for
+// display purposes only ever returns a masked placeholder, never the decrypted value, per the
+// "never display plaintext once saved" requirement.
+model ApiCredential {
+  id           String    @id @default(cuid())
+  provider     String    @unique // "meta" | "google_ads" | "youtube"
+  encryptedValue String  @db.Text
+  status       String    @default("not_connected") // not_connected | connected | error
+  lastTestedAt DateTime?
+  updatedAt    DateTime  @updatedAt
 }

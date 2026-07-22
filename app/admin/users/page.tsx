@@ -3,6 +3,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Plus, Trash2, Shield, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { ROLE_LABELS as ROLE_NAME } from "@/lib/roles";
 
 interface AdminUser {
   id: string;
@@ -13,10 +14,25 @@ interface AdminUser {
   createdAt: string;
 }
 
+// Labels come from lib/roles.ts (the single source of truth, shared with the API route) --
+// this map only adds the display color per role, which is presentation-only and doesn't need
+// to live in the shared data file. The first three entries are unchanged from before.
 const ROLE_LABELS: Record<string, { label: string; color: string; style?: CSSProperties }> = {
-  master:  { label: "Master Admin", color: "text-black", style: { background: "var(--gold)" } },
-  manager: { label: "Manager",      color: "bg-blue-500 text-white" },
-  agent:   { label: "Agent",        color: "bg-zinc-600 text-white" },
+  master:  { label: ROLE_NAME.master,  color: "text-black", style: { background: "var(--gold)" } },
+  manager: { label: ROLE_NAME.manager, color: "bg-blue-500 text-white" },
+  agent:   { label: ROLE_NAME.agent,   color: "bg-zinc-600 text-white" },
+  super_admin:       { label: ROLE_NAME.super_admin,       color: "text-black", style: { background: "var(--gold)" } },
+  chairman:          { label: ROLE_NAME.chairman,          color: "text-black", style: { background: "var(--gold)" } },
+  managing_director: { label: ROLE_NAME.managing_director, color: "text-black", style: { background: "var(--gold)" } },
+  ceo:               { label: ROLE_NAME.ceo,               color: "text-black", style: { background: "var(--gold)" } },
+  coo:               { label: ROLE_NAME.coo,               color: "bg-purple-500 text-white" },
+  sales_manager:     { label: ROLE_NAME.sales_manager,     color: "bg-blue-500 text-white" },
+  sales_executive:   { label: ROLE_NAME.sales_executive,   color: "bg-zinc-600 text-white" },
+  crm_executive:     { label: ROLE_NAME.crm_executive,     color: "bg-zinc-600 text-white" },
+  hr:                { label: ROLE_NAME.hr,                color: "bg-teal-600 text-white" },
+  marketing:         { label: ROLE_NAME.marketing,         color: "bg-pink-600 text-white" },
+  legal:             { label: ROLE_NAME.legal,              color: "bg-orange-600 text-white" },
+  channel_partner:   { label: ROLE_NAME.channel_partner,   color: "bg-indigo-600 text-white" },
 };
 
 export default function AdminUsersPage() {
@@ -110,6 +126,24 @@ export default function AdminUsersPage() {
                 <option value="agent">Agent — sees assigned leads only</option>
                 <option value="manager">Manager — full CRM + submissions</option>
                 <option value="master">Master Admin — all permissions</option>
+                <optgroup label="Executive">
+                  <option value="super_admin">{ROLE_NAME.super_admin} — all permissions</option>
+                  <option value="chairman">{ROLE_NAME.chairman} — all permissions</option>
+                  <option value="managing_director">{ROLE_NAME.managing_director} — all permissions</option>
+                  <option value="ceo">{ROLE_NAME.ceo} — all permissions</option>
+                  <option value="coo">{ROLE_NAME.coo} — CRM, submissions, settings, reports</option>
+                </optgroup>
+                <optgroup label="Sales">
+                  <option value="sales_manager">{ROLE_NAME.sales_manager} — full CRM + submissions</option>
+                  <option value="sales_executive">{ROLE_NAME.sales_executive} — assigned leads only</option>
+                  <option value="crm_executive">{ROLE_NAME.crm_executive} — assigned leads + CRM</option>
+                </optgroup>
+                <optgroup label="Functional">
+                  <option value="hr">{ROLE_NAME.hr} — team management</option>
+                  <option value="marketing">{ROLE_NAME.marketing} — campaigns, notifications</option>
+                  <option value="legal">{ROLE_NAME.legal} — property legal checklist</option>
+                  <option value="channel_partner">{ROLE_NAME.channel_partner} — assigned leads only</option>
+                </optgroup>
               </select>
             </div>
           </div>

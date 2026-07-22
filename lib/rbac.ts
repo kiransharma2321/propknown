@@ -2,19 +2,13 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
-export type Role = "master" | "manager" | "agent";
-
-export const ROLE_LABELS: Record<Role, string> = {
-  master:  "Master Admin",
-  manager: "Manager",
-  agent:   "Agent",
-};
-
-export const ROLE_PERMISSIONS: Record<Role, string[]> = {
-  master:  ["all"],
-  manager: ["leads", "submissions", "properties", "crm", "notifications", "bulk_import"],
-  agent:   ["leads_assigned", "crm_assigned"],
-};
+// Role/ROLE_LABELS/ROLE_PERMISSIONS now live in lib/roles.ts (no server-only imports there, so
+// it's safe for client components too -- see app/admin/users/page.tsx). Re-exported here so
+// every existing `import { ... } from "@/lib/rbac"` call site keeps working unchanged.
+export type { Role } from "@/lib/roles";
+export { ROLE_LABELS, ROLE_PERMISSIONS } from "@/lib/roles";
+import type { Role } from "@/lib/roles";
+import { ROLE_PERMISSIONS } from "@/lib/roles";
 
 // bcrypt, cost factor 12 -- replaces the previous single-round SHA-256+static-salt scheme,
 // which was fast enough to brute-force offline and used the same "pepper" for every password.
