@@ -85,6 +85,11 @@ model Lead {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Documents attached in Lead Detail -- same JSON-array-of-UploadedFile-id pattern already
+  // used by PropertySubmission's photoIds/videoIds/docIds, not a real FK (UploadedFile has no
+  // relation column; every existing usage in this codebase resolves IDs manually instead).
+  docIds       String    @default("[]") @db.Text
+
   // Enterprise CRM: AI Lead Scoring (Section 3). All nullable, all written only by the
   // "Score this lead" action -- never auto-populated, never fabricated. recommendedPropertyId
   // is a soft reference (Property IDs live in a separate space from PropertySubmission's, same
