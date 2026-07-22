@@ -79,6 +79,16 @@ export default function KnownAIChat() {
         {open ? <X size={22} className="text-white" /> : <AIOrb size={38} active={typing} />}
       </button>
 
+      {/* Always-visible label pill (closed state only) */}
+      {!open && (
+        <span
+          className="fixed bottom-8 right-24 z-50 pointer-events-none whitespace-nowrap rounded-full text-xs font-semibold px-3 py-1.5 text-white shadow-lg"
+          style={{ background: "#0a0a0a", border: `1px solid ${goldBg}` }}
+        >
+          Ask KnownAI
+        </span>
+      )}
+
       {/* Chat panel */}
       {open && (
         <div
