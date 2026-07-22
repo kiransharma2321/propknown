@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, Eye, EyeOff, Activity } from "lucide-react";
+import PKLogo from "@/components/layout/PKLogo";
 
 export default function CRMLoginPage() {
   const router = useRouter();
@@ -31,16 +32,14 @@ export default function CRMLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--navy)" }}>
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <span className="text-3xl font-bold tracking-widest gold-text block mb-1" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-            PROPKNOWN
-          </span>
-          <span className="text-[9px] tracking-[0.4em] text-zinc-500">CRM PORTAL</span>
+        <div className="flex flex-col items-center mb-10">
+          <PKLogo dark />
+          <span className="text-[9px] tracking-[0.4em] text-zinc-500 mt-3">CRM PORTAL</span>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-full bg-gold-500/20 border border-gold-500/40 flex items-center justify-center">
               <Activity size={18} className="text-gold-400" />

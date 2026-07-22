@@ -45,7 +45,7 @@ export default function DealsPage() {
   const winRate       = leads.length > 0 ? Math.round((byStage("won").length / leads.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-navy p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/crm/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
@@ -63,7 +63,7 @@ export default function DealsPage() {
             { label: "Total Deals",    value: String(leads.length),                      icon: <IndianRupee size={16} />, color: "text-blue-400" },
             { label: "Win Rate",       value: `${winRate}%`,                             icon: <Trophy size={16} />,     color: "text-purple-400" },
           ].map(k => (
-            <div key={k.label} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+            <div key={k.label} className="bg-white/5 border border-white/10 rounded-2xl p-4">
               <div className={`${k.color} mb-2`}>{k.icon}</div>
               <p className="text-white text-2xl font-bold">{k.value}</p>
               <p className="text-zinc-500 text-xs mt-1">{k.label}</p>
@@ -79,11 +79,11 @@ export default function DealsPage() {
               const deals = byStage(stage.key);
               const val   = stageValue(stage.key);
               return (
-                <div key={stage.key} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div key={stage.key} className="bg-white/5 border border-white/10 rounded-2xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-semibold ${stage.color}`}>{stage.label}</span>
-                      <span className="bg-zinc-800 text-zinc-400 text-xs px-2 py-0.5 rounded-full">{deals.length}</span>
+                      <span className="bg-white/10 text-zinc-400 text-xs px-2 py-0.5 rounded-full">{deals.length}</span>
                     </div>
                     {val > 0 && <span className="text-xs text-zinc-400">₹{(val / 1e5).toFixed(1)}L</span>}
                   </div>
@@ -93,7 +93,7 @@ export default function DealsPage() {
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {deals.map(d => (
-                        <div key={d.id} className="bg-zinc-800 rounded-xl px-3 py-2 flex items-center gap-3 min-w-[200px]">
+                        <div key={d.id} className="bg-white/10 rounded-xl px-3 py-2 flex items-center gap-3 min-w-[200px]">
                           <div>
                             <p className="text-white text-xs font-medium">{d.name}</p>
                             <p className="text-zinc-500 text-[10px]">{d.property?.title ?? d.source}</p>

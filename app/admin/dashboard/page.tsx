@@ -9,6 +9,7 @@ import type { VerificationFlags } from "@/components/ui/VerificationBadge";
 import { LEGAL_CHECKLIST_ITEMS, type LegalChecklist, type ChecklistStatus } from "@/lib/legalShield";
 import { PRESET_MILESTONES, type ConstructionMilestone } from "@/lib/constructionProgress";
 import { toIndianWaNumber } from "@/lib/phone";
+import PKLogo from "@/components/layout/PKLogo";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -48,7 +49,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={async () => { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-all"
+      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 transition-all"
     >
       {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
       {copied ? "Copied!" : "Copy"}
@@ -110,14 +111,14 @@ function AiBrainTab() {
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 text-xs">Mode:</span>
           <select value={mode} onChange={e => setMode(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D6A63E]">
+            className="bg-white/10 border border-white/10 text-zinc-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D6A63E]">
             {["Auto", "Manage Listings", "Manage Leads", "Write Content"].map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 bg-white/5/50 rounded-xl border border-white/10 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-8">
             <Brain size={36} className="mb-3 text-zinc-700" />
@@ -126,7 +127,7 @@ function AiBrainTab() {
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
               {HINTS.map(h => (
                 <button key={h} onClick={() => setInput(h)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-400 hover:border-[#D6A63E]/60 hover:text-white transition-all text-left">
+                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-400 hover:border-[#D6A63E]/60 hover:text-white transition-all text-left">
                   {h}
                 </button>
               ))}
@@ -137,13 +138,13 @@ function AiBrainTab() {
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "user" ? (
-              <div className="max-w-sm bg-zinc-800 rounded-2xl rounded-tr-sm px-4 py-2.5">
+              <div className="max-w-sm bg-white/10 rounded-2xl rounded-tr-sm px-4 py-2.5">
                 <p className="text-white text-sm leading-relaxed">{m.content}</p>
                 <p className="text-zinc-600 text-[10px] mt-1 text-right">{m.ts}</p>
               </div>
             ) : (
               <div className="max-w-2xl w-full">
-                <div className="bg-zinc-800/50 border border-zinc-700/40 rounded-2xl rounded-tl-sm px-4 py-3">
+                <div className="bg-white/10/50 border border-white/10/40 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
                       <Brain size={11} style={{ color: "var(--gold)" }} />
@@ -160,7 +161,7 @@ function AiBrainTab() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-zinc-800/50 border border-zinc-700/40 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+            <div className="bg-white/10/50 border border-white/10/40 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
               <Loader2 size={13} className="animate-spin" style={{ color: "var(--gold)" }} />
               <span className="text-zinc-400 text-sm">AI Brain is thinkingâ€¦</span>
             </div>
@@ -189,7 +190,7 @@ function AiBrainTab() {
               : mode === "Manage Leads"
               ? "e.g. Show today's leads Â· Mark lead as contacted Â· Show won leads this monthâ€¦"
               : "e.g. Add listing: My Home Bhooja 3BHK, Kokapet, 1.5Cr, RERA P02400008234â€¦"}
-            className="flex-1 bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] resize-none"
+            className="flex-1 bg-white/10 border border-white/10 text-white placeholder-zinc-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] resize-none"
           />
           <button onClick={send} disabled={loading || !input.trim()}
             className="px-5 rounded-lg font-semibold text-black text-sm disabled:opacity-40 transition-colors duration-200 flex flex-col items-center justify-center gap-1 shrink-0"
@@ -259,7 +260,7 @@ function QuickAddTab() {
     finally { setParsing(false); }
   };
 
-  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
+  const inpCls = "bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
 
   return (
     <div>
@@ -323,7 +324,7 @@ function QuickAddTab() {
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-zinc-700 hover:border-zinc-500"}`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-white/10 hover:border-white/20"}`}
             >
               <p className="text-zinc-400 text-sm">Drag &amp; drop photos here or click to browse</p>
               <p className="text-zinc-600 text-xs mt-1">JPG, PNG — up to 10 photos</p>
@@ -332,11 +333,11 @@ function QuickAddTab() {
             {photos.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {photos.map((f, i) => (
-                  <div key={i} className="relative aspect-square bg-zinc-800 rounded-lg overflow-hidden group">
+                  <div key={i} className="relative aspect-square bg-white/10 rounded-lg overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
                     <button onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-red-400 text-lg">âœ•</button>
+                      className="absolute inset-0 bg-navy-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-red-400 text-lg">âœ•</button>
                   </div>
                 ))}
               </div>
@@ -439,7 +440,7 @@ function SubmissionsTab() {
   const [milestonePhoto, setMilestonePhoto] = useState<File | null>(null);
   const [savingConstruction, setSavingConstruction] = useState(false);
 
-  const inpCls = "bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
+  const inpCls = "bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
 
   const fetchList = async (st = statusFilter) => {
     setLoadingList(true);
@@ -616,7 +617,7 @@ function SubmissionsTab() {
             <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>
           )}
         </div>
-        <button onClick={() => fetchList()} className="text-zinc-400 hover:text-white text-sm border border-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+        <button onClick={() => fetchList()} className="text-zinc-400 hover:text-white text-sm border border-white/10 px-3 py-1.5 rounded-lg transition-colors">
           Refresh
         </button>
       </div>
@@ -625,7 +626,7 @@ function SubmissionsTab() {
       <div className="flex gap-2 mb-5">
         {STATUS_TABS.map(t => (
           <button key={t.key} onClick={() => changeFilter(t.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-black" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-black" : "bg-white/10 text-zinc-400 hover:text-white"}`}
             style={statusFilter === t.key ? { background: "var(--gold)" } : {}}>
             {t.label}
           </button>
@@ -633,10 +634,10 @@ function SubmissionsTab() {
       </div>
 
       {/* List */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6">
+      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden mb-6">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-800/50 border-b border-zinc-800">
+            <thead className="bg-white/10/50 border-b border-white/10">
               <tr>
                 {["Property", "Location", "Price", "Contact", "Files", "Status", "Date", ""].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
@@ -649,7 +650,7 @@ function SubmissionsTab() {
               ) : list.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-10 text-zinc-500">No {statusFilter} submissions.</td></tr>
               ) : list.map(s => (
-                <tr key={s.id} className="hover:bg-zinc-800/30 transition-colors">
+                <tr key={s.id} className="hover:bg-white/10/30 transition-colors">
                   <td className="px-4 py-3">
                     <p className="text-white font-medium line-clamp-1">{s.title}</p>
                     <p className="text-zinc-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
@@ -678,7 +679,7 @@ function SubmissionsTab() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openDetail(s.id)}
-                        className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all">
+                        className="text-xs px-3 py-1.5 rounded-lg border border-white/15 text-zinc-300 hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all">
                         Review
                       </button>
                       <button onClick={() => doDelete(s.id)} className="text-zinc-600 hover:text-red-400 transition-colors p-1.5">
@@ -695,14 +696,14 @@ function SubmissionsTab() {
 
       {/* Detail modal */}
       {(loadDetail || reviewing) && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-navy-900/80 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
             {loadDetail ? (
               <div className="p-20 text-center"><Loader2 size={28} className="mx-auto animate-spin" style={{ color: "var(--gold)" }} /></div>
             ) : reviewing && (
               <>
                 {/* Modal header */}
-                <div className="flex items-start justify-between p-6 border-b border-zinc-800">
+                <div className="flex items-start justify-between p-6 border-b border-white/10">
                   <div>
                     <h2 className="font-playfair text-white font-bold text-lg">{reviewing.title}</h2>
                     <p className="text-zinc-400 text-sm mt-0.5">{reviewing.propType}{reviewing.bhk ? ` · ${reviewing.bhk}` : ""} · {reviewing.area}, {reviewing.city}</p>
@@ -726,7 +727,7 @@ function SubmissionsTab() {
                         <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <ImageIcon size={12} /> Photos ({reviewing.photoFiles.length})
                         </p>
-                        <div className="aspect-video bg-zinc-800 rounded-xl overflow-hidden mb-2">
+                        <div className="aspect-video bg-white/10 rounded-xl overflow-hidden mb-2">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={reviewing.photoFiles[activePhoto]?.data} alt="" className="w-full h-full object-cover" />
                         </div>
@@ -734,7 +735,7 @@ function SubmissionsTab() {
                           <div className="flex gap-2 overflow-x-auto pb-1">
                             {reviewing.photoFiles.map((f, i) => (
                               <button key={f.id} onClick={() => setActivePhoto(i)}
-                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-[#D6A63E]" : "border-zinc-700"}`}>
+                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-[#D6A63E]" : "border-white/10"}`}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={f.data} alt="" className="w-full h-full object-cover" />
                               </button>
@@ -752,14 +753,14 @@ function SubmissionsTab() {
                         </p>
                         <div className="space-y-3">
                           {reviewing.videoFiles.map(v => (
-                            <video key={v.id} src={v.data} controls className="w-full rounded-xl bg-black max-h-48" />
+                            <video key={v.id} src={v.data} controls className="w-full rounded-xl bg-navy-900 max-h-48" />
                           ))}
                           {reviewing.videoUrls.map((url, i) => (
                             isYoutube(url) ? (
                               <iframe key={i} src={ytEmbed(url)} title="Property video" className="w-full aspect-video rounded-xl" allowFullScreen />
                             ) : (
                               <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                                className="block text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
+                                className="block text-sm px-4 py-2 rounded-lg border border-white/10 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
                                 Video link: {url}
                               </a>
                             )
@@ -769,13 +770,13 @@ function SubmissionsTab() {
                     )}
 
                     {/* Description */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                    <div className="bg-white/10/50 rounded-xl p-4">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
                       <p className="text-zinc-200 text-sm leading-relaxed whitespace-pre-line">{reviewing.description}</p>
                     </div>
 
                     {reviewing.features && (
-                      <div className="bg-zinc-800/50 rounded-xl p-4">
+                      <div className="bg-white/10/50 rounded-xl p-4">
                         <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Features</p>
                         <p className="text-zinc-200 text-sm">{reviewing.features}</p>
                       </div>
@@ -789,7 +790,7 @@ function SubmissionsTab() {
                         </p>
                         <div className="space-y-2">
                           {reviewing.docFiles.map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2.5">
+                            <div key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2.5">
                               <div className="flex items-center gap-2 min-w-0">
                                 <FileText size={13} className="text-[#D6A63E] shrink-0" />
                                 <div className="min-w-0">
@@ -812,7 +813,7 @@ function SubmissionsTab() {
                   {/* Right: Info + Actions */}
                   <div className="space-y-4">
                     {/* Property info */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm">
+                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2 text-sm">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Property Info</p>
                       {[
                         ["Price",    reviewing.priceDisplay],
@@ -829,7 +830,7 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Submitter contact */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                    <div className="bg-white/10/50 rounded-xl p-4 space-y-3">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
                       <p className="text-white font-semibold text-sm">{reviewing.ownerName}</p>
                       <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-[#D6A63E] hover:underline text-sm">
@@ -848,13 +849,13 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Doc summary */}
-                    <div className="text-zinc-500 text-xs bg-zinc-800/30 rounded-lg p-3">
+                    <div className="text-zinc-500 text-xs bg-white/10/30 rounded-lg p-3">
                       Docs: {reviewing.docFiles.length} uploaded · Photos: {reviewing.photoFiles.length} · Videos: {reviewing.videoFiles.length + reviewing.videoUrls.length}
                     </div>
 
                     {/* PropKnown Verified checks — honesty-first: stamp only reflects what's
                         actually ticked here. Independent of approve/reject status. */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2.5">
+                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2.5">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> PropKnown Verified Checks
                       </p>
@@ -902,7 +903,7 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Legal Safety Checklist — 3-way status per item, honest defaults to "pending" */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2.5">
+                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2.5">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> Legal Safety Checklist
                       </p>
@@ -912,7 +913,7 @@ function SubmissionsTab() {
                           <select
                             value={legal[item.key] ?? "pending"}
                             onChange={e => setLegal(l => ({ ...l, [item.key]: e.target.value as ChecklistStatus }))}
-                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-[#D6A63E] shrink-0"
+                            className="bg-white/10 border border-white/10 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-[#D6A63E] shrink-0"
                           >
                             <option value="pending">Pending</option>
                             <option value="verified">Verified</option>
@@ -939,7 +940,7 @@ function SubmissionsTab() {
 
                     {/* Construction Progress — only appears on the property page once at
                         least one milestone exists here; there's no separate on/off flag. */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                    <div className="bg-white/10/50 rounded-xl p-4 space-y-3">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
                         <Home size={12} /> Construction Progress
                       </p>
@@ -968,7 +969,7 @@ function SubmissionsTab() {
                       </button>
 
                       {milestones.length > 0 && (
-                        <div className="space-y-1.5 border-t border-zinc-700 pt-2">
+                        <div className="space-y-1.5 border-t border-white/10 pt-2">
                           {milestones.map(m => (
                             <div key={m.id} className="flex items-center justify-between gap-2 text-[11px] text-zinc-300">
                               <span className="truncate">{m.title} — {m.date}{m.photoUrl ? " 📷" : ""}</span>
@@ -980,13 +981,13 @@ function SubmissionsTab() {
                         </div>
                       )}
 
-                      <div className="border-t border-zinc-700 pt-2.5 space-y-2">
+                      <div className="border-t border-white/10 pt-2.5 space-y-2">
                         <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Add Milestone</p>
                         <div className="grid grid-cols-2 gap-2">
                           <select
                             value={newMilestone.title}
                             onChange={e => setNewMilestone(nm => ({ ...nm, title: e.target.value }))}
-                            className="bg-zinc-800 border border-zinc-700 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-[#D6A63E]"
+                            className="bg-white/10 border border-white/10 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-[#D6A63E]"
                           >
                             {PRESET_MILESTONES.map(p => <option key={p} value={p}>{p}</option>)}
                             <option value="Custom">Custom…</option>
@@ -1019,7 +1020,7 @@ function SubmissionsTab() {
 
                     {/* Approve / Reject */}
                     {reviewing.status === "pending" && (
-                      <div className="space-y-3 border-t border-zinc-800 pt-4">
+                      <div className="space-y-3 border-t border-white/10 pt-4">
                         <button onClick={() => doAction("approve")} disabled={acting}
                           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-black text-sm transition-all disabled:opacity-50"
                           style={{ background: "#22c55e" }}>
@@ -1038,7 +1039,7 @@ function SubmissionsTab() {
                     )}
 
                     {reviewing.status === "approved" && (
-                      <div className="border-t border-zinc-800 pt-4">
+                      <div className="border-t border-white/10 pt-4">
                         <div className="bg-green-900/30 border border-green-800 rounded-xl p-3 text-center">
                           <CheckCircle size={16} className="mx-auto mb-1 text-green-400" />
                           <p className="text-green-400 text-xs font-semibold">Live on Buy page</p>
@@ -1052,7 +1053,7 @@ function SubmissionsTab() {
                     )}
 
                     {reviewing.status === "rejected" && reviewing.rejectReason && (
-                      <div className="border-t border-zinc-800 pt-4">
+                      <div className="border-t border-white/10 pt-4">
                         <div className="bg-red-900/20 border border-red-800 rounded-xl p-3">
                           <p className="text-red-400 text-xs font-semibold mb-1">Rejection reason</p>
                           <p className="text-zinc-300 text-xs">{reviewing.rejectReason}</p>
@@ -1204,7 +1205,7 @@ function AdminDashboardInner() {
     router.push("/admin");
   };
 
-  const inputCls = "bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-[#D6A63E]";
+  const inputCls = "bg-white/10 border border-white/10 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-[#D6A63E]";
 
   const SIDEBAR_TABS = [
     { key: "aiBrain",     label: "AI Brain",       icon: Brain },
@@ -1216,43 +1217,47 @@ function AdminDashboardInner() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex">
+    <div className="min-h-screen bg-navy flex">
       {/* Sidebar */}
-      <aside className="w-56 bg-black border-r border-zinc-800 flex flex-col">
-        <div className="p-5 border-b border-zinc-800">
-          <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold tracking-wide" style={{ fontFamily: "Georgia, serif" }}>
-              <span style={{ color: "var(--gold)" }}>PROP</span>
-              <span className="text-white">KNOWN</span>
-            </span>
-            <span className="text-[7px] tracking-[0.25em] mt-0.5" style={{ color: "var(--gold)" }}>ADMIN PORTAL</span>
-          </div>
+      <aside className="w-56 bg-navy-900 border-r border-white/10 flex flex-col">
+        <div className="p-5 border-b border-white/10">
+          <PKLogo dark />
+          <span className="text-[7px] tracking-[0.25em] mt-2 block" style={{ color: "var(--gold)" }}>ADMIN PORTAL</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {SIDEBAR_TABS.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setAdminTab(key)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${adminTab === key ? "text-black font-semibold" : "text-zinc-400 hover:text-white hover:bg-zinc-800"}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${adminTab === key ? "text-black font-semibold" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
               style={adminTab === key ? { background: "var(--gold)" } : {}}>
               <Icon size={15} /> {label}
             </button>
           ))}
-          <a href="/crm/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/crm/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Users size={15} /> CRM Pipeline
           </a>
-          <a href="/admin/bulk-import" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <LayoutDashboard size={15} /> Executive Dashboard
+          </a>
+          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <Inbox size={15} /> Follow-Ups
+          </a>
+          <a href="/admin/bulk-import" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <FileText size={15} /> Bulk Import
           </a>
-          <a href="/admin/users" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/admin/users" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Shield size={15} /> Team / RBAC
           </a>
-          <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <Zap size={15} /> Integrations
+          </a>
+          <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Home size={15} /> NRI Page
           </a>
-          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Home size={15} /> View Website
           </a>
         </nav>
-        <div className="p-3 border-t border-zinc-800">
+        <div className="p-3 border-t border-white/10">
           <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-red-400 transition-colors">
             <LogOut size={15} /> Logout
           </button>
@@ -1273,14 +1278,14 @@ function AdminDashboardInner() {
           <>
             <div className="flex items-center justify-between mb-6">
               <h1 className="font-playfair text-xl font-bold text-white">All Leads</h1>
-              <button onClick={fetchAdminLeads} className="text-zinc-400 hover:text-white text-sm border border-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+              <button onClick={fetchAdminLeads} className="text-zinc-400 hover:text-white text-sm border border-white/10 px-3 py-1.5 rounded-lg transition-colors">
                 Refresh
               </button>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-zinc-800/50 border-b border-zinc-800">
+                  <thead className="bg-white/10/50 border-b border-white/10">
                     <tr>
                       {["Name","Phone","Email","Source","Status","Date","WhatsApp"].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
@@ -1299,12 +1304,12 @@ function AdminDashboardInner() {
                           .filter(Boolean).join("\n")
                       )}`;
                       return (
-                      <tr key={l.id} className="hover:bg-zinc-800/30 transition-colors">
+                      <tr key={l.id} className="hover:bg-white/10/30 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{l.name}</td>
                         <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-[#D6A63E] hover:underline">{l.phone}</a></td>
                         <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "—"}</td>
-                        <td className="px-4 py-3"><span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
-                        <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-zinc-800 text-zinc-300"}`}>{l.status}</span></td>
+                        <td className="px-4 py-3"><span className="bg-white/10 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
+                        <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-white/10 text-zinc-300"}`}>{l.status}</span></td>
                         <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(l.createdAt).toLocaleDateString("en-IN")}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <a href={leadWaLink} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 text-xs font-medium mr-3">Message Lead</a>
@@ -1323,8 +1328,8 @@ function AdminDashboardInner() {
         {adminTab === "settings" && (
           <div className="max-w-2xl space-y-6">
             <h1 className="font-playfair text-xl font-bold text-white mb-6">Settings</h1>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">Business Info</h2>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3">Business Info</h2>
               {[
                 { label: "Company", value: "PropKnown Infra Pvt Ltd" },
                 { label: "Founder", value: "Pinnelli Raghu Kiran" },
@@ -1338,8 +1343,8 @@ function AdminDashboardInner() {
                 </div>
               ))}
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">API Status</h2>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3">API Status</h2>
               {[
                 { label: "Gemini AI (KnownAI)", status: true,  note: "gemini-2.5-flash-lite" },
                 { label: "Resend (Email)",     status: true,  note: "raghupinnelli@gmail.com" },
@@ -1353,8 +1358,8 @@ function AdminDashboardInner() {
                 </div>
               ))}
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3 mb-4">Quick Links</h2>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3 mb-4">Quick Links</h2>
               <div className="flex flex-wrap gap-3">
                 {[
                   { label: "View Website",    href: "/" },
@@ -1363,7 +1368,7 @@ function AdminDashboardInner() {
                   { label: "Buy Page",        href: "/buy" },
                 ].map(({ label, href }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                    className="text-sm px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
+                    className="text-sm px-4 py-2 rounded-lg border border-white/10 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
                     {label}
                   </a>
                 ))}
@@ -1384,7 +1389,7 @@ function AdminDashboardInner() {
             </div>
 
             {showForm && (
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
                 <h2 className="font-playfair text-white font-semibold mb-4">New Property</h2>
                 <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="col-span-full">
@@ -1419,7 +1424,7 @@ function AdminDashboardInner() {
                       <option value="rent">For Rent</option>
                     </select>
                   </div>
-                  <div className="col-span-full border-t border-zinc-800 pt-4">
+                  <div className="col-span-full border-t border-white/10 pt-4">
                     <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
                       <Shield size={13} style={{ color: "var(--gold)" }} /> Approval Checklist
                     </p>
@@ -1439,7 +1444,7 @@ function AdminDashboardInner() {
                     </div>
                   </div>
                   {/* Document Upload */}
-                  <div className="col-span-full border-t border-zinc-800 pt-4">
+                  <div className="col-span-full border-t border-white/10 pt-4">
                     <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
                       <FileText size={13} style={{ color: "var(--gold)" }} /> Documents (RERA Certificate, Title Deed, Brochure, Floor Plan)
                     </p>
@@ -1448,7 +1453,7 @@ function AdminDashboardInner() {
                       onDragLeave={() => setDocDragging(false)}
                       onDrop={e => { e.preventDefault(); setDocDragging(false); addDocFiles(e.dataTransfer.files); }}
                       onClick={() => docInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-[#D6A63E] bg-[#D6A63E]/10" : "border-zinc-700 hover:border-zinc-500"}`}
+                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-[#D6A63E] bg-[#D6A63E]/10" : "border-white/10 hover:border-white/20"}`}
                     >
                       <FileText size={24} className="mx-auto mb-2 text-zinc-600" />
                       <p className="text-zinc-400 text-sm">Drag &amp; drop files here, or <span style={{ color: "var(--gold)" }}>Choose Files</span></p>
@@ -1465,7 +1470,7 @@ function AdminDashboardInner() {
                     {docFiles.length > 0 && (
                       <ul className="mt-3 space-y-2">
                         {docFiles.map(doc => (
-                          <li key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2">
+                          <li key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <FileText size={13} className="text-zinc-400 shrink-0" />
                               <span className="text-zinc-300 text-xs truncate">{doc.name}</span>
@@ -1485,7 +1490,7 @@ function AdminDashboardInner() {
                     <button type="submit" disabled={saving} className="text-black text-sm font-semibold px-6 py-2 rounded-lg disabled:opacity-60" style={{ background: "var(--gold)" }}>
                       {saving ? "Saving..." : "Save Property"}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setDocFiles([]); }} className="border border-zinc-700 text-zinc-400 text-sm px-4 py-2 rounded-lg hover:text-white">
+                    <button type="button" onClick={() => { setShowForm(false); setDocFiles([]); }} className="border border-white/10 text-zinc-400 text-sm px-4 py-2 rounded-lg hover:text-white">
                       Cancel
                     </button>
                   </div>
@@ -1496,7 +1501,7 @@ function AdminDashboardInner() {
             <div className="flex gap-2 mb-4">
               {(["pending", "approved"] as const).map((t) => (
                 <button key={t} onClick={() => setPropTab(t)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${propTab === t ? "text-black" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${propTab === t ? "text-black" : "bg-white/10 text-zinc-400 hover:text-white"}`}
                   style={propTab === t ? { background: "var(--gold)" } : {}}>
                   {t}
                 </button>
@@ -1505,8 +1510,8 @@ function AdminDashboardInner() {
 
             {/* Document Viewer Modal */}
             {viewDocsFor && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setViewDocsFor(null)}>
-                <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/70 p-4" onClick={() => setViewDocsFor(null)}>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-playfair text-white font-semibold">Documents</h3>
@@ -1516,7 +1521,7 @@ function AdminDashboardInner() {
                   </div>
                   <ul className="space-y-2 max-h-80 overflow-y-auto">
                     {((viewDocsFor.documents ?? []) as DocFile[]).map(doc => (
-                      <li key={doc.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2.5">
+                      <li key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2.5">
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText size={14} className="text-[#D6A63E] shrink-0" />
                           <div className="min-w-0">
@@ -1539,10 +1544,10 @@ function AdminDashboardInner() {
               </div>
             )}
 
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-zinc-800/50 border-b border-zinc-800">
+                  <thead className="bg-white/10/50 border-b border-white/10">
                     <tr>
                       {["Property", "City", "Price", "Checklist", "Actions"].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
@@ -1555,7 +1560,7 @@ function AdminDashboardInner() {
                     ) : properties.length === 0 ? (
                       <tr><td colSpan={5} className="text-center py-10 text-zinc-500">No {propTab} properties found.</td></tr>
                     ) : properties.map((p) => (
-                      <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
+                      <tr key={p.id} className="hover:bg-white/10/30 transition-colors">
                         <td className="px-4 py-3">
                           <p className="text-white font-medium line-clamp-1">{p.title}</p>
                           <p className="text-zinc-500 text-xs">{p.location}</p>
@@ -1565,7 +1570,7 @@ function AdminDashboardInner() {
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
                             {[p.reraVerified, p.realPhotos, p.accuratePrice, p.ownerConsent].map((v, i) => (
-                              <span key={i} className={`w-5 h-5 rounded-full flex items-center justify-center ${v ? "bg-green-900 text-green-400" : "bg-zinc-800 text-zinc-600"}`}>
+                              <span key={i} className={`w-5 h-5 rounded-full flex items-center justify-center ${v ? "bg-green-900 text-green-400" : "bg-white/10 text-zinc-600"}`}>
                                 {v ? <CheckCircle size={12} /> : <XCircle size={12} />}
                               </span>
                             ))}
@@ -1583,7 +1588,7 @@ function AdminDashboardInner() {
                             </button>
                             {p.documents && (p.documents as DocFile[]).length > 0 && (
                               <button onClick={() => setViewDocsFor(p)}
-                                className="bg-zinc-800 border border-zinc-600 text-zinc-300 text-xs px-3 py-1.5 rounded-lg hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all flex items-center gap-1">
+                                className="bg-white/10 border border-white/15 text-zinc-300 text-xs px-3 py-1.5 rounded-lg hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all flex items-center gap-1">
                                 <FileText size={11} /> {(p.documents as DocFile[]).length} Doc{(p.documents as DocFile[]).length > 1 ? "s" : ""}
                               </button>
                             )}
@@ -1608,7 +1613,7 @@ function AdminDashboardInner() {
 
 export default function AdminDashboard() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-navy" />}>
       <AdminDashboardInner />
     </Suspense>
   );

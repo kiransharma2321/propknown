@@ -10,7 +10,7 @@ export const metadata = { title: "PropKnown Admin", robots: { index: false, foll
 // theme the old <body> applied.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-black text-white min-h-screen" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="text-white min-h-screen" style={{ background: "var(--navy)", fontFamily: "Inter, sans-serif" }}>
       {children}
     </div>
   );

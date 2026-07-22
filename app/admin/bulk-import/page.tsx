@@ -88,7 +88,7 @@ export default function BulkImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-navy p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/admin/dashboard" className="text-zinc-400 hover:text-white transition-colors">
@@ -101,7 +101,7 @@ export default function BulkImportPage() {
         </div>
 
         {/* Download template */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-6 flex items-center justify-between">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6 flex items-center justify-between">
           <div>
             <p className="text-white text-sm font-semibold mb-1">CSV Format</p>
             <p className="text-zinc-500 text-xs">Required columns: title, priceDisplay, city, ownerName, ownerPhone</p>
@@ -113,14 +113,14 @@ export default function BulkImportPage() {
         </div>
 
         {/* Paste area */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-5">
           <label className="block text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Paste CSV Data</label>
           <textarea
             value={csv}
             onChange={e => { setCsv(e.target.value); setParsed([]); setResults(null); }}
             rows={10}
             placeholder={CSV_TEMPLATE}
-            className="w-full bg-zinc-800 border border-zinc-700 text-white text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-700 resize-none"
+            className="w-full bg-black/30 border border-white/10 text-white text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-700 resize-none"
           />
           <div className="flex items-center gap-3 mt-3">
             <button onClick={parseCSV} disabled={!csv.trim()} className="btn-primary text-sm px-5 py-2.5 disabled:opacity-40">
@@ -136,7 +136,7 @@ export default function BulkImportPage() {
 
         {/* Preview table */}
         {parsed.length > 0 && !results && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-5">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-5">
             <div className="flex items-center justify-between mb-4">
               <p className="text-white text-sm font-semibold">{parsed.length} rows ready to import</p>
               <div className="flex items-center gap-4">
@@ -160,7 +160,7 @@ export default function BulkImportPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-700 text-zinc-500">
+                  <tr className="border-b border-white/10 text-zinc-500">
                     <th className="text-left py-2 px-2">#</th>
                     <th className="text-left py-2 px-2">Title</th>
                     <th className="text-left py-2 px-2">City / Area</th>
@@ -172,7 +172,7 @@ export default function BulkImportPage() {
                 </thead>
                 <tbody>
                   {parsed.map((r, i) => (
-                    <tr key={i} className="border-b border-zinc-800/50">
+                    <tr key={i} className="border-b border-white/10/50">
                       <td className="py-2 px-2 text-zinc-600">{i + 1}</td>
                       <td className="py-2 px-2 text-white max-w-[180px] truncate">{r.title || <span className="text-red-400">Missing!</span>}</td>
                       <td className="py-2 px-2 text-zinc-400">{r.city} {r.area && `/ ${r.area}`}</td>
@@ -196,7 +196,7 @@ export default function BulkImportPage() {
 
         {/* Results */}
         {results && summary && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
             <div className="flex items-center gap-4 mb-5">
               <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
                 <CheckCircle size={16} /> {summary.ok} imported

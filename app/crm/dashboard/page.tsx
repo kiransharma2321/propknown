@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp } from "lucide-react";
+import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp, BarChart3, CalendarClock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toIndianWaNumber } from "@/lib/phone";
+import PKLogo from "@/components/layout/PKLogo";
 
 type LeadStatus = "new" | "contacted" | "visit_booked" | "negotiation" | "won" | "lost";
 
@@ -192,28 +193,34 @@ export default function CRMDashboard() {
   const allSources = Array.from(new Set(leads.map(l => l.source)));
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex">
+    <div className="min-h-screen bg-navy flex">
       {/* Sidebar */}
-      <aside className="w-56 bg-black border-r border-zinc-800 flex flex-col shrink-0">
-        <div className="p-5 border-b border-zinc-800">
-          <span className="text-lg font-bold gold-text tracking-widest" style={{ fontFamily: "Georgia, serif" }}>PROPKNOWN</span>
-          <p className="text-[9px] text-zinc-600 tracking-widest mt-0.5">CRM PORTAL</p>
+      <aside className="w-56 bg-navy-900 border-r border-white/10 flex flex-col shrink-0">
+        <div className="p-5 border-b border-white/10">
+          <PKLogo dark />
+          <p className="text-[9px] text-zinc-600 tracking-widest mt-2">CRM PORTAL</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white bg-zinc-800">
+          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white bg-white/10">
             <LayoutDashboard size={15} /> Lead Pipeline
           </button>
-          <a href="/crm/contacts" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <BarChart3 size={15} /> Executive Dashboard
+          </a>
+          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <CalendarClock size={15} /> Follow-Ups
+          </a>
+          <a href="/crm/contacts" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Users size={15} /> Contacts
           </a>
-          <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <TrendingUp size={15} /> Deals
           </a>
-          <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+          <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Home size={15} /> Admin
           </a>
         </nav>
-        <div className="p-3 border-t border-zinc-800">
+        <div className="p-3 border-t border-white/10">
           <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-red-400 transition-colors">
             <LogOut size={15} /> Logout
           </button>
@@ -222,7 +229,7 @@ export default function CRMDashboard() {
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-black border-b border-zinc-800 px-6 py-3 flex items-center gap-4 shrink-0 flex-wrap">
+        <div className="bg-navy-900 border-b border-white/10 px-6 py-3 flex items-center gap-4 shrink-0 flex-wrap">
           <h1 className="font-playfair text-white font-semibold mr-auto">Lead Pipeline</h1>
 
           {/* Stats row */}
@@ -237,7 +244,7 @@ export default function CRMDashboard() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView(v => v === "kanban" ? "list" : "kanban")}
-              className="text-xs text-zinc-400 hover:text-white border border-zinc-700 rounded-lg px-3 py-1.5 hover:border-zinc-500 transition-all">
+              className="text-xs text-zinc-400 hover:text-white border border-white/10 rounded-lg px-3 py-1.5 hover:border-white/20 transition-all">
               {view === "kanban" ? "List View" : "Kanban"}
             </button>
             <button
@@ -250,20 +257,20 @@ export default function CRMDashboard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-zinc-950 border-b border-zinc-800 px-6 py-2.5 flex items-center gap-3 shrink-0">
+        <div className="bg-navy border-b border-white/10 px-6 py-2.5 flex items-center gap-3 shrink-0">
           <div className="relative flex-1 max-w-xs">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search name, phone, email..."
-              className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600"
+              className="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600"
             />
           </div>
           <select
             value={filterSource}
             onChange={e => setFilter(e.target.value)}
-            className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-3 py-2 focus:outline-none">
+            className="bg-white/5 border border-white/10 text-zinc-300 text-xs rounded-lg px-3 py-2 focus:outline-none">
             <option value="">All Sources</option>
             {allSources.map(s => <option key={s} value={s}>{SOURCE_LABELS[s] ?? s}</option>)}
           </select>
@@ -287,12 +294,12 @@ export default function CRMDashboard() {
                       <div className="flex items-center gap-2 text-zinc-300 text-sm font-semibold">
                         {col.icon} {col.label}
                       </div>
-                      <span className="bg-zinc-800 text-zinc-400 text-xs px-2 py-0.5 rounded-full">{colLeads.length}</span>
+                      <span className="bg-white/10 text-zinc-400 text-xs px-2 py-0.5 rounded-full">{colLeads.length}</span>
                     </div>
 
                     <div className="flex-1 space-y-2 overflow-y-auto min-h-[60px]">
                       {colLeads.length === 0 ? (
-                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-[#D6A63E]/40 text-[#D6A63E]/80" : "border-zinc-800 text-zinc-700"}`}>
+                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-[#D6A63E]/40 text-[#D6A63E]/80" : "border-white/10 text-zinc-700"}`}>
                           {isOver ? "Drop here" : "No leads"}
                         </div>
                       ) : colLeads.map(lead => {
@@ -302,7 +309,7 @@ export default function CRMDashboard() {
                             onDragStart={() => handleDragStart(lead.id)}
                             onDragEnd={handleDragEnd}
                             onClick={() => openLead(lead)}
-                            className={`bg-zinc-900 border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#D6A63E]/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-zinc-800"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
+                            className={`bg-white/5 border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#D6A63E]/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-white/10"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
                             <div className="flex items-start justify-between mb-1">
                               <p className="text-white text-sm font-medium leading-tight">{lead.name}</p>
                               <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${STATUS_COLORS[lead.status]}`} />
@@ -310,7 +317,7 @@ export default function CRMDashboard() {
                             <p className="text-zinc-500 text-xs">{lead.phone}</p>
                             {lead.property && <p className="text-zinc-600 text-[10px] mt-1 truncate">{lead.property.title}</p>}
                             <div className="flex items-center justify-between mt-2 flex-wrap gap-1">
-                              <span className="text-[10px] text-zinc-600 bg-zinc-800 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] text-zinc-600 bg-white/10 px-2 py-0.5 rounded-full">
                                 {SOURCE_LABELS[lead.source] ?? lead.source}
                               </span>
                               {fuStatus === "overdue" && <span className="text-[10px] text-red-400 flex items-center gap-0.5"><AlertCircle size={10} /> {formatFollowUp(lead.followUpDate)}</span>}
@@ -333,7 +340,7 @@ export default function CRMDashboard() {
             <div className="max-w-5xl">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-500 text-xs">
+                  <tr className="border-b border-white/10 text-zinc-500 text-xs">
                     <th className="text-left py-2 px-3">Name</th>
                     <th className="text-left py-2 px-3">Phone</th>
                     <th className="text-left py-2 px-3">Source</th>
@@ -349,7 +356,7 @@ export default function CRMDashboard() {
                     return (
                       <tr key={lead.id}
                         onClick={() => openLead(lead)}
-                        className="border-b border-zinc-800/50 hover:bg-zinc-900 cursor-pointer transition-colors">
+                        className="border-b border-white/10/50 hover:bg-white/5 cursor-pointer transition-colors">
                         <td className="py-2.5 px-3 text-white font-medium">{lead.name}</td>
                         <td className="py-2.5 px-3 text-zinc-400">{lead.phone}</td>
                         <td className="py-2.5 px-3 text-zinc-500 text-xs">{SOURCE_LABELS[lead.source] ?? lead.source}</td>
@@ -385,15 +392,15 @@ export default function CRMDashboard() {
 
       {/* Lead detail side panel */}
       {selectedLead && (
-        <aside className="w-80 bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0 overflow-y-auto">
-          <div className="flex items-center justify-between p-4 border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
+        <aside className="w-80 bg-white/5 border-l border-white/10 flex flex-col shrink-0 overflow-y-auto">
+          <div className="flex items-center justify-between p-4 border-b border-white/10 sticky top-0 bg-white/5 z-10">
             <h2 className="font-playfair text-white font-semibold text-sm">Lead Details</h2>
             <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
           </div>
 
           <div className="p-4 space-y-4">
             {/* Info */}
-            <div className="bg-zinc-800 rounded-xl p-4 space-y-3">
+            <div className="bg-white/10 rounded-xl p-4 space-y-3">
               <div>
                 <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Name</p>
                 <p className="text-white font-semibold">{selectedLead.name}</p>
@@ -425,14 +432,14 @@ export default function CRMDashboard() {
             </div>
 
             {/* Follow-up + Value */}
-            <div className="bg-zinc-800 rounded-xl p-4 space-y-3">
+            <div className="bg-white/10 rounded-xl p-4 space-y-3">
               <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Follow-up & Value</p>
               <div>
                 <label className="text-zinc-500 text-[10px]">Follow-up Date</label>
                 <input type="date"
                   value={editFollowUp}
                   onChange={e => setFollowUp(e.target.value)}
-                  className="w-full mt-1 bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                  className="w-full mt-1 bg-white/15 border border-white/15 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
               </div>
               <div>
                 <label className="text-zinc-500 text-[10px]">Lead Value (₹)</label>
@@ -442,7 +449,7 @@ export default function CRMDashboard() {
                     value={editValue}
                     onChange={e => setEditValue(e.target.value)}
                     placeholder="e.g. 5000000"
-                    className="w-full bg-zinc-700 border border-zinc-600 text-white text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                    className="w-full bg-white/15 border border-white/15 text-white text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
                 </div>
               </div>
               <button onClick={saveFollowUp}
@@ -463,7 +470,7 @@ export default function CRMDashboard() {
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-all ${
                       selectedLead.status === col.key
                         ? "text-black border-[#D6A63E] font-semibold"
-                        : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-[#D6A63E] hover:text-white"
+                        : "bg-white/10 border-white/10 text-zinc-400 hover:border-[#D6A63E] hover:text-white"
                     }`}
                     style={selectedLead.status === col.key ? { background: "var(--gold)" } : {}}>
                     {col.icon} {col.label}
@@ -489,7 +496,7 @@ export default function CRMDashboard() {
               )}
 
               {selectedLead.notes && (
-                <div className="bg-zinc-800 rounded-lg p-3 mb-2">
+                <div className="bg-white/10 rounded-lg p-3 mb-2">
                   <p className="text-zinc-400 text-[10px] mb-1">Last Note</p>
                   <p className="text-zinc-300 text-xs leading-relaxed">{selectedLead.notes}</p>
                 </div>
@@ -499,7 +506,7 @@ export default function CRMDashboard() {
                 onChange={e => setNoteInput(e.target.value)}
                 rows={3}
                 placeholder="Add a note..."
-                className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
+                className="w-full bg-white/10 border border-white/10 text-white placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
               />
               <button onClick={saveNote} disabled={saving || !noteInput.trim()}
                 className="mt-2 w-full text-black text-xs font-semibold py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
@@ -517,7 +524,7 @@ export default function CRMDashboard() {
                 <MessageSquare size={12} /> WhatsApp
               </a>
               <a href={`tel:${selectedLead.phone}`}
-                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium bg-zinc-700 text-white hover:bg-zinc-600 transition-all">
+                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium bg-white/15 text-white hover:bg-white/20 transition-all">
                 <Phone size={12} /> Call
               </a>
             </div>
@@ -527,8 +534,8 @@ export default function CRMDashboard() {
 
       {/* Add Lead Modal */}
       {addOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm p-6">
+        <div className="fixed inset-0 bg-navy-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/5 border border-white/10 rounded-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-playfair text-white font-semibold">Add Lead Manually</h3>
               <button onClick={() => setAddOpen(false)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
@@ -545,13 +552,13 @@ export default function CRMDashboard() {
                   <input type={f.type} placeholder={f.placeholder}
                     value={addForm[f.key as keyof typeof addForm]}
                     onChange={e => setAddForm(a => ({ ...a, [f.key]: e.target.value }))}
-                    className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
+                    className="w-full bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
                 </div>
               ))}
               <div>
                 <label className="text-zinc-400 text-xs mb-1 block">Source</label>
                 <select value={addForm.source} onChange={e => setAddForm(a => ({ ...a, source: e.target.value }))}
-                  className="w-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2 focus:outline-none">
+                  className="w-full bg-white/10 border border-white/10 text-zinc-300 text-sm rounded-lg px-3 py-2 focus:outline-none">
                   {Object.entries(SOURCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>

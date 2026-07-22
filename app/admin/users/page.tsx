@@ -82,7 +82,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-navy p-6">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/admin/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
@@ -96,24 +96,24 @@ export default function AdminUsersPage() {
         {success && <div className="bg-green-900/20 border border-green-700/40 rounded-xl p-4 mb-5 text-green-400 text-sm">{success}</div>}
 
         {/* Add user form */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
           <h2 className="font-playfair text-white font-semibold text-sm mb-4">Add Team Member</h2>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Full Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="John Doe" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                placeholder="John Doe" className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
             </div>
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Email</label>
               <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="agent@propknown.com" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                placeholder="agent@propknown.com" className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
             </div>
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Password</label>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="Strong password" className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 pr-9 focus:outline-none focus:border-[#D6A63E]" />
+                  placeholder="Strong password" className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-lg px-3 py-2 pr-9 focus:outline-none focus:border-[#D6A63E]" />
                 <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
                   {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
             <div>
               <label className="text-zinc-400 text-xs mb-1 block">Role</label>
               <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm rounded-lg px-3 py-2 focus:outline-none">
+                className="w-full bg-black/30 border border-white/10 text-zinc-300 text-sm rounded-lg px-3 py-2 focus:outline-none">
                 <option value="agent">Agent — sees assigned leads only</option>
                 <option value="manager">Manager — full CRM + submissions</option>
                 <option value="master">Master Admin — all permissions</option>
@@ -154,8 +154,8 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Users list */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-zinc-800">
+        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-white/10">
             <p className="font-playfair text-white text-sm font-semibold">Team Members ({users.length})</p>
           </div>
           {loading ? (
@@ -168,7 +168,7 @@ export default function AdminUsersPage() {
                 const roleInfo = ROLE_LABELS[u.role] ?? { label: u.role, color: "bg-zinc-700 text-white" };
                 return (
                   <div key={u.id} className="flex items-center gap-4 px-5 py-3.5">
-                    <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
                       <User size={14} className="text-zinc-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -176,7 +176,7 @@ export default function AdminUsersPage() {
                       <p className="text-zinc-500 text-xs">{u.email}</p>
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${roleInfo.color}`} style={roleInfo.style}>{roleInfo.label}</span>
-                    {!u.isActive && <span className="text-xs text-zinc-600 bg-zinc-800 px-2 py-1 rounded-full">Inactive</span>}
+                    {!u.isActive && <span className="text-xs text-zinc-600 bg-black/30 px-2 py-1 rounded-full">Inactive</span>}
                     <p className="text-zinc-600 text-xs shrink-0">{new Date(u.createdAt).toLocaleDateString("en-IN")}</p>
                     {u.role !== "master" && u.isActive && (
                       <button onClick={() => deactivate(u.id, u.name)} className="text-zinc-600 hover:text-red-400 transition-colors ml-2">
@@ -190,7 +190,7 @@ export default function AdminUsersPage() {
           )}
         </div>
 
-        <div className="mt-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+        <div className="mt-4 bg-white/5 border border-white/10 rounded-2xl p-4">
           <p className="text-zinc-400 text-xs leading-relaxed">
             <strong className="text-zinc-300">Role Permissions:</strong><br />
             <strong>Master Admin:</strong> All access — properties, leads, CRM, submissions, user management, bulk import.<br />
