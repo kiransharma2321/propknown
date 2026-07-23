@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 // Site Visit Module (Section 6) -- basic scheduling/status/feedback tonight. No live GPS
 // tracking (mapsLink is a plain Google Maps deep link, not a tracked device location) and no
@@ -8,6 +8,7 @@ import { getAdminSession } from "@/lib/rbac";
 export async function GET() {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "site_visits"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const siteVisits = await prisma.siteVisit.findMany({
     orderBy: { scheduledAt: "asc" },
     include: { lead: { select: { id: true, name: true, phone: true } }, property: { select: { id: true, title: true } } },
@@ -18,6 +19,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "site_visits"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { leadId, propertyId, scheduledAt, assignedTo, mapsLink } = await req.json() as {
     leadId?: string; propertyId?: string; scheduledAt?: string; assignedTo?: string; mapsLink?: string;
   };
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "site_visits"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { id, status, feedback, rating } = await req.json() as { id: string; status?: string; feedback?: string; rating?: number };
   const siteVisit = await prisma.siteVisit.update({ where: { id }, data: { status, feedback, rating } });
   return NextResponse.json({ siteVisit });

@@ -9,7 +9,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 // create training items can also actually assign them.
 export async function GET() {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!session || !(await canRole(session.role, "training_admin"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const users = await prisma.adminUser.findMany({
     where: { isActive: true },

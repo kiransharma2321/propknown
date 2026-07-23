@@ -12,7 +12,7 @@ import { logAudit } from "@/lib/auditLog";
 // roiAnalysis fields. Manually triggered per property, same pattern as AI Lead Scoring.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "properties")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!session || !(await canRole(session.role, "properties"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const property = await prisma.property.findUnique({ where: { id: params.id } });
   if (!property) return NextResponse.json({ error: "Property not found" }, { status: 404 });

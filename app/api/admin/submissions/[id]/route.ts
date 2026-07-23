@@ -5,7 +5,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 
 async function requireSubmissionsAccess() {
   const session = await getAdminSession();
-  return session && canRole(session.role, "submissions");
+  return session && (await canRole(session.role, "submissions"));
 }
 
 export async function GET(

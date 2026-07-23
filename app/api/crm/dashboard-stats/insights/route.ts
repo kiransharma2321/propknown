@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 // AI Dashboard Insights (Section 16). Manually triggered ("Generate Insights" button), not run
 // automatically on every page load -- same "no surprise Gemini calls" pattern as AI Lead
@@ -11,6 +11,7 @@ const GEMINI_MODEL = "gemini-2.5-flash";
 export async function POST(req: Request) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "dashboard"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const stats = await req.json() as Record<string, unknown>;
   const apiKey = process.env.GEMINI_API_KEY;

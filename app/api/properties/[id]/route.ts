@@ -4,7 +4,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 
 async function requirePropertiesAccess() {
   const session = await getAdminSession();
-  return session && canRole(session.role, "properties");
+  return session && (await canRole(session.role, "properties"));
 }
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {

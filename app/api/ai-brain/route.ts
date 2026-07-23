@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOOL_ROUNDS = 8;
@@ -307,6 +307,9 @@ export async function POST(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized — please log in as admin." }, { status: 401 });
+  }
+  if (!(await canRole(session.role, "ai_brain"))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {

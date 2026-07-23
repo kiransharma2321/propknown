@@ -34,20 +34,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   channel_partner:   "Channel Partner",
 };
 
-export const ROLE_PERMISSIONS: Record<Role, string[]> = {
-  master:  ["all"],
-  manager: ["leads", "submissions", "properties", "crm", "notifications", "bulk_import"],
-  agent:   ["leads_assigned", "crm_assigned"],
-  super_admin:       ["all"],
-  chairman:          ["all"],
-  managing_director: ["all"],
-  ceo:               ["all"],
-  coo: ["leads", "submissions", "properties", "crm", "notifications", "bulk_import", "settings", "reports"],
-  sales_manager:   ["leads", "submissions", "properties", "crm", "notifications", "bulk_import"],
-  sales_executive: ["leads_assigned", "crm_assigned"],
-  crm_executive:   ["leads_assigned", "crm_assigned", "crm"],
-  hr:              ["team_management"],
-  marketing:       ["notifications", "marketing"],
-  legal:           ["properties", "legal"],
-  channel_partner: ["crm_assigned"],
-};
+// Permission checking itself now lives in the Permission Matrix (RolePermission table,
+// lib/rbac.ts's canRole()) -- the old hardcoded ROLE_PERMISSIONS map that used to live here was
+// removed once it was seeded into that table (see the Step 0 diagnostic / seed script history).

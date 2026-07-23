@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 import { sendAdminEmail, escapeHtml } from "@/lib/email";
 import { sendWhatsApp, sendSms } from "@/lib/twilio";
 
@@ -11,6 +11,7 @@ import { sendWhatsApp, sendSms } from "@/lib/twilio";
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "followups"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { leadId, channel, message } = await req.json() as { leadId?: string; channel?: string; message?: string };
   if (!leadId || !channel) return NextResponse.json({ error: "leadId and channel are required" }, { status: 400 });

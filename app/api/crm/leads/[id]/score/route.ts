@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 import { logAudit } from "@/lib/auditLog";
 
 // AI Lead Scoring (Section 3). Manually triggered per lead ("Score this lead"), never automatic.
@@ -19,6 +19,7 @@ interface ScoreResult {
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "lead_detail"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const lead = await prisma.lead.findUnique({ where: { id: params.id } });
   if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });

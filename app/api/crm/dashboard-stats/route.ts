@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 // Executive Dashboard (Section 1). Every number here is a real query against real tables --
 // nothing is estimated or fabricated. Where a feature's source data doesn't exist yet (Site
@@ -10,6 +10,7 @@ import { getAdminSession } from "@/lib/rbac";
 export async function GET() {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "dashboard"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());

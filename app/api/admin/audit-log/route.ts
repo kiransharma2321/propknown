@@ -7,7 +7,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 // nothing before that exists, and this honestly shows an empty list rather than backfilling.
 export async function GET() {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!session || !(await canRole(session.role, "audit_log"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const logs = await prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
   return NextResponse.json({ logs });
 }

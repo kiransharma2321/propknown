@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/settings/banks", label: "Banks" },
   { href: "/admin/settings/property-types", label: "Property Types" },
   { href: "/admin/settings/email-templates", label: "Email Templates" },
+  { href: "/admin/settings/permissions", label: "Permission Matrix" },
 ];
 
 export default function SettingsNav() {

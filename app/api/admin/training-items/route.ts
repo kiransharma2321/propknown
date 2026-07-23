@@ -7,7 +7,7 @@ import { logAudit } from "@/lib/auditLog";
 // document/other) with a title and description. Simple by design: no quiz/certification system.
 async function requireSettingsAccess() {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return null;
+  if (!session || !(await canRole(session.role, "training_admin"))) return null;
   return session;
 }
 

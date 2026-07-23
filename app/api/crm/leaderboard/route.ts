@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 // Sales Champions Leaderboard (new feature). Viewable by any logged-in CRM user (not
 // manager/admin-only) -- see the page component for the reasoning: this is meant to function
@@ -12,6 +12,7 @@ import { getAdminSession } from "@/lib/rbac";
 export async function GET() {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await canRole(session.role, "leaderboard"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const leads = await prisma.lead.findMany({
     where: { assignedTo: { not: null } },

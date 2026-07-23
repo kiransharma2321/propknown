@@ -6,7 +6,7 @@ import { logAudit } from "@/lib/auditLog";
 // Assign a training item to one or more employees (Section: Training Tracker).
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!session || !(await canRole(session.role, "training_admin"))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { assigneeIds } = await req.json() as { assigneeIds?: string[] };
   if (!assigneeIds?.length) return NextResponse.json({ error: "assigneeIds is required" }, { status: 400 });

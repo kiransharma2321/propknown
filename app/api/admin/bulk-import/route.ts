@@ -5,7 +5,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 
 async function requireBulkImportAccess() {
   const session = await getAdminSession();
-  return session && canRole(session.role, "bulk_import");
+  return session && (await canRole(session.role, "bulk_import"));
 }
 
 interface ImportRow {

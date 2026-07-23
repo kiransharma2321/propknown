@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword, ROLE_LABELS } from "@/lib/rbac";
+import { hashPassword, ROLE_LABELS, getAdminSession, canRole } from "@/lib/rbac";
 import { cookies } from "next/headers";
 import { logAudit } from "@/lib/auditLog";
 
-async function isMasterAdmin(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const rbacToken = cookieStore.get("rbac_auth")?.value;
-  if (!rbacToken) return false;
-  const [userId] = rbacToken.split(":");
-  const user = await prisma.adminUser.findUnique({ where: { id: userId }, select: { role: true } });
-  return user?.role === "master";
+// User Management used to be gated on a literal role === "master" check, independent of the
+// rest of the permission system. Now reads the "user_management" area from the Permission
+// Matrix instead -- canRole() still hardcodes master to true unconditionally, so master's
+// access is unchanged; other roles can now be granted this explicitly via the matrix (seeded
+// to false for everyone but master, matching the exact old behavior on day one).
+async function hasUserManagementAccess(): Promise<boolean> {
+  const session = await getAdminSession();
+  return !!session && (await canRole(session.role, "user_management"));
 }
 
-// Additive, logging-only -- does not change isMasterAdmin's own logic or the access check above.
+// Additive, logging-only -- does not change hasUserManagementAccess's own logic or the access check above.
 async function getActorInfo(): Promise<{ id?: string; name?: string }> {
   const cookieStore = await cookies();
   const rbacToken = cookieStore.get("rbac_auth")?.value;
@@ -24,7 +25,7 @@ async function getActorInfo(): Promise<{ id?: string; name?: string }> {
 }
 
 export async function GET() {
-  if (!(await isMasterAdmin())) {
+  if (!(await hasUserManagementAccess())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const users = await prisma.adminUser.findMany({
@@ -35,7 +36,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isMasterAdmin())) {
+  if (!(await hasUserManagementAccess())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { name, email, password, role } = await req.json() as { name: string; email: string; password: string; role: string };
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!(await isMasterAdmin())) {
+  if (!(await hasUserManagementAccess())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await req.json() as { id: string };

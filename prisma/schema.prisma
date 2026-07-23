@@ -520,6 +520,17 @@ model TrainingAssignment {
   @@index([assigneeId])
 }
 
+model RolePermission {
+  id        String   @id @default(cuid())
+  role      String   // Role key from lib/roles.ts (e.g. "manager", "sales_executive")
+  area      String   // Feature-area key from lib/permissionAreas.ts (e.g. "site_visits")
+  allowed   Boolean
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, area])
+  @@index([role])
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Sales Champions Leaderboard (new feature) -- no new table needed. Ranking is computed live
 // from real Lead data (status="won", assignedTo, leadValue) via the same aggregation pattern

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { sendAdminEmail, buildLeadHtml, buildRaghuNotifyWhatsAppLink } from "@/lib/email";
 import { notifyNewLead } from "@/lib/notifications";
 import { toIndianWaNumber } from "@/lib/phone";
-import { getAdminSession } from "@/lib/rbac";
+import { getAdminSession, canRole } from "@/lib/rbac";
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,6 +75,9 @@ export async function GET(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!(await canRole(session.role, "leads"))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);

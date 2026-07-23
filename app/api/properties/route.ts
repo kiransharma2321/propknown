@@ -4,7 +4,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "properties")) {
+  if (!session || !(await canRole(session.role, "properties"))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "properties")) {
+  if (!session || !(await canRole(session.role, "properties"))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

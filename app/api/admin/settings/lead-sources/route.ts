@@ -4,7 +4,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 
 async function requireSettingsAccess() {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return null;
+  if (!session || !(await canRole(session.role, "settings_config"))) return null;
   return session;
 }
 

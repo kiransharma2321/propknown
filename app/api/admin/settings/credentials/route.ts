@@ -10,7 +10,7 @@ import { logAudit } from "@/lib/auditLog";
 // permission sets are untouched, so they correctly do NOT gain access to credential storage.
 async function requireSettingsAccess() {
   const session = await getAdminSession();
-  if (!session || !canRole(session.role, "settings")) return null;
+  if (!session || !(await canRole(session.role, "settings_integrations"))) return null;
   return session;
 }
 
