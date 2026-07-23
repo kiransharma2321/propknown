@@ -111,96 +111,96 @@ export default function LeadDetailPage() {
   };
 
   if (loading || !lead) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--navy)" }}><p className="text-zinc-500 text-sm">Loading…</p></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500 text-sm">Loading…</p></div>;
   }
 
   const timeline = [...lead.timeline].reverse();
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--navy)" }}>
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center gap-3 mb-8">
-          <Link href="/crm/dashboard" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
-          <PKLogo dark />
+          <Link href="/crm/dashboard" className="text-gray-500 hover:text-gray-900"><ArrowLeft size={18} /></Link>
+          <PKLogo />
         </div>
 
         {/* Profile header */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h1 className="font-playfair text-white text-xl font-bold">{lead.name}</h1>
-              <p className="text-zinc-500 text-xs">Source: {lead.source} · Stage: {lead.status} · Added {new Date(lead.createdAt).toLocaleDateString("en-IN")}</p>
+              <h1 className="font-playfair text-gray-900 text-xl font-bold">{lead.name}</h1>
+              <p className="text-gray-500 text-xs">Source: {lead.source} · Stage: {lead.status} · Added {new Date(lead.createdAt).toLocaleDateString("en-IN")}</p>
             </div>
-            {lead.leadValue != null && <span className="text-white font-bold">₹{lead.leadValue.toLocaleString("en-IN")}</span>}
+            {lead.leadValue != null && <span className="text-gray-900 font-bold">₹{lead.leadValue.toLocaleString("en-IN")}</span>}
           </div>
-          <div className="flex items-center gap-4 text-sm text-zinc-300 mb-3">
+          <div className="flex items-center gap-4 text-sm text-gray-700 mb-3">
             <span className="flex items-center gap-1.5"><Phone size={13} /> {lead.phone}</span>
             {lead.email && <span className="flex items-center gap-1.5"><Mail size={13} /> {lead.email}</span>}
           </div>
-          {lead.message && <p className="text-zinc-400 text-sm bg-black/20 rounded-lg p-3">{lead.message}</p>}
+          {lead.message && <p className="text-gray-500 text-sm bg-gray-50 rounded-lg p-3">{lead.message}</p>}
 
           {/* Property Interests -- tags backed by real Settings > Projects */}
           <div className="mt-4">
-            <p className="text-zinc-500 text-xs mb-2 flex items-center gap-1.5"><Tag size={12} /> Property Interests</p>
+            <p className="text-gray-500 text-xs mb-2 flex items-center gap-1.5"><Tag size={12} /> Property Interests</p>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {lead.tags.map(t => (
-                <span key={t} className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-black/30 border border-white/10 text-zinc-300">
+                <span key={t} className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-white border border-gray-200 text-gray-700">
                   {t} <button onClick={() => removeInterestTag(t)}><X size={10} /></button>
                 </span>
               ))}
-              {lead.tags.length === 0 && <span className="text-zinc-600 text-xs">None tagged yet.</span>}
+              {lead.tags.length === 0 && <span className="text-gray-400 text-xs">None tagged yet.</span>}
             </div>
             {projects.length > 0 ? (
               <select onChange={e => { if (e.target.value) addInterestTag(e.target.value); e.target.value = ""; }}
-                className="bg-black/30 border border-white/10 text-zinc-400 text-xs rounded-lg px-2 py-1.5">
+                className="bg-white border border-gray-200 text-gray-500 text-xs rounded-lg px-2 py-1.5">
                 <option value="">+ Tag a project…</option>
                 {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
               </select>
             ) : (
-              <p className="text-zinc-600 text-xs">No projects in Settings yet — add one to tag interests.</p>
+              <p className="text-gray-400 text-xs">No projects in Settings yet — add one to tag interests.</p>
             )}
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-5 mb-6">
           {/* AI Summary / Score */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2"><Sparkles size={14} style={{ color: "var(--gold)" }} /><h2 className="text-white font-semibold text-sm">AI Lead Score</h2></div>
+              <div className="flex items-center gap-2"><Sparkles size={14} style={{ color: "var(--gold)" }} /><h2 className="text-gray-900 font-semibold text-sm">AI Lead Score</h2></div>
               <button onClick={runScoring} disabled={scoring} className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50">
                 {scoring ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} {scoring ? "Scoring…" : "Score this lead"}
               </button>
             </div>
             {lead.leadScore != null ? (
               <div className="space-y-1.5 text-sm">
-                <p className="text-white font-bold text-lg">{lead.leadScore}/100</p>
-                <p className="text-zinc-400"><span className="text-zinc-500">Buying intent:</span> {lead.buyingIntent}</p>
-                <p className="text-zinc-400"><span className="text-zinc-500">Financial strength:</span> {lead.financialStrength}</p>
-                <p className="text-zinc-400"><span className="text-zinc-500">Urgency:</span> {lead.urgencyLevel}</p>
-                <p className="text-zinc-400"><span className="text-zinc-500">Conversion probability:</span> {lead.conversionProbability}%</p>
-                <p className="text-zinc-400"><span className="text-zinc-500">Best follow-up time:</span> {lead.bestFollowUpTime}</p>
-                {recommendedProperty && <p className="text-zinc-400"><span className="text-zinc-500">Recommended:</span> {recommendedProperty.title}</p>}
-                <p className="text-zinc-400"><span className="text-zinc-500">Next best action:</span> {lead.nextBestAction}</p>
-                <p className="text-zinc-500 text-xs mt-2 leading-relaxed">{lead.aiSummary}</p>
-                <p className="text-zinc-700 text-[10px]">Scored {lead.aiScoredAt ? new Date(lead.aiScoredAt).toLocaleString("en-IN") : ""}</p>
+                <p className="text-gray-900 font-bold text-lg">{lead.leadScore}/100</p>
+                <p className="text-gray-500"><span className="text-gray-500">Buying intent:</span> {lead.buyingIntent}</p>
+                <p className="text-gray-500"><span className="text-gray-500">Financial strength:</span> {lead.financialStrength}</p>
+                <p className="text-gray-500"><span className="text-gray-500">Urgency:</span> {lead.urgencyLevel}</p>
+                <p className="text-gray-500"><span className="text-gray-500">Conversion probability:</span> {lead.conversionProbability}%</p>
+                <p className="text-gray-500"><span className="text-gray-500">Best follow-up time:</span> {lead.bestFollowUpTime}</p>
+                {recommendedProperty && <p className="text-gray-500"><span className="text-gray-500">Recommended:</span> {recommendedProperty.title}</p>}
+                <p className="text-gray-500"><span className="text-gray-500">Next best action:</span> {lead.nextBestAction}</p>
+                <p className="text-gray-500 text-xs mt-2 leading-relaxed">{lead.aiSummary}</p>
+                <p className="text-gray-400 text-[10px]">Scored {lead.aiScoredAt ? new Date(lead.aiScoredAt).toLocaleString("en-IN") : ""}</p>
               </div>
             ) : (
-              <p className="text-zinc-600 text-sm">Not scored yet.</p>
+              <p className="text-gray-400 text-sm">Not scored yet.</p>
             )}
-            {scoreError && <p className="text-red-400 text-xs mt-2">{scoreError}</p>}
+            {scoreError && <p className="text-red-600 text-xs mt-2">{scoreError}</p>}
             {draftMessage && (
-              <div className="mt-3 bg-black/30 border border-white/10 rounded-lg p-3">
-                <p className="text-zinc-500 text-xs mb-1 flex items-center gap-1"><Send size={11} /> Draft follow-up (review before sending — nothing is auto-sent)</p>
-                <p className="text-zinc-300 text-sm">{draftMessage}</p>
+              <div className="mt-3 bg-white border border-gray-200 rounded-lg p-3">
+                <p className="text-gray-500 text-xs mb-1 flex items-center gap-1"><Send size={11} /> Draft follow-up (review before sending — nothing is auto-sent)</p>
+                <p className="text-gray-700 text-sm">{draftMessage}</p>
               </div>
             )}
           </div>
 
           {/* Notes */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h2 className="text-white font-semibold text-sm mb-3">Notes</h2>
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="text-gray-900 font-semibold text-sm mb-3">Notes</h2>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={6}
-              className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
+              className="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
               placeholder="Write notes about this lead…" />
             <button onClick={saveNotes} disabled={savingNotes} className="btn-primary text-xs px-3 py-1.5 mt-2 disabled:opacity-50">
               {savingNotes ? "Saving…" : "Save Notes"}
@@ -210,39 +210,39 @@ export default function LeadDetailPage() {
 
         {/* Call History / WhatsApp History -- honest, not fabricated */}
         <div className="grid md:grid-cols-2 gap-5 mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h2 className="text-white font-semibold text-sm mb-2 flex items-center gap-2"><PhoneOff size={14} className="text-zinc-500" /> Call History</h2>
-            <p className="text-zinc-600 text-xs">Not connected — no telephony integration is set up yet. This section will populate once one is.</p>
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="text-gray-900 font-semibold text-sm mb-2 flex items-center gap-2"><PhoneOff size={14} className="text-gray-500" /> Call History</h2>
+            <p className="text-gray-400 text-xs">Not connected — no telephony integration is set up yet. This section will populate once one is.</p>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h2 className="text-white font-semibold text-sm mb-2 flex items-center gap-2"><MessageCircleOff size={14} className="text-zinc-500" /> WhatsApp History</h2>
-            <p className="text-zinc-600 text-xs">Not connected — no WhatsApp Business API integration is set up yet. This section will populate once one is.</p>
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="text-gray-900 font-semibold text-sm mb-2 flex items-center gap-2"><MessageCircleOff size={14} className="text-gray-500" /> WhatsApp History</h2>
+            <p className="text-gray-400 text-xs">Not connected — no WhatsApp Business API integration is set up yet. This section will populate once one is.</p>
           </div>
         </div>
 
         {/* Documents */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
-          <h2 className="text-white font-semibold text-sm mb-3 flex items-center gap-2"><FileText size={14} style={{ color: "var(--gold)" }} /> Documents</h2>
-          {docs.length === 0 ? <p className="text-zinc-600 text-sm mb-3">No documents attached yet.</p> : (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6">
+          <h2 className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2"><FileText size={14} style={{ color: "var(--gold)" }} /> Documents</h2>
+          {docs.length === 0 ? <p className="text-gray-400 text-sm mb-3">No documents attached yet.</p> : (
             <div className="space-y-1.5 mb-3">
-              {docs.map(d => <p key={d.id} className="text-zinc-300 text-sm">{d.name} <span className="text-zinc-600 text-xs">({Math.round(d.sizeBytes / 1024)} KB)</span></p>)}
+              {docs.map(d => <p key={d.id} className="text-gray-700 text-sm">{d.name} <span className="text-gray-400 text-xs">({Math.round(d.sizeBytes / 1024)} KB)</span></p>)}
             </div>
           )}
-          <label className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-white/20 text-white hover:border-[#D6A63E] cursor-pointer">
+          <label className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-gray-300 text-gray-900 hover:border-[#D6A63E] cursor-pointer">
             {uploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />} {uploading ? "Uploading…" : "Attach Document"}
             <input type="file" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadDoc(e.target.files[0]); }} />
           </label>
         </div>
 
         {/* Timeline */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <h2 className="text-white font-semibold text-sm mb-3 flex items-center gap-2"><Clock size={14} style={{ color: "var(--gold)" }} /> Customer Journey Timeline</h2>
-          {timeline.length === 0 ? <p className="text-zinc-600 text-sm">No activity logged yet.</p> : (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <h2 className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2"><Clock size={14} style={{ color: "var(--gold)" }} /> Customer Journey Timeline</h2>
+          {timeline.length === 0 ? <p className="text-gray-400 text-sm">No activity logged yet.</p> : (
             <div className="space-y-3">
               {timeline.map((t, i) => (
                 <div key={i} className="flex gap-3 text-sm">
-                  <span className="text-zinc-600 text-xs shrink-0 w-32">{new Date(t.ts ?? t.at ?? "").toLocaleString("en-IN")}</span>
-                  <span className="text-zinc-300">{t.text ?? (t.type === "reminder" ? `Reminder sent via ${t.channel}${t.by ? ` by ${t.by}` : ""}` : t.type)}</span>
+                  <span className="text-gray-400 text-xs shrink-0 w-32">{new Date(t.ts ?? t.at ?? "").toLocaleString("en-IN")}</span>
+                  <span className="text-gray-700">{t.text ?? (t.type === "reminder" ? `Reminder sent via ${t.channel}${t.by ? ` by ${t.by}` : ""}` : t.type)}</span>
                 </div>
               ))}
             </div>

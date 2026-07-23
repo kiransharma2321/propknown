@@ -37,15 +37,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <RadixToast.Root
             key={m.id}
             onOpenChange={open => { if (!open) dismiss(m.id); }}
-            className="flex items-center gap-2.5 rounded-xl border px-4 py-3 shadow-lg data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out"
-            style={{
-              background: "var(--navy-900, #050d1f)",
-              borderColor: m.variant === "success" ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)",
-            }}
+            className="flex items-center gap-2.5 rounded-xl border bg-white px-4 py-3 shadow-lg data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out"
+            style={{ borderColor: m.variant === "success" ? "#bbf7d0" : "#fecaca" }}
           >
-            {m.variant === "success" ? <CheckCircle2 size={16} className="text-green-400 shrink-0" /> : <XCircle size={16} className="text-red-400 shrink-0" />}
-            <RadixToast.Title className="text-white text-sm">{m.text}</RadixToast.Title>
-            <RadixToast.Close className="ml-auto text-zinc-500 hover:text-white"><X size={13} /></RadixToast.Close>
+            {m.variant === "success" ? <CheckCircle2 size={16} className="text-green-600 shrink-0" /> : <XCircle size={16} className="text-red-600 shrink-0" />}
+            <RadixToast.Title className="text-gray-900 text-sm">{m.text}</RadixToast.Title>
+            <RadixToast.Close className="ml-auto text-gray-400 hover:text-gray-700"><X size={13} /></RadixToast.Close>
           </RadixToast.Root>
         ))}
         <RadixToast.Viewport className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-80 max-w-[90vw] outline-none" />

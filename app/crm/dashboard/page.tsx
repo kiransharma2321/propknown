@@ -193,35 +193,35 @@ export default function CRMDashboard() {
   const allSources = Array.from(new Set(leads.map(l => l.source)));
 
   return (
-    <div className="min-h-screen bg-navy flex">
-      {/* Sidebar */}
-      <aside className="w-56 bg-navy-900 border-r border-white/10 flex flex-col shrink-0">
-        <div className="p-5 border-b border-white/10">
-          <PKLogo dark />
-          <p className="text-[9px] text-zinc-600 tracking-widest mt-2">CRM PORTAL</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar -- white, matching .card-dark's exact border/bg pairing used site-wide */}
+      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col shrink-0">
+        <div className="p-5 border-b border-gray-200">
+          <PKLogo />
+          <p className="text-[9px] text-gray-400 tracking-widest mt-2">CRM PORTAL</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white bg-white/10">
+          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold" style={{ color: "var(--gold-text)", background: "rgba(214,166,62,0.1)" }}>
             <LayoutDashboard size={15} /> Lead Pipeline
           </button>
-          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <BarChart3 size={15} /> Executive Dashboard
           </a>
-          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <CalendarClock size={15} /> Follow-Ups
           </a>
-          <a href="/crm/contacts" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/contacts" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Users size={15} /> Contacts
           </a>
-          <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <TrendingUp size={15} /> Deals
           </a>
-          <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Home size={15} /> Admin
           </a>
         </nav>
-        <div className="p-3 border-t border-white/10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-red-400 transition-colors">
+        <div className="p-3 border-t border-gray-200">
+          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-600 transition-colors">
             <LogOut size={15} /> Logout
           </button>
         </div>
@@ -229,12 +229,12 @@ export default function CRMDashboard() {
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-navy-900 border-b border-white/10 px-6 py-3 flex items-center gap-4 shrink-0 flex-wrap">
-          <h1 className="font-playfair text-white font-semibold mr-auto">Lead Pipeline</h1>
+        <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 shrink-0 flex-wrap">
+          <h1 className="font-playfair text-gray-900 font-semibold mr-auto">Lead Pipeline</h1>
 
           {/* Stats row */}
-          <div className="flex items-center gap-4 text-xs text-zinc-400">
-            <span>Total: <span className="text-white font-bold">{leads.length}</span></span>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span>Total: <span className="text-gray-900 font-bold">{leads.length}</span></span>
             <span className="text-green-400">Won: ₹{(wonValue / 1e5).toFixed(1)}L</span>
             <span className="text-[#D6A63E]">Pipeline: ₹{(pipelineValue / 1e5).toFixed(1)}L</span>
             {todayFollowUps > 0 && <span className="text-blue-400"><Clock size={11} className="inline" /> {todayFollowUps} today</span>}
@@ -244,12 +244,12 @@ export default function CRMDashboard() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView(v => v === "kanban" ? "list" : "kanban")}
-              className="text-xs text-zinc-400 hover:text-white border border-white/10 rounded-lg px-3 py-1.5 hover:border-white/20 transition-all">
+              className="text-xs text-gray-500 hover:text-gray-900 border border-gray-200 rounded-lg px-3 py-1.5 hover:border-gray-300 transition-all">
               {view === "kanban" ? "List View" : "Kanban"}
             </button>
             <button
               onClick={() => setAddOpen(true)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold text-black"
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold text-navy"
               style={{ background: "var(--gold)" }}>
               <Plus size={13} /> Add Lead
             </button>
@@ -257,20 +257,20 @@ export default function CRMDashboard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-navy border-b border-white/10 px-6 py-2.5 flex items-center gap-3 shrink-0">
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-2.5 flex items-center gap-3 shrink-0">
           <div className="relative flex-1 max-w-xs">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search name, phone, email..."
-              className="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600"
+              className="w-full bg-white border border-gray-200 text-gray-900 text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600"
             />
           </div>
           <select
             value={filterSource}
             onChange={e => setFilter(e.target.value)}
-            className="bg-white/5 border border-white/10 text-zinc-300 text-xs rounded-lg px-3 py-2 focus:outline-none">
+            className="bg-white border border-gray-200 text-gray-700 text-xs rounded-lg px-3 py-2 focus:outline-none">
             <option value="">All Sources</option>
             {allSources.map(s => <option key={s} value={s}>{SOURCE_LABELS[s] ?? s}</option>)}
           </select>
@@ -279,7 +279,7 @@ export default function CRMDashboard() {
         {/* Kanban or List */}
         <div className="flex-1 overflow-auto p-4">
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-zinc-500">Loading leads...</div>
+            <div className="flex items-center justify-center h-64 text-gray-500">Loading leads...</div>
           ) : view === "kanban" ? (
             <div className="flex gap-4 min-w-max h-full">
               {COLUMNS.map((col) => {
@@ -291,15 +291,15 @@ export default function CRMDashboard() {
                     onDragOver={e => handleDragOver(e, col.key)}
                     onDrop={() => handleDrop(col.key)}>
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <div className="flex items-center gap-2 text-zinc-300 text-sm font-semibold">
+                      <div className="flex items-center gap-2 text-gray-700 text-sm font-semibold">
                         {col.icon} {col.label}
                       </div>
-                      <span className="bg-white/10 text-zinc-400 text-xs px-2 py-0.5 rounded-full">{colLeads.length}</span>
+                      <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">{colLeads.length}</span>
                     </div>
 
                     <div className="flex-1 space-y-2 overflow-y-auto min-h-[60px]">
                       {colLeads.length === 0 ? (
-                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-[#D6A63E]/40 text-[#D6A63E]/80" : "border-white/10 text-zinc-700"}`}>
+                        <div className={`text-xs text-center py-6 rounded-lg border border-dashed transition-colors ${isOver ? "border-[#D6A63E]/40 text-[#D6A63E]/80" : "border-gray-200 text-gray-400"}`}>
                           {isOver ? "Drop here" : "No leads"}
                         </div>
                       ) : colLeads.map(lead => {
@@ -309,20 +309,20 @@ export default function CRMDashboard() {
                             onDragStart={() => handleDragStart(lead.id)}
                             onDragEnd={handleDragEnd}
                             onClick={() => openLead(lead)}
-                            className={`bg-white/5 border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#D6A63E]/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-white/10"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
+                            className={`bg-white border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-[#D6A63E]/50 transition-all ${dragId === lead.id ? "opacity-40 scale-95" : "border-gray-200"} ${fuStatus === "overdue" ? "border-l-2 border-l-red-500" : fuStatus === "today" ? "border-l-2 border-l-blue-400" : ""}`}>
                             <div className="flex items-start justify-between mb-1">
-                              <p className="text-white text-sm font-medium leading-tight">{lead.name}</p>
+                              <p className="text-gray-900 text-sm font-medium leading-tight">{lead.name}</p>
                               <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${STATUS_COLORS[lead.status]}`} />
                             </div>
-                            <p className="text-zinc-500 text-xs">{lead.phone}</p>
-                            {lead.property && <p className="text-zinc-600 text-[10px] mt-1 truncate">{lead.property.title}</p>}
+                            <p className="text-gray-500 text-xs">{lead.phone}</p>
+                            {lead.property && <p className="text-gray-400 text-[10px] mt-1 truncate">{lead.property.title}</p>}
                             <div className="flex items-center justify-between mt-2 flex-wrap gap-1">
-                              <span className="text-[10px] text-zinc-600 bg-white/10 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                                 {SOURCE_LABELS[lead.source] ?? lead.source}
                               </span>
                               {fuStatus === "overdue" && <span className="text-[10px] text-red-400 flex items-center gap-0.5"><AlertCircle size={10} /> {formatFollowUp(lead.followUpDate)}</span>}
                               {fuStatus === "today"   && <span className="text-[10px] text-blue-400 flex items-center gap-0.5"><Clock size={10} /> Today</span>}
-                              {fuStatus === "upcoming" && <span className="text-[10px] text-zinc-500">{formatFollowUp(lead.followUpDate)}</span>}
+                              {fuStatus === "upcoming" && <span className="text-[10px] text-gray-500">{formatFollowUp(lead.followUpDate)}</span>}
                               {lead.leadValue && lead.leadValue > 0 && (
                                 <span className="text-[10px] text-green-400">₹{(lead.leadValue / 1e5).toFixed(1)}L</span>
                               )}
@@ -340,7 +340,7 @@ export default function CRMDashboard() {
             <div className="max-w-5xl">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-zinc-500 text-xs">
+                  <tr className="border-b border-gray-200 text-gray-500 text-xs">
                     <th className="text-left py-2 px-3">Name</th>
                     <th className="text-left py-2 px-3">Phone</th>
                     <th className="text-left py-2 px-3">Source</th>
@@ -356,25 +356,25 @@ export default function CRMDashboard() {
                     return (
                       <tr key={lead.id}
                         onClick={() => openLead(lead)}
-                        className="border-b border-white/10 hover:bg-white/5 cursor-pointer transition-colors">
-                        <td className="py-2.5 px-3 text-white font-medium">{lead.name}</td>
-                        <td className="py-2.5 px-3 text-zinc-400">{lead.phone}</td>
-                        <td className="py-2.5 px-3 text-zinc-500 text-xs">{SOURCE_LABELS[lead.source] ?? lead.source}</td>
+                        className="border-b border-gray-200 hover:bg-white cursor-pointer transition-colors">
+                        <td className="py-2.5 px-3 text-gray-900 font-medium">{lead.name}</td>
+                        <td className="py-2.5 px-3 text-gray-500">{lead.phone}</td>
+                        <td className="py-2.5 px-3 text-gray-500 text-xs">{SOURCE_LABELS[lead.source] ?? lead.source}</td>
                         <td className="py-2.5 px-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full text-white ${STATUS_COLORS[lead.status]}`}>
+                          <span className={`text-xs px-2 py-0.5 rounded-full text-gray-900 ${STATUS_COLORS[lead.status]}`}>
                             {lead.status}
                           </span>
                         </td>
                         <td className="py-2.5 px-3">
                           {fuStatus === "overdue"  && <span className="text-red-400 text-xs flex items-center gap-1"><AlertCircle size={11} /> {formatFollowUp(lead.followUpDate)}</span>}
                           {fuStatus === "today"    && <span className="text-blue-400 text-xs flex items-center gap-1"><Clock size={11} /> Today</span>}
-                          {fuStatus === "upcoming" && <span className="text-zinc-400 text-xs">{formatFollowUp(lead.followUpDate)}</span>}
-                          {!fuStatus              && <span className="text-zinc-700 text-xs">—</span>}
+                          {fuStatus === "upcoming" && <span className="text-gray-500 text-xs">{formatFollowUp(lead.followUpDate)}</span>}
+                          {!fuStatus              && <span className="text-gray-400 text-xs">—</span>}
                         </td>
                         <td className="py-2.5 px-3 text-green-400 text-xs">
                           {lead.leadValue ? `₹${(lead.leadValue / 1e5).toFixed(1)}L` : "—"}
                         </td>
-                        <td className="py-2.5 px-3 text-zinc-600 text-xs">
+                        <td className="py-2.5 px-3 text-gray-400 text-xs">
                           {new Date(lead.createdAt).toLocaleDateString("en-IN")}
                         </td>
                       </tr>
@@ -383,7 +383,7 @@ export default function CRMDashboard() {
                 </tbody>
               </table>
               {filtered.length === 0 && (
-                <div className="text-center py-12 text-zinc-600 text-sm">No leads match your search</div>
+                <div className="text-center py-12 text-gray-400 text-sm">No leads match your search</div>
               )}
             </div>
           )}
@@ -392,68 +392,68 @@ export default function CRMDashboard() {
 
       {/* Lead detail side panel */}
       {selectedLead && (
-        <aside className="w-80 bg-white/5 border-l border-white/10 flex flex-col shrink-0 overflow-y-auto">
-          <div className="flex items-center justify-between p-4 border-b border-white/10 sticky top-0 bg-white/5 z-10">
-            <h2 className="font-playfair text-white font-semibold text-sm">Lead Details</h2>
-            <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
+        <aside className="w-80 bg-white border-l border-gray-200 flex flex-col shrink-0 overflow-y-auto">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h2 className="font-playfair text-gray-900 font-semibold text-sm">Lead Details</h2>
+            <button onClick={() => setSelected(null)} className="text-gray-500 hover:text-gray-900"><X size={16} /></button>
           </div>
 
           <div className="p-4 space-y-4">
             {/* Info */}
-            <div className="bg-white/10 rounded-xl p-4 space-y-3">
+            <div className="bg-gray-100 rounded-xl p-4 space-y-3">
               <div>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Name</p>
-                <p className="text-white font-semibold">{selectedLead.name}</p>
+                <p className="text-gray-500 text-[10px] uppercase tracking-wider">Name</p>
+                <p className="text-gray-900 font-semibold">{selectedLead.name}</p>
               </div>
               <div>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Phone</p>
+                <p className="text-gray-500 text-[10px] uppercase tracking-wider">Phone</p>
                 <a href={`tel:${selectedLead.phone}`} className="text-[#D6A63E] hover:underline font-medium text-sm">{selectedLead.phone}</a>
               </div>
               {selectedLead.email && (
                 <div>
-                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Email</p>
-                  <a href={`mailto:${selectedLead.email}`} className="text-zinc-300 hover:text-white text-sm">{selectedLead.email}</a>
+                  <p className="text-gray-500 text-[10px] uppercase tracking-wider">Email</p>
+                  <a href={`mailto:${selectedLead.email}`} className="text-gray-700 hover:text-gray-900 text-sm">{selectedLead.email}</a>
                 </div>
               )}
               {selectedLead.message && (
                 <div>
-                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Message</p>
-                  <p className="text-zinc-300 text-sm leading-relaxed">{selectedLead.message}</p>
+                  <p className="text-gray-500 text-[10px] uppercase tracking-wider">Message</p>
+                  <p className="text-gray-700 text-sm leading-relaxed">{selectedLead.message}</p>
                 </div>
               )}
               <div>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Source</p>
-                <p className="text-zinc-300 text-sm">{SOURCE_LABELS[selectedLead.source] ?? selectedLead.source}</p>
+                <p className="text-gray-500 text-[10px] uppercase tracking-wider">Source</p>
+                <p className="text-gray-700 text-sm">{SOURCE_LABELS[selectedLead.source] ?? selectedLead.source}</p>
               </div>
               <div>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Created</p>
-                <p className="text-zinc-300 text-xs">{new Date(selectedLead.createdAt).toLocaleString("en-IN")}</p>
+                <p className="text-gray-500 text-[10px] uppercase tracking-wider">Created</p>
+                <p className="text-gray-700 text-xs">{new Date(selectedLead.createdAt).toLocaleString("en-IN")}</p>
               </div>
             </div>
 
             {/* Follow-up + Value */}
-            <div className="bg-white/10 rounded-xl p-4 space-y-3">
-              <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Follow-up & Value</p>
+            <div className="bg-gray-100 rounded-xl p-4 space-y-3">
+              <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Follow-up & Value</p>
               <div>
-                <label className="text-zinc-500 text-[10px]">Follow-up Date</label>
+                <label className="text-gray-500 text-[10px]">Follow-up Date</label>
                 <input type="date"
                   value={editFollowUp}
                   onChange={e => setFollowUp(e.target.value)}
-                  className="w-full mt-1 bg-white/15 border border-white/15 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                  className="w-full mt-1 bg-gray-200 border border-gray-300 text-gray-900 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
               </div>
               <div>
-                <label className="text-zinc-500 text-[10px]">Lead Value (₹)</label>
+                <label className="text-gray-500 text-[10px]">Lead Value (₹)</label>
                 <div className="relative mt-1">
-                  <IndianRupee size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <IndianRupee size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input type="number" min="0"
                     value={editValue}
                     onChange={e => setEditValue(e.target.value)}
                     placeholder="e.g. 5000000"
-                    className="w-full bg-white/15 border border-white/15 text-white text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
+                    className="w-full bg-gray-200 border border-gray-300 text-gray-900 text-xs rounded-lg pl-7 pr-3 py-2 focus:outline-none focus:border-[#D6A63E]" />
                 </div>
               </div>
               <button onClick={saveFollowUp}
-                className="w-full text-xs font-semibold py-2 rounded-lg text-black"
+                className="w-full text-xs font-semibold py-2 rounded-lg text-navy"
                 style={{ background: "var(--gold)" }}>
                 Save Follow-up & Value
               </button>
@@ -461,7 +461,7 @@ export default function CRMDashboard() {
 
             {/* Move status */}
             <div>
-              <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2">Move Stage</p>
+              <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-2">Move Stage</p>
               <div className="grid grid-cols-2 gap-2">
                 {COLUMNS.map(col => (
                   <button key={col.key}
@@ -469,8 +469,8 @@ export default function CRMDashboard() {
                     disabled={selectedLead.status === col.key}
                     className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-all ${
                       selectedLead.status === col.key
-                        ? "text-black border-[#D6A63E] font-semibold"
-                        : "bg-white/10 border-white/10 text-zinc-400 hover:border-[#D6A63E] hover:text-white"
+                        ? "text-navy border-[#D6A63E] font-semibold"
+                        : "bg-gray-100 border-gray-200 text-gray-500 hover:border-[#D6A63E] hover:text-gray-900"
                     }`}
                     style={selectedLead.status === col.key ? { background: "var(--gold)" } : {}}>
                     {col.icon} {col.label}
@@ -481,24 +481,24 @@ export default function CRMDashboard() {
 
             {/* Notes / Timeline */}
             <div>
-              <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2">Notes & Activity</p>
+              <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-2">Notes & Activity</p>
 
               {/* Timeline */}
               {(selectedLead.timeline ?? []).length > 0 && (
                 <div className="space-y-1.5 mb-3 max-h-32 overflow-y-auto">
                   {[...(selectedLead.timeline ?? [])].reverse().map((entry, i) => (
                     <div key={i} className="flex gap-2 text-[10px]">
-                      <span className="text-zinc-600 shrink-0">{new Date(entry.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
-                      <span className={entry.type === "note" ? "text-zinc-300" : "text-[#D6A63E]"}>{entry.text}</span>
+                      <span className="text-gray-400 shrink-0">{new Date(entry.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                      <span className={entry.type === "note" ? "text-gray-700" : "text-[#D6A63E]"}>{entry.text}</span>
                     </div>
                   ))}
                 </div>
               )}
 
               {selectedLead.notes && (
-                <div className="bg-white/10 rounded-lg p-3 mb-2">
-                  <p className="text-zinc-400 text-[10px] mb-1">Last Note</p>
-                  <p className="text-zinc-300 text-xs leading-relaxed">{selectedLead.notes}</p>
+                <div className="bg-gray-100 rounded-lg p-3 mb-2">
+                  <p className="text-gray-500 text-[10px] mb-1">Last Note</p>
+                  <p className="text-gray-700 text-xs leading-relaxed">{selectedLead.notes}</p>
                 </div>
               )}
               <textarea
@@ -506,10 +506,10 @@ export default function CRMDashboard() {
                 onChange={e => setNoteInput(e.target.value)}
                 rows={3}
                 placeholder="Add a note..."
-                className="w-full bg-white/10 border border-white/10 text-white placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
+                className="w-full bg-gray-100 border border-gray-200 text-gray-900 placeholder-zinc-600 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] resize-none"
               />
               <button onClick={saveNote} disabled={saving || !noteInput.trim()}
-                className="mt-2 w-full text-black text-xs font-semibold py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
+                className="mt-2 w-full text-navy text-xs font-semibold py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
                 style={{ background: "var(--gold)" }}>
                 {saving ? "Saving..." : "Save Note"}
               </button>
@@ -519,12 +519,12 @@ export default function CRMDashboard() {
             <div className="grid grid-cols-2 gap-2">
               <a href={`https://wa.me/${toIndianWaNumber(selectedLead.phone)}?text=${encodeURIComponent(`Hi ${selectedLead.name}, this is Raghu from PropKnown. How can I help you?`)}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium text-white"
+                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium text-gray-900"
                 style={{ backgroundColor: "#25D366" }}>
                 <MessageSquare size={12} /> WhatsApp
               </a>
               <a href={`tel:${selectedLead.phone}`}
-                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium bg-white/15 text-white hover:bg-white/20 transition-all">
+                className="flex items-center justify-center gap-1.5 text-xs py-2.5 rounded-lg font-medium bg-gray-200 text-gray-900 hover:bg-gray-200 transition-all">
                 <Phone size={12} /> Call
               </a>
             </div>
@@ -534,11 +534,11 @@ export default function CRMDashboard() {
 
       {/* Add Lead Modal */}
       {addOpen && (
-        <div className="fixed inset-0 bg-navy-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl w-full max-w-sm p-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-playfair text-white font-semibold">Add Lead Manually</h3>
-              <button onClick={() => setAddOpen(false)} className="text-zinc-500 hover:text-white"><X size={16} /></button>
+              <h3 className="font-playfair text-gray-900 font-semibold">Add Lead Manually</h3>
+              <button onClick={() => setAddOpen(false)} className="text-gray-500 hover:text-gray-900"><X size={16} /></button>
             </div>
             <div className="space-y-3">
               {[
@@ -548,22 +548,22 @@ export default function CRMDashboard() {
                 { label: "Message", key: "message", type: "text", placeholder: "Requirements..." },
               ].map(f => (
                 <div key={f.key}>
-                  <label className="text-zinc-400 text-xs mb-1 block">{f.label}</label>
+                  <label className="text-gray-500 text-xs mb-1 block">{f.label}</label>
                   <input type={f.type} placeholder={f.placeholder}
                     value={addForm[f.key as keyof typeof addForm]}
                     onChange={e => setAddForm(a => ({ ...a, [f.key]: e.target.value }))}
-                    className="w-full bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
+                    className="w-full bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-600" />
                 </div>
               ))}
               <div>
-                <label className="text-zinc-400 text-xs mb-1 block">Source</label>
+                <label className="text-gray-500 text-xs mb-1 block">Source</label>
                 <select value={addForm.source} onChange={e => setAddForm(a => ({ ...a, source: e.target.value }))}
-                  className="w-full bg-white/10 border border-white/10 text-zinc-300 text-sm rounded-lg px-3 py-2 focus:outline-none">
+                  className="w-full bg-gray-100 border border-gray-200 text-gray-700 text-sm rounded-lg px-3 py-2 focus:outline-none">
                   {Object.entries(SOURCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <button onClick={addLead} disabled={addLoading || !addForm.name || !addForm.phone}
-                className="w-full text-black font-semibold py-2.5 rounded-lg text-sm mt-2 disabled:opacity-50"
+                className="w-full text-navy font-semibold py-2.5 rounded-lg text-sm mt-2 disabled:opacity-50"
                 style={{ background: "var(--gold)" }}>
                 {addLoading ? "Adding..." : "Add Lead"}
               </button>

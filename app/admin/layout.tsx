@@ -12,7 +12,7 @@ export const metadata = { title: "PropKnown Admin", robots: { index: false, foll
 // theme the old <body> applied.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-white min-h-screen" style={{ background: "var(--navy)", fontFamily: "Inter, sans-serif" }}>
+    <div className="text-gray-900 min-h-screen bg-gray-50" style={{ fontFamily: "var(--font-montserrat, Inter, sans-serif)" }}>
       <ToastProvider>{children}</ToastProvider>
     </div>
   );

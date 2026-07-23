@@ -51,9 +51,9 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={async () => { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 transition-all"
+      className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all"
     >
-      {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+      {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
       {copied ? "Copied!" : "Copy"}
     </button>
   );
@@ -107,29 +107,29 @@ function AiBrainTab() {
       {/* Header */}
       <div className="flex items-start justify-between mb-4 shrink-0">
         <div>
-          <h1 className="font-playfair text-2xl font-bold text-white">AI Brain</h1>
-          <p className="text-zinc-400 text-sm mt-0.5">Manage listings, leads, and generate content in plain English</p>
+          <h1 className="font-playfair text-2xl font-bold text-gray-900">AI Brain</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Manage listings, leads, and generate content in plain English</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-zinc-500 text-xs">Mode:</span>
+          <span className="text-gray-500 text-xs">Mode:</span>
           <select value={mode} onChange={e => setMode(e.target.value)}
-            className="bg-white/10 border border-white/10 text-zinc-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D6A63E]">
+            className="bg-gray-100 border border-gray-200 text-gray-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D6A63E]">
             {["Auto", "Manage Listings", "Manage Leads", "Write Content"].map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 bg-white/5 rounded-xl border border-white/10 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-8">
-            <Brain size={36} className="mb-3 text-zinc-700" />
-            <p className="text-zinc-500 text-sm mb-1">Ask AI Brain anything</p>
-            <p className="text-zinc-700 text-xs mb-6">Add listings · manage leads · generate content · search data</p>
+            <Brain size={36} className="mb-3 text-gray-400" />
+            <p className="text-gray-500 text-sm mb-1">Ask AI Brain anything</p>
+            <p className="text-gray-400 text-xs mb-6">Add listings · manage leads · generate content · search data</p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
               {HINTS.map(h => (
                 <button key={h} onClick={() => setInput(h)}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-400 hover:border-[#D6A63E]/60 hover:text-white transition-all text-left">
+                  className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-[#D6A63E]/60 hover:text-gray-900 transition-all text-left">
                   {h}
                 </button>
               ))}
@@ -140,21 +140,21 @@ function AiBrainTab() {
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "user" ? (
-              <div className="max-w-sm bg-white/10 rounded-2xl rounded-tr-sm px-4 py-2.5">
-                <p className="text-white text-sm leading-relaxed">{m.content}</p>
-                <p className="text-zinc-600 text-[10px] mt-1 text-right">{m.ts}</p>
+              <div className="max-w-sm bg-gray-100 rounded-2xl rounded-tr-sm px-4 py-2.5">
+                <p className="text-gray-900 text-sm leading-relaxed">{m.content}</p>
+                <p className="text-gray-400 text-[10px] mt-1 text-right">{m.ts}</p>
               </div>
             ) : (
               <div className="max-w-2xl w-full">
-                <div className="bg-white/10 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
+                <div className="bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
                       <Brain size={11} style={{ color: "var(--gold)" }} />
-                      <span className="text-[10px] text-zinc-500">AI Brain Â· {m.ts}</span>
+                      <span className="text-[10px] text-gray-500">AI Brain Â· {m.ts}</span>
                     </div>
                     <CopyButton text={m.content} />
                   </div>
-                  <pre className="text-zinc-200 text-sm whitespace-pre-wrap leading-relaxed font-sans">{m.content}</pre>
+                  <pre className="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed font-sans">{m.content}</pre>
                 </div>
               </div>
             )}
@@ -163,16 +163,16 @@ function AiBrainTab() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white/10 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+            <div className="bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
               <Loader2 size={13} className="animate-spin" style={{ color: "var(--gold)" }} />
-              <span className="text-zinc-400 text-sm">AI Brain is thinkingâ€¦</span>
+              <span className="text-gray-500 text-sm">AI Brain is thinkingâ€¦</span>
             </div>
           </div>
         )}
 
         {error && (
           <div className="bg-red-950/40 border border-red-800/50 rounded-xl px-4 py-2.5">
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
@@ -192,20 +192,20 @@ function AiBrainTab() {
               : mode === "Manage Leads"
               ? "e.g. Show today's leads Â· Mark lead as contacted Â· Show won leads this monthâ€¦"
               : "e.g. Add listing: My Home Bhooja 3BHK, Kokapet, 1.5Cr, RERA P02400008234â€¦"}
-            className="flex-1 bg-white/10 border border-white/10 text-white placeholder-zinc-600 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] resize-none"
+            className="flex-1 bg-gray-100 border border-gray-200 text-gray-900 placeholder-gray-400 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] resize-none"
           />
           <button onClick={send} disabled={loading || !input.trim()}
-            className="px-5 rounded-lg font-semibold text-black text-sm disabled:opacity-40 transition-colors duration-200 flex flex-col items-center justify-center gap-1 shrink-0"
+            className="px-5 rounded-lg font-semibold text-navy text-sm disabled:opacity-40 transition-colors duration-200 flex flex-col items-center justify-center gap-1 shrink-0"
             style={{ background: "var(--gold)" }}>
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Brain size={16} />}
             <span className="text-[10px]">Send</span>
           </button>
         </div>
         <div className="flex justify-between items-center mt-1.5 px-1">
-          <p className="text-zinc-700 text-[11px]">Enter to send Â· Shift+Enter for new line</p>
+          <p className="text-gray-400 text-[11px]">Enter to send Â· Shift+Enter for new line</p>
           {messages.length > 0 && (
             <button onClick={() => { setMessages([]); setError(""); }}
-              className="text-zinc-700 hover:text-zinc-400 text-[11px] transition-colors">
+              className="text-gray-400 hover:text-gray-500 text-[11px] transition-colors">
               Clear chat ({messages.length})
             </button>
           )}
@@ -262,20 +262,20 @@ function QuickAddTab() {
     finally { setParsing(false); }
   };
 
-  const inpCls = "bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
+  const inpCls = "bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-gray-400";
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-playfair text-2xl font-bold text-white mb-1">Quick Add Listing</h1>
-        <p className="text-zinc-400 text-sm">Paste any property details — AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
+        <h1 className="font-playfair text-2xl font-bold text-gray-900 mb-1">Quick Add Listing</h1>
+        <p className="text-gray-500 text-sm">Paste any property details — AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="space-y-5">
           {/* Paste area */}
           <div>
-            <label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Paste Property Details</label>
+            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Paste Property Details</label>
             <textarea
               value={rawText}
               onChange={e => setRawText(e.target.value)}
@@ -284,7 +284,7 @@ function QuickAddTab() {
               placeholder="Paste any format: WhatsApp message, email, brochure text, broker notes, MagicBricks link textâ€¦"
             />
             <button onClick={parseText} disabled={parsing || !rawText.trim()}
-              className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-black disabled:opacity-50 transition-all"
+              className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-navy disabled:opacity-50 transition-all"
               style={{ background: "var(--gold)" }}>
               {parsing ? <><Loader2 size={14} className="animate-spin" /> Parsing...</> : <><Brain size={14} /> AI Auto-Fill</>}
             </button>
@@ -298,13 +298,13 @@ function QuickAddTab() {
               ["RERA No.", "reraNumber"], ["Property Type", "propertyType"],
             ].map(([label, key]) => (
               <div key={key}>
-                <label className="text-zinc-500 text-[10px] mb-1 block">{label}</label>
+                <label className="text-gray-500 text-[10px] mb-1 block">{label}</label>
                 <input value={parsed[key] ?? ""} onChange={e => setParsed({ ...parsed, [key]: e.target.value })}
                   className={inpCls} placeholder={label} />
               </div>
             ))}
             <div className="sm:col-span-2">
-              <label className="text-zinc-500 text-[10px] mb-1 block">Description</label>
+              <label className="text-gray-500 text-[10px] mb-1 block">Description</label>
               <textarea value={parsed["description"] ?? ""} onChange={e => setParsed({ ...parsed, description: e.target.value })}
                 rows={3} className={`${inpCls} resize-none`} placeholder="Property description" />
             </div>
@@ -312,7 +312,7 @@ function QuickAddTab() {
 
           {/* Video URL */}
           <div>
-            <label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Video URL (YouTube / Matterport 3D)</label>
+            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Video URL (YouTube / Matterport 3D)</label>
             <input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className={inpCls} placeholder="https://youtube.com/... or https://my.matterport.com/..." />
           </div>
         </div>
@@ -320,26 +320,26 @@ function QuickAddTab() {
         <div className="space-y-5">
           {/* Photo upload */}
           <div>
-            <label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Photos ({photos.length}/10)</label>
+            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Photos ({photos.length}/10)</label>
             <div
               onDrop={handleDrop}
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-white/10 hover:border-white/20"}`}
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-gray-200 hover:border-gray-300"}`}
             >
-              <p className="text-zinc-400 text-sm">Drag &amp; drop photos here or click to browse</p>
-              <p className="text-zinc-600 text-xs mt-1">JPG, PNG — up to 10 photos</p>
+              <p className="text-gray-500 text-sm">Drag &amp; drop photos here or click to browse</p>
+              <p className="text-gray-400 text-xs mt-1">JPG, PNG — up to 10 photos</p>
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
             </div>
             {photos.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {photos.map((f, i) => (
-                  <div key={i} className="relative aspect-square bg-white/10 rounded-lg overflow-hidden group">
+                  <div key={i} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
                     <button onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute inset-0 bg-navy-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-red-400 text-lg">âœ•</button>
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-red-400 text-lg">âœ•</button>
                   </div>
                 ))}
               </div>
@@ -350,7 +350,7 @@ function QuickAddTab() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Shield size={14} style={{ color: "var(--gold)" }} />
-              <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">10-Point Approval Checklist</p>
+              <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">10-Point Approval Checklist</p>
             </div>
             <div className="space-y-2">
               {CHECKLIST_ITEMS.map((item, i) => (
@@ -362,11 +362,11 @@ function QuickAddTab() {
                     className="w-4 h-4 rounded"
                     style={{ accentColor: "var(--gold)" }}
                   />
-                  <span className={`text-sm transition-colors ${checklist[i] ? "text-zinc-300 line-through opacity-60" : "text-zinc-400"}`}>{item}</span>
+                  <span className={`text-sm transition-colors ${checklist[i] ? "text-gray-700 line-through opacity-60" : "text-gray-500"}`}>{item}</span>
                 </label>
               ))}
             </div>
-            <p className="mt-2 text-xs text-zinc-600">
+            <p className="mt-2 text-xs text-gray-400">
               {checklist.filter(Boolean).length}/{CHECKLIST_ITEMS.length} completed
             </p>
           </div>
@@ -374,7 +374,7 @@ function QuickAddTab() {
           {/* Actions */}
           <div className="space-y-3">
             <button disabled={!allChecked}
-              className="w-full py-3 rounded-lg font-bold text-black transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-lg font-bold text-navy transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--gold)" }}>
               {allChecked ? "✓ Approve & Publish" : "Complete All 10 Checklist Items to Approve"}
             </button>
@@ -382,7 +382,7 @@ function QuickAddTab() {
               <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={2}
                 className={`${inpCls} resize-none`} placeholder="Rejection reason (required for reject)..." />
               <button disabled={!rejectReason.trim()}
-                className="mt-2 w-full py-2 rounded-xl font-semibold text-sm border border-red-700 text-red-400 hover:bg-red-900/30 transition-all disabled:opacity-40">
+                className="mt-2 w-full py-2 rounded-xl font-semibold text-sm border border-red-700 text-red-600 hover:bg-red-900/30 transition-all disabled:opacity-40">
                 Reject Listing
               </button>
             </div>
@@ -442,7 +442,7 @@ function SubmissionsTab() {
   const [milestonePhoto, setMilestonePhoto] = useState<File | null>(null);
   const [savingConstruction, setSavingConstruction] = useState(false);
 
-  const inpCls = "bg-white/10 border border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-zinc-500";
+  const inpCls = "bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-gray-400";
 
   const fetchList = async (st = statusFilter) => {
     setLoadingList(true);
@@ -614,12 +614,12 @@ function SubmissionsTab() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="font-playfair text-xl font-bold text-white">Property Submissions</h1>
+          <h1 className="font-playfair text-xl font-bold text-gray-900">Property Submissions</h1>
           {pendingCount > 0 && (
             <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>
           )}
         </div>
-        <button onClick={() => fetchList()} className="text-zinc-400 hover:text-white text-sm border border-white/10 px-3 py-1.5 rounded-lg transition-colors">
+        <button onClick={() => fetchList()} className="text-gray-500 hover:text-gray-900 text-sm border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
           Refresh
         </button>
       </div>
@@ -628,7 +628,7 @@ function SubmissionsTab() {
       <div className="flex gap-2 mb-5">
         {STATUS_TABS.map(t => (
           <button key={t.key} onClick={() => changeFilter(t.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-black" : "bg-white/10 text-zinc-400 hover:text-white"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${statusFilter === t.key ? "text-navy" : "bg-gray-100 text-gray-500 hover:text-gray-900"}`}
             style={statusFilter === t.key ? { background: "var(--gold)" } : {}}>
             {t.label}
           </button>
@@ -636,37 +636,37 @@ function SubmissionsTab() {
       </div>
 
       {/* List */}
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden mb-6">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/10 border-b border-white/10">
+            <thead className="bg-gray-100 border-b border-gray-200">
               <tr>
                 {["Property", "Location", "Price", "Contact", "Files", "Status", "Date", ""].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800">
+            <tbody className="divide-y divide-gray-200">
               {loadingList ? (
-                <tr><td colSpan={8} className="text-center py-10"><Loader2 size={20} className="mx-auto animate-spin text-zinc-500" /></td></tr>
+                <tr><td colSpan={8} className="text-center py-10"><Loader2 size={20} className="mx-auto animate-spin text-gray-500" /></td></tr>
               ) : list.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-10 text-zinc-500">No {statusFilter} submissions.</td></tr>
+                <tr><td colSpan={8} className="text-center py-10 text-gray-500">No {statusFilter} submissions.</td></tr>
               ) : list.map(s => (
-                <tr key={s.id} className="hover:bg-white/10 transition-colors">
+                <tr key={s.id} className="hover:bg-gray-100 transition-colors">
                   <td className="px-4 py-3">
-                    <p className="text-white font-medium line-clamp-1">{s.title}</p>
-                    <p className="text-zinc-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
+                    <p className="text-gray-900 font-medium line-clamp-1">{s.title}</p>
+                    <p className="text-gray-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
                   </td>
-                  <td className="px-4 py-3 text-zinc-300 text-xs">{s.area}, {s.city}</td>
+                  <td className="px-4 py-3 text-gray-700 text-xs">{s.area}, {s.city}</td>
                   <td className="px-4 py-3 font-semibold text-sm" style={{ color: "var(--gold)" }}>{s.priceDisplay}</td>
                   <td className="px-4 py-3">
-                    <p className="text-zinc-200 text-xs">{s.ownerName}</p>
+                    <p className="text-gray-800 text-xs">{s.ownerName}</p>
                     <a href={`tel:${s.ownerPhone}`} className="text-[#D6A63E] hover:underline text-xs">{s.ownerPhone}</a>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1.5 text-xs">
-                      {s.photoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><ImageIcon size={10} />{s.photoCount}</span>}
-                      {s.videoCount > 0 && <span className="flex items-center gap-0.5 text-zinc-400"><Video size={10} />{s.videoCount}</span>}
+                      {s.photoCount > 0 && <span className="flex items-center gap-0.5 text-gray-500"><ImageIcon size={10} />{s.photoCount}</span>}
+                      {s.videoCount > 0 && <span className="flex items-center gap-0.5 text-gray-500"><Video size={10} />{s.videoCount}</span>}
                       {s.docCount > 0 && <span className="flex items-center gap-0.5 text-[#D6A63E]"><FileText size={10} />{s.docCount}</span>}
                     </div>
                   </td>
@@ -677,14 +677,14 @@ function SubmissionsTab() {
                       "bg-yellow-900/60 text-yellow-400"
                     }`}>{s.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(s.createdAt).toLocaleDateString("en-IN")}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{new Date(s.createdAt).toLocaleDateString("en-IN")}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openDetail(s.id)}
-                        className="text-xs px-3 py-1.5 rounded-lg border border-white/15 text-zinc-300 hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all">
+                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all">
                         Review
                       </button>
-                      <button onClick={() => doDelete(s.id)} className="text-zinc-600 hover:text-red-400 transition-colors p-1.5">
+                      <button onClick={() => doDelete(s.id)} className="text-gray-400 hover:text-red-400 transition-colors p-1.5">
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -698,17 +698,17 @@ function SubmissionsTab() {
 
       {/* Detail modal */}
       {(loadDetail || reviewing) && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-navy-900/80 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 overflow-y-auto" onClick={() => !acting && setReviewing(null)}>
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-4xl shadow-2xl mt-4 mb-4" onClick={e => e.stopPropagation()}>
             {loadDetail ? (
               <div className="p-20 text-center"><Loader2 size={28} className="mx-auto animate-spin" style={{ color: "var(--gold)" }} /></div>
             ) : reviewing && (
               <>
                 {/* Modal header */}
-                <div className="flex items-start justify-between p-6 border-b border-white/10">
+                <div className="flex items-start justify-between p-6 border-b border-gray-200">
                   <div>
-                    <h2 className="font-playfair text-white font-bold text-lg">{reviewing.title}</h2>
-                    <p className="text-zinc-400 text-sm mt-0.5">{reviewing.propType}{reviewing.bhk ? ` · ${reviewing.bhk}` : ""} · {reviewing.area}, {reviewing.city}</p>
+                    <h2 className="font-playfair text-gray-900 font-bold text-lg">{reviewing.title}</h2>
+                    <p className="text-gray-500 text-sm mt-0.5">{reviewing.propType}{reviewing.bhk ? ` · ${reviewing.bhk}` : ""} · {reviewing.area}, {reviewing.city}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
@@ -716,7 +716,7 @@ function SubmissionsTab() {
                       reviewing.status === "rejected" ? "bg-red-900/60 text-red-400" :
                       "bg-yellow-900/60 text-yellow-400"
                     }`}>{reviewing.status}</span>
-                    <button onClick={() => setReviewing(null)} className="text-zinc-500 hover:text-white transition-colors"><XCircle size={20} /></button>
+                    <button onClick={() => setReviewing(null)} className="text-gray-500 hover:text-gray-900 transition-colors"><XCircle size={20} /></button>
                   </div>
                 </div>
 
@@ -726,10 +726,10 @@ function SubmissionsTab() {
                     {/* Photos */}
                     {reviewing.photoFiles.length > 0 && (
                       <div>
-                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <ImageIcon size={12} /> Photos ({reviewing.photoFiles.length})
                         </p>
-                        <div className="aspect-video bg-white/10 rounded-xl overflow-hidden mb-2">
+                        <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden mb-2">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={reviewing.photoFiles[activePhoto]?.data} alt="" className="w-full h-full object-cover" />
                         </div>
@@ -737,7 +737,7 @@ function SubmissionsTab() {
                           <div className="flex gap-2 overflow-x-auto pb-1">
                             {reviewing.photoFiles.map((f, i) => (
                               <button key={f.id} onClick={() => setActivePhoto(i)}
-                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-[#D6A63E]" : "border-white/10"}`}>
+                                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-[#D6A63E]" : "border-gray-200"}`}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={f.data} alt="" className="w-full h-full object-cover" />
                               </button>
@@ -750,19 +750,19 @@ function SubmissionsTab() {
                     {/* Videos */}
                     {(reviewing.videoFiles.length > 0 || reviewing.videoUrls.length > 0) && (
                       <div>
-                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <Video size={12} /> Videos
                         </p>
                         <div className="space-y-3">
                           {reviewing.videoFiles.map(v => (
-                            <video key={v.id} src={v.data} controls className="w-full rounded-xl bg-navy-900 max-h-48" />
+                            <video key={v.id} src={v.data} controls className="w-full rounded-xl bg-white max-h-48" />
                           ))}
                           {reviewing.videoUrls.map((url, i) => (
                             isYoutube(url) ? (
                               <iframe key={i} src={ytEmbed(url)} title="Property video" className="w-full aspect-video rounded-xl" allowFullScreen />
                             ) : (
                               <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                                className="block text-sm px-4 py-2 rounded-lg border border-white/10 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
+                                className="block text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:border-[#D6A63E] hover:text-gray-900 transition-all">
                                 Video link: {url}
                               </a>
                             )
@@ -772,32 +772,32 @@ function SubmissionsTab() {
                     )}
 
                     {/* Description */}
-                    <div className="bg-white/10 rounded-xl p-4">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
-                      <p className="text-zinc-200 text-sm leading-relaxed whitespace-pre-line">{reviewing.description}</p>
+                    <div className="bg-gray-100 rounded-xl p-4">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
+                      <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">{reviewing.description}</p>
                     </div>
 
                     {reviewing.features && (
-                      <div className="bg-white/10 rounded-xl p-4">
-                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Features</p>
-                        <p className="text-zinc-200 text-sm">{reviewing.features}</p>
+                      <div className="bg-gray-100 rounded-xl p-4">
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2">Features</p>
+                        <p className="text-gray-800 text-sm">{reviewing.features}</p>
                       </div>
                     )}
 
                     {/* Documents — admin only */}
                     {reviewing.docFiles.length > 0 && (
                       <div>
-                        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <FileText size={12} /> Documents ({reviewing.docFiles.length}) — admin only
                         </p>
                         <div className="space-y-2">
                           {reviewing.docFiles.map(doc => (
-                            <div key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2.5">
+                            <div key={doc.id} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2.5">
                               <div className="flex items-center gap-2 min-w-0">
                                 <FileText size={13} className="text-[#D6A63E] shrink-0" />
                                 <div className="min-w-0">
-                                  <p className="text-zinc-200 text-xs truncate">{doc.name}</p>
-                                  {doc.docType && <p className="text-zinc-500 text-[10px]">{doc.docType}</p>}
+                                  <p className="text-gray-800 text-xs truncate">{doc.name}</p>
+                                  {doc.docType && <p className="text-gray-500 text-[10px]">{doc.docType}</p>}
                                 </div>
                               </div>
                               <a href={doc.data} download={doc.name}
@@ -815,8 +815,8 @@ function SubmissionsTab() {
                   {/* Right: Info + Actions */}
                   <div className="space-y-4">
                     {/* Property info */}
-                    <div className="bg-white/10 rounded-xl p-4 space-y-2 text-sm">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Property Info</p>
+                    <div className="bg-gray-100 rounded-xl p-4 space-y-2 text-sm">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Property Info</p>
                       {[
                         ["Price",    reviewing.priceDisplay],
                         ["Type",     `${reviewing.propType}${reviewing.bhk ? ` · ${reviewing.bhk}` : ""}`],
@@ -825,20 +825,20 @@ function SubmissionsTab() {
                         reviewing.reraNumber ? ["RERA", reviewing.reraNumber] : null,
                       ].filter(Boolean).map((row) => (
                         <div key={row![0] as string} className="flex gap-2">
-                          <span className="text-zinc-500 w-18 shrink-0 text-xs">{row![0] as string}</span>
-                          <span className="text-zinc-200 text-xs">{row![1] as string}</span>
+                          <span className="text-gray-500 w-18 shrink-0 text-xs">{row![0] as string}</span>
+                          <span className="text-gray-800 text-xs">{row![1] as string}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Submitter contact */}
-                    <div className="bg-white/10 rounded-xl p-4 space-y-3">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
-                      <p className="text-white font-semibold text-sm">{reviewing.ownerName}</p>
+                    <div className="bg-gray-100 rounded-xl p-4 space-y-3">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
+                      <p className="text-gray-900 font-semibold text-sm">{reviewing.ownerName}</p>
                       <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-[#D6A63E] hover:underline text-sm">
                         <Phone size={13} /> {reviewing.ownerPhone}
                       </a>
-                      <a href={`mailto:${reviewing.ownerEmail}`} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-200 text-xs">
+                      <a href={`mailto:${reviewing.ownerEmail}`} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 text-xs">
                         <Mail size={12} /> {reviewing.ownerEmail}
                       </a>
                       <a href={`https://wa.me/91${reviewing.ownerPhone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${reviewing.ownerName}, this is PropKnown regarding your property "${reviewing.title}".`)}`}
@@ -851,14 +851,14 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Doc summary */}
-                    <div className="text-zinc-500 text-xs bg-white/10 rounded-lg p-3">
+                    <div className="text-gray-500 text-xs bg-gray-100 rounded-lg p-3">
                       Docs: {reviewing.docFiles.length} uploaded · Photos: {reviewing.photoFiles.length} · Videos: {reviewing.videoFiles.length + reviewing.videoUrls.length}
                     </div>
 
                     {/* PropKnown Verified checks — honesty-first: stamp only reflects what's
                         actually ticked here. Independent of approve/reject status. */}
-                    <div className="bg-white/10 rounded-xl p-4 space-y-2.5">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <div className="bg-gray-100 rounded-xl p-4 space-y-2.5">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> PropKnown Verified Checks
                       </p>
                       {([
@@ -868,7 +868,7 @@ function SubmissionsTab() {
                         ["layoutApproved", "Approved Layout (HMDA/DTCP)"],
                         ["encumbranceClear", "Encumbrance Clear"],
                       ] as [keyof VerificationFlags, string][]).map(([key, label]) => (
-                        <label key={key} className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer">
+                        <label key={key} className="flex items-center gap-2.5 text-xs text-gray-700 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={!!vFlags[key]}
@@ -905,17 +905,17 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Legal Safety Checklist — 3-way status per item, honest defaults to "pending" */}
-                    <div className="bg-white/10 rounded-xl p-4 space-y-2.5">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <div className="bg-gray-100 rounded-xl p-4 space-y-2.5">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> Legal Safety Checklist
                       </p>
                       {LEGAL_CHECKLIST_ITEMS.map((item) => (
                         <div key={item.key} className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-zinc-300 truncate">{item.label}</span>
+                          <span className="text-xs text-gray-700 truncate">{item.label}</span>
                           <select
                             value={legal[item.key] ?? "pending"}
                             onChange={e => setLegal(l => ({ ...l, [item.key]: e.target.value as ChecklistStatus }))}
-                            className="bg-white/10 border border-white/10 text-white text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-[#D6A63E] shrink-0"
+                            className="bg-gray-100 border border-gray-200 text-gray-900 text-[11px] rounded-md px-2 py-1 focus:outline-none focus:border-[#D6A63E] shrink-0"
                           >
                             <option value="pending">Pending</option>
                             <option value="verified">Verified</option>
@@ -942,20 +942,20 @@ function SubmissionsTab() {
 
                     {/* Construction Progress — only appears on the property page once at
                         least one milestone exists here; there's no separate on/off flag. */}
-                    <div className="bg-white/10 rounded-xl p-4 space-y-3">
-                      <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                    <div className="bg-gray-100 rounded-xl p-4 space-y-3">
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
                         <Home size={12} /> Construction Progress
                       </p>
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-[10px] text-zinc-500 block mb-1">Overall % complete</label>
+                          <label className="text-[10px] text-gray-500 block mb-1">Overall % complete</label>
                           <input type="number" min={0} max={100} value={pctDraft}
                             onChange={e => setPctDraft(e.target.value)} placeholder="e.g. 45"
                             className={`${inpCls} text-xs py-1.5`} />
                         </div>
                         <div>
-                          <label className="text-[10px] text-zinc-500 block mb-1">Expected completion</label>
+                          <label className="text-[10px] text-gray-500 block mb-1">Expected completion</label>
                           <input type="date" value={completionDraft}
                             onChange={e => setCompletionDraft(e.target.value)}
                             className={`${inpCls} text-xs py-1.5`} />
@@ -971,9 +971,9 @@ function SubmissionsTab() {
                       </button>
 
                       {milestones.length > 0 && (
-                        <div className="space-y-1.5 border-t border-white/10 pt-2">
+                        <div className="space-y-1.5 border-t border-gray-200 pt-2">
                           {milestones.map(m => (
-                            <div key={m.id} className="flex items-center justify-between gap-2 text-[11px] text-zinc-300">
+                            <div key={m.id} className="flex items-center justify-between gap-2 text-[11px] text-gray-700">
                               <span className="truncate">{m.title} — {m.date}{m.photoUrl ? " 📷" : ""}</span>
                               <button onClick={() => removeMilestone(m.id)} className="text-red-400 hover:text-red-300 shrink-0">
                                 <Trash2 size={11} />
@@ -983,13 +983,13 @@ function SubmissionsTab() {
                         </div>
                       )}
 
-                      <div className="border-t border-white/10 pt-2.5 space-y-2">
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Add Milestone</p>
+                      <div className="border-t border-gray-200 pt-2.5 space-y-2">
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Add Milestone</p>
                         <div className="grid grid-cols-2 gap-2">
                           <select
                             value={newMilestone.title}
                             onChange={e => setNewMilestone(nm => ({ ...nm, title: e.target.value }))}
-                            className="bg-white/10 border border-white/10 text-white text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-[#D6A63E]"
+                            className="bg-gray-100 border border-gray-200 text-gray-900 text-[11px] rounded-md px-2 py-1.5 focus:outline-none focus:border-[#D6A63E]"
                           >
                             {PRESET_MILESTONES.map(p => <option key={p} value={p}>{p}</option>)}
                             <option value="Custom">Custom…</option>
@@ -1008,11 +1008,11 @@ function SubmissionsTab() {
                           placeholder="Note (optional)" className={`${inpCls} text-xs py-1.5`} />
                         <input type="file" accept="image/*"
                           onChange={e => setMilestonePhoto(e.target.files?.[0] ?? null)}
-                          className="text-[10px] text-zinc-400 w-full" />
+                          className="text-[10px] text-gray-500 w-full" />
                         <button
                           onClick={addMilestone}
                           disabled={savingConstruction}
-                          className="w-full py-2 rounded-lg text-xs font-semibold text-black transition-all disabled:opacity-50"
+                          className="w-full py-2 rounded-lg text-xs font-semibold text-navy transition-all disabled:opacity-50"
                           style={{ background: "var(--gold)" }}
                         >
                           {savingConstruction ? "Saving…" : "Add Milestone"}
@@ -1022,9 +1022,9 @@ function SubmissionsTab() {
 
                     {/* Approve / Reject */}
                     {reviewing.status === "pending" && (
-                      <div className="space-y-3 border-t border-white/10 pt-4">
+                      <div className="space-y-3 border-t border-gray-200 pt-4">
                         <button onClick={() => doAction("approve")} disabled={acting}
-                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-black text-sm transition-all disabled:opacity-50"
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-navy text-sm transition-all disabled:opacity-50"
                           style={{ background: "#22c55e" }}>
                           {acting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />}
                           Approve & Go Live
@@ -1033,7 +1033,7 @@ function SubmissionsTab() {
                           <textarea value={rejectMsg} onChange={e => setRejectMsg(e.target.value)} rows={2}
                             className={`${inpCls} resize-none`} placeholder="Rejection reason (required)…" />
                           <button onClick={() => doAction("reject")} disabled={acting || !rejectMsg.trim()}
-                            className="w-full py-2.5 rounded-xl font-semibold text-sm border border-red-700 text-red-400 hover:bg-red-900/30 transition-all disabled:opacity-40">
+                            className="w-full py-2.5 rounded-xl font-semibold text-sm border border-red-700 text-red-600 hover:bg-red-900/30 transition-all disabled:opacity-40">
                             Reject
                           </button>
                         </div>
@@ -1041,27 +1041,27 @@ function SubmissionsTab() {
                     )}
 
                     {reviewing.status === "approved" && (
-                      <div className="border-t border-white/10 pt-4">
+                      <div className="border-t border-gray-200 pt-4">
                         <div className="bg-green-900/30 border border-green-800 rounded-xl p-3 text-center">
-                          <CheckCircle size={16} className="mx-auto mb-1 text-green-400" />
-                          <p className="text-green-400 text-xs font-semibold">Live on Buy page</p>
+                          <CheckCircle size={16} className="mx-auto mb-1 text-green-600" />
+                          <p className="text-green-600 text-xs font-semibold">Live on Buy page</p>
                           <a href="/buy" target="_blank" className="text-xs text-green-600 underline mt-1 inline-block">View →</a>
                         </div>
                         <button onClick={() => doAction("reject")} disabled={acting}
-                          className="mt-3 w-full py-2 rounded-xl text-sm border border-red-800 text-red-400 hover:bg-red-900/30 transition-all disabled:opacity-40">
+                          className="mt-3 w-full py-2 rounded-xl text-sm border border-red-800 text-red-600 hover:bg-red-900/30 transition-all disabled:opacity-40">
                           Revoke Approval
                         </button>
                       </div>
                     )}
 
                     {reviewing.status === "rejected" && reviewing.rejectReason && (
-                      <div className="border-t border-white/10 pt-4">
+                      <div className="border-t border-gray-200 pt-4">
                         <div className="bg-red-900/20 border border-red-800 rounded-xl p-3">
-                          <p className="text-red-400 text-xs font-semibold mb-1">Rejection reason</p>
-                          <p className="text-zinc-300 text-xs">{reviewing.rejectReason}</p>
+                          <p className="text-red-600 text-xs font-semibold mb-1">Rejection reason</p>
+                          <p className="text-gray-700 text-xs">{reviewing.rejectReason}</p>
                         </div>
                         <button onClick={() => doAction("approve")} disabled={acting}
-                          className="mt-3 w-full py-2.5 rounded-xl font-semibold text-black text-sm transition-all disabled:opacity-50"
+                          className="mt-3 w-full py-2.5 rounded-xl font-semibold text-navy text-sm transition-all disabled:opacity-50"
                           style={{ background: "#22c55e" }}>
                           Re-approve
                         </button>
@@ -1219,7 +1219,7 @@ function AdminDashboardInner() {
     router.push("/admin");
   };
 
-  const inputCls = "bg-white/10 border border-white/10 text-white placeholder-zinc-500 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-[#D6A63E]";
+  const inputCls = "bg-gray-100 border border-gray-200 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-[#D6A63E]";
 
   const SIDEBAR_TABS = [
     { key: "aiBrain",     label: "AI Brain",       icon: Brain },
@@ -1231,51 +1231,51 @@ function AdminDashboardInner() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-navy flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-56 bg-navy-900 border-r border-white/10 flex flex-col">
-        <div className="p-5 border-b border-white/10">
-          <PKLogo dark />
-          <span className="text-[7px] tracking-[0.25em] mt-2 block" style={{ color: "var(--gold)" }}>ADMIN PORTAL</span>
+      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-5 border-b border-gray-200">
+          <PKLogo />
+          <span className="text-[7px] tracking-[0.25em] mt-2 block" style={{ color: "var(--gold-text)" }}>ADMIN PORTAL</span>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {SIDEBAR_TABS.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setAdminTab(key)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${adminTab === key ? "text-black font-semibold" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${adminTab === key ? "text-navy font-semibold" : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}
               style={adminTab === key ? { background: "var(--gold)" } : {}}>
               <Icon size={15} /> {label}
             </button>
           ))}
-          <a href="/crm/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Users size={15} /> CRM Pipeline
           </a>
-          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/dashboard-v2" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <LayoutDashboard size={15} /> Executive Dashboard
           </a>
-          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/crm/followups" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Inbox size={15} /> Follow-Ups
           </a>
-          <a href="/admin/bulk-import" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/admin/bulk-import" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <FileText size={15} /> Bulk Import
           </a>
-          <a href="/admin/users" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/admin/users" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Shield size={15} /> Team / RBAC
           </a>
-          <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Zap size={15} /> Integrations
           </a>
-          <a href="/admin/audit-log" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/admin/audit-log" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <History size={15} /> Audit Trail
           </a>
-          <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Home size={15} /> NRI Page
           </a>
-          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Home size={15} /> View Website
           </a>
         </nav>
-        <div className="p-3 border-t border-white/10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-red-400 transition-colors">
+        <div className="p-3 border-t border-gray-200">
+          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 transition-colors">
             <LogOut size={15} /> Logout
           </button>
         </div>
@@ -1294,26 +1294,26 @@ function AdminDashboardInner() {
         {adminTab === "leads" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="font-playfair text-xl font-bold text-white">All Leads</h1>
-              <button onClick={fetchAdminLeads} className="text-zinc-400 hover:text-white text-sm border border-white/10 px-3 py-1.5 rounded-lg transition-colors">
+              <h1 className="font-playfair text-xl font-bold text-gray-900">All Leads</h1>
+              <button onClick={fetchAdminLeads} className="text-gray-500 hover:text-gray-900 text-sm border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
                 Refresh
               </button>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-white/10 border-b border-white/10">
+                  <thead className="bg-gray-100 border-b border-gray-200">
                     <tr>
                       {["Name","Phone","Email","Source","Status","Date","WhatsApp"].map(h => (
-                        <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
+                        <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800">
+                  <tbody className="divide-y divide-gray-200">
                     {leadsLoading ? (
-                      <tr><td colSpan={7} className="text-center py-10 text-zinc-500"><Loader2 size={20} className="mx-auto animate-spin" /></td></tr>
+                      <tr><td colSpan={7} className="text-center py-10 text-gray-500"><Loader2 size={20} className="mx-auto animate-spin" /></td></tr>
                     ) : adminLeads.length === 0 ? (
-                      <tr><td colSpan={7} className="text-center py-10 text-zinc-500">No leads yet. Leads from all forms appear here.</td></tr>
+                      <tr><td colSpan={7} className="text-center py-10 text-gray-500">No leads yet. Leads from all forms appear here.</td></tr>
                     ) : adminLeads.map(l => {
                       const leadWaLink = `https://wa.me/${toIndianWaNumber(l.phone)}?text=${encodeURIComponent(`Hi ${l.name}, this is Raghu from PropKnown. How can I help you?`)}`;
                       const notifyWaLink = `https://wa.me/917013016003?text=${encodeURIComponent(
@@ -1321,16 +1321,16 @@ function AdminDashboardInner() {
                           .filter(Boolean).join("\n")
                       )}`;
                       return (
-                      <tr key={l.id} className="hover:bg-white/10 transition-colors">
-                        <td className="px-4 py-3 text-white font-medium">{l.name}</td>
+                      <tr key={l.id} className="hover:bg-gray-100 transition-colors">
+                        <td className="px-4 py-3 text-gray-900 font-medium">{l.name}</td>
                         <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-[#D6A63E] hover:underline">{l.phone}</a></td>
-                        <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "—"}</td>
-                        <td className="px-4 py-3"><span className="bg-white/10 text-zinc-300 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
-                        <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-white/10 text-zinc-300"}`}>{l.status}</span></td>
-                        <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(l.createdAt).toLocaleDateString("en-IN")}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{l.email ?? "—"}</td>
+                        <td className="px-4 py-3"><span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{l.source}</span></td>
+                        <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.status==="won"?"bg-green-900 text-green-400":l.status==="lost"?"bg-red-900 text-red-400":"bg-gray-100 text-gray-700"}`}>{l.status}</span></td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{new Date(l.createdAt).toLocaleDateString("en-IN")}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <a href={leadWaLink} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 text-xs font-medium mr-3">Message Lead</a>
-                          <a href={notifyWaLink} target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-400 text-xs font-medium">Notify Raghu</a>
+                          <a href={leadWaLink} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-300 text-xs font-medium mr-3">Message Lead</a>
+                          <a href={notifyWaLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-400 text-xs font-medium">Notify Raghu</a>
                         </td>
                       </tr>
                       );
@@ -1344,9 +1344,9 @@ function AdminDashboardInner() {
 
         {adminTab === "settings" && (
           <div className="max-w-2xl space-y-6">
-            <h1 className="font-playfair text-xl font-bold text-white mb-6">Settings</h1>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3">Business Info</h2>
+            <h1 className="font-playfair text-xl font-bold text-gray-900 mb-6">Settings</h1>
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              <h2 className="font-playfair text-gray-900 font-semibold text-sm uppercase tracking-wider border-b border-gray-200 pb-3">Business Info</h2>
               {[
                 { label: "Company", value: "PropKnown Infra Pvt Ltd" },
                 { label: "Founder", value: "Pinnelli Raghu Kiran" },
@@ -1355,13 +1355,13 @@ function AdminDashboardInner() {
                 { label: "Address", value: "Shop No 3, Venkateswara Nilyam, Nizampet Road, Hyd 500090" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex gap-4">
-                  <span className="text-zinc-500 text-sm w-28 shrink-0">{label}</span>
-                  <span className="text-zinc-200 text-sm">{value}</span>
+                  <span className="text-gray-500 text-sm w-28 shrink-0">{label}</span>
+                  <span className="text-gray-800 text-sm">{value}</span>
                 </div>
               ))}
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3">API Status</h2>
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              <h2 className="font-playfair text-gray-900 font-semibold text-sm uppercase tracking-wider border-b border-gray-200 pb-3">API Status</h2>
               {[
                 { label: "Gemini AI (KnownAI)", status: true,  note: "gemini-2.5-flash-lite" },
                 { label: "Resend (Email)",     status: true,  note: "raghupinnelli@gmail.com" },
@@ -1370,13 +1370,13 @@ function AdminDashboardInner() {
               ].map(({ label, status, note }) => (
                 <div key={label} className="flex items-center gap-4">
                   <div className={`w-2 h-2 rounded-full shrink-0 ${status ? "bg-green-400" : "bg-yellow-500"}`} />
-                  <span className="text-zinc-300 text-sm w-44 shrink-0">{label}</span>
-                  <span className={`text-xs ${status ? "text-zinc-500" : "text-yellow-500"}`}>{note}</span>
+                  <span className="text-gray-700 text-sm w-44 shrink-0">{label}</span>
+                  <span className={`text-xs ${status ? "text-gray-500" : "text-yellow-500"}`}>{note}</span>
                 </div>
               ))}
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <h2 className="font-playfair text-white font-semibold text-sm uppercase tracking-wider border-b border-white/10 pb-3 mb-4">Quick Links</h2>
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <h2 className="font-playfair text-gray-900 font-semibold text-sm uppercase tracking-wider border-b border-gray-200 pb-3 mb-4">Quick Links</h2>
               <div className="flex flex-wrap gap-3">
                 {[
                   { label: "View Website",    href: "/" },
@@ -1385,7 +1385,7 @@ function AdminDashboardInner() {
                   { label: "Buy Page",        href: "/buy" },
                 ].map(({ label, href }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                    className="text-sm px-4 py-2 rounded-lg border border-white/10 text-zinc-300 hover:border-[#D6A63E] hover:text-white transition-all">
+                    className="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:border-[#D6A63E] hover:text-gray-900 transition-all">
                     {label}
                   </a>
                 ))}
@@ -1397,20 +1397,20 @@ function AdminDashboardInner() {
         {adminTab === "properties" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="font-playfair text-xl font-bold text-white">Property Management</h1>
+              <h1 className="font-playfair text-xl font-bold text-gray-900">Property Management</h1>
               <button onClick={() => setShowForm(!showForm)}
-                className="flex items-center gap-2 text-black text-sm font-semibold px-4 py-2 rounded-lg transition-all"
+                className="flex items-center gap-2 text-navy text-sm font-semibold px-4 py-2 rounded-lg transition-all"
                 style={{ background: "var(--gold)" }}>
                 <Plus size={16} /> Add Property
               </button>
             </div>
 
             {showForm && (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-                <h2 className="font-playfair text-white font-semibold mb-4">New Property</h2>
+              <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+                <h2 className="font-playfair text-gray-900 font-semibold mb-4">New Property</h2>
                 <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="col-span-full">
-                    <label className="text-zinc-400 text-xs mb-1 block">Title *</label>
+                    <label className="text-gray-500 text-xs mb-1 block">Title *</label>
                     <input className={inputCls} required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Property title" />
                   </div>
                   {[
@@ -1424,25 +1424,25 @@ function AdminDashboardInner() {
                     { label: "RERA No.", key: "reraNumber", placeholder: "P02400..." },
                   ].map(({ label, key, placeholder, type }) => (
                     <div key={key}>
-                      <label className="text-zinc-400 text-xs mb-1 block">{label}</label>
+                      <label className="text-gray-500 text-xs mb-1 block">{label}</label>
                       <input className={inputCls} type={type ?? "text"} value={(form as Record<string, unknown>)[key] as string} onChange={(e) => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} />
                     </div>
                   ))}
                   <div>
-                    <label className="text-zinc-400 text-xs mb-1 block">Property Type</label>
+                    <label className="text-gray-500 text-xs mb-1 block">Property Type</label>
                     <select className={inputCls} value={form.propertyType} onChange={(e) => setForm({ ...form, propertyType: e.target.value })}>
                       {["apartment","villa","penthouse","commercial","plot"].map((t) => <option key={t}>{t}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-zinc-400 text-xs mb-1 block">Listing Type</label>
+                    <label className="text-gray-500 text-xs mb-1 block">Listing Type</label>
                     <select className={inputCls} value={form.listingType} onChange={(e) => setForm({ ...form, listingType: e.target.value })}>
                       <option value="sale">For Sale</option>
                       <option value="rent">For Rent</option>
                     </select>
                   </div>
-                  <div className="col-span-full border-t border-white/10 pt-4">
-                    <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <div className="col-span-full border-t border-gray-200 pt-4">
+                    <p className="text-gray-500 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
                       <Shield size={13} style={{ color: "var(--gold)" }} /> Approval Checklist
                     </p>
                     <div className="grid grid-cols-2 gap-3">
@@ -1455,14 +1455,14 @@ function AdminDashboardInner() {
                         <label key={key} className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={(form as Record<string, unknown>)[key] as boolean}
                             onChange={(e) => setForm({ ...form, [key]: e.target.checked })} className="w-4 h-4" style={{ accentColor: "var(--gold)" }} />
-                          <span className="text-zinc-300 text-sm">{label}</span>
+                          <span className="text-gray-700 text-sm">{label}</span>
                         </label>
                       ))}
                     </div>
                   </div>
                   {/* Document Upload */}
-                  <div className="col-span-full border-t border-white/10 pt-4">
-                    <p className="text-zinc-400 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <div className="col-span-full border-t border-gray-200 pt-4">
+                    <p className="text-gray-500 text-xs font-semibold mb-3 uppercase tracking-wider flex items-center gap-2">
                       <FileText size={13} style={{ color: "var(--gold)" }} /> Documents (RERA Certificate, Title Deed, Brochure, Floor Plan)
                     </p>
                     <div
@@ -1470,11 +1470,11 @@ function AdminDashboardInner() {
                       onDragLeave={() => setDocDragging(false)}
                       onDrop={e => { e.preventDefault(); setDocDragging(false); addDocFiles(e.dataTransfer.files); }}
                       onClick={() => docInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-[#D6A63E] bg-[#D6A63E]/10" : "border-white/10 hover:border-white/20"}`}
+                      className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all ${docDragging ? "border-[#D6A63E] bg-[#D6A63E]/10" : "border-gray-200 hover:border-gray-300"}`}
                     >
-                      <FileText size={24} className="mx-auto mb-2 text-zinc-600" />
-                      <p className="text-zinc-400 text-sm">Drag &amp; drop files here, or <span style={{ color: "var(--gold)" }}>Choose Files</span></p>
-                      <p className="text-zinc-600 text-xs mt-1">PDF, JPG, PNG Â· Max 5 MB each</p>
+                      <FileText size={24} className="mx-auto mb-2 text-gray-400" />
+                      <p className="text-gray-500 text-sm">Drag &amp; drop files here, or <span style={{ color: "var(--gold)" }}>Choose Files</span></p>
+                      <p className="text-gray-400 text-xs mt-1">PDF, JPG, PNG Â· Max 5 MB each</p>
                     </div>
                     <input
                       ref={docInputRef}
@@ -1487,14 +1487,14 @@ function AdminDashboardInner() {
                     {docFiles.length > 0 && (
                       <ul className="mt-3 space-y-2">
                         {docFiles.map(doc => (
-                          <li key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2">
+                          <li key={doc.id} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2">
                             <div className="flex items-center gap-2 min-w-0">
-                              <FileText size={13} className="text-zinc-400 shrink-0" />
-                              <span className="text-zinc-300 text-xs truncate">{doc.name}</span>
-                              <span className="text-zinc-600 text-[10px] shrink-0">({(doc.size / 1024).toFixed(0)} KB)</span>
+                              <FileText size={13} className="text-gray-500 shrink-0" />
+                              <span className="text-gray-700 text-xs truncate">{doc.name}</span>
+                              <span className="text-gray-400 text-[10px] shrink-0">({(doc.size / 1024).toFixed(0)} KB)</span>
                             </div>
                             <button type="button" onClick={() => setDocFiles(d => d.filter(x => x.id !== doc.id))}
-                              className="text-zinc-600 hover:text-red-400 ml-2 transition-colors shrink-0">
+                              className="text-gray-400 hover:text-red-400 ml-2 transition-colors shrink-0">
                               <XCircle size={14} />
                             </button>
                           </li>
@@ -1504,10 +1504,10 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className="col-span-full flex gap-3 pt-2">
-                    <button type="submit" disabled={saving} className="text-black text-sm font-semibold px-6 py-2 rounded-lg disabled:opacity-60" style={{ background: "var(--gold)" }}>
+                    <button type="submit" disabled={saving} className="text-navy text-sm font-semibold px-6 py-2 rounded-lg disabled:opacity-60" style={{ background: "var(--gold)" }}>
                       {saving ? "Saving..." : "Save Property"}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setDocFiles([]); }} className="border border-white/10 text-zinc-400 text-sm px-4 py-2 rounded-lg hover:text-white">
+                    <button type="button" onClick={() => { setShowForm(false); setDocFiles([]); }} className="border border-gray-200 text-gray-500 text-sm px-4 py-2 rounded-lg hover:text-gray-900">
                       Cancel
                     </button>
                   </div>
@@ -1518,7 +1518,7 @@ function AdminDashboardInner() {
             <div className="flex gap-2 mb-4">
               {(["pending", "approved"] as const).map((t) => (
                 <button key={t} onClick={() => setPropTab(t)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${propTab === t ? "text-black" : "bg-white/10 text-zinc-400 hover:text-white"}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${propTab === t ? "text-navy" : "bg-gray-100 text-gray-500 hover:text-gray-900"}`}
                   style={propTab === t ? { background: "var(--gold)" } : {}}>
                   {t}
                 </button>
@@ -1527,23 +1527,23 @@ function AdminDashboardInner() {
 
             {/* Document Viewer Modal */}
             {viewDocsFor && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/70 p-4" onClick={() => setViewDocsFor(null)}>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setViewDocsFor(null)}>
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-playfair text-white font-semibold">Documents</h3>
-                      <p className="text-zinc-500 text-xs mt-0.5 line-clamp-1">{viewDocsFor.title}</p>
+                      <h3 className="font-playfair text-gray-900 font-semibold">Documents</h3>
+                      <p className="text-gray-500 text-xs mt-0.5 line-clamp-1">{viewDocsFor.title}</p>
                     </div>
-                    <button onClick={() => setViewDocsFor(null)} className="text-zinc-500 hover:text-white transition-colors"><XCircle size={18} /></button>
+                    <button onClick={() => setViewDocsFor(null)} className="text-gray-500 hover:text-gray-900 transition-colors"><XCircle size={18} /></button>
                   </div>
                   <ul className="space-y-2 max-h-80 overflow-y-auto">
                     {((viewDocsFor.documents ?? []) as DocFile[]).map(doc => (
-                      <li key={doc.id} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2.5">
+                      <li key={doc.id} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2.5">
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText size={14} className="text-[#D6A63E] shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-zinc-200 text-sm truncate">{doc.name}</p>
-                            <p className="text-zinc-600 text-[10px]">{(doc.size / 1024).toFixed(0)} KB Â· {doc.type}</p>
+                            <p className="text-gray-800 text-sm truncate">{doc.name}</p>
+                            <p className="text-gray-400 text-[10px]">{(doc.size / 1024).toFixed(0)} KB Â· {doc.type}</p>
                           </div>
                         </div>
                         <a
@@ -1561,33 +1561,33 @@ function AdminDashboardInner() {
               </div>
             )}
 
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-white/10 border-b border-white/10">
+                  <thead className="bg-gray-100 border-b border-gray-200">
                     <tr>
                       {["Property", "City", "Price", "Checklist", "AI Score", "Actions"].map((h) => (
-                        <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
+                        <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium text-xs uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800">
+                  <tbody className="divide-y divide-gray-200">
                     {loading ? (
-                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500">Loading...</td></tr>
+                      <tr><td colSpan={6} className="text-center py-10 text-gray-500">Loading...</td></tr>
                     ) : properties.length === 0 ? (
-                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500">No {propTab} properties found.</td></tr>
+                      <tr><td colSpan={6} className="text-center py-10 text-gray-500">No {propTab} properties found.</td></tr>
                     ) : properties.map((p) => (
-                      <tr key={p.id} className="hover:bg-white/10 transition-colors">
+                      <tr key={p.id} className="hover:bg-gray-100 transition-colors">
                         <td className="px-4 py-3">
-                          <p className="text-white font-medium line-clamp-1">{p.title}</p>
-                          <p className="text-zinc-500 text-xs">{p.location}</p>
+                          <p className="text-gray-900 font-medium line-clamp-1">{p.title}</p>
+                          <p className="text-gray-500 text-xs">{p.location}</p>
                         </td>
-                        <td className="px-4 py-3 text-zinc-300">{p.city}</td>
+                        <td className="px-4 py-3 text-gray-700">{p.city}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: "var(--gold)" }}>{formatPrice(p.price, p.currency)}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
                             {[p.reraVerified, p.realPhotos, p.accuratePrice, p.ownerConsent].map((v, i) => (
-                              <span key={i} className={`w-5 h-5 rounded-full flex items-center justify-center ${v ? "bg-green-900 text-green-400" : "bg-white/10 text-zinc-600"}`}>
+                              <span key={i} className={`w-5 h-5 rounded-full flex items-center justify-center ${v ? "bg-green-900 text-green-400" : "bg-gray-100 text-gray-400"}`}>
                                 {v ? <CheckCircle size={12} /> : <XCircle size={12} />}
                               </span>
                             ))}
@@ -1596,12 +1596,12 @@ function AdminDashboardInner() {
                         <td className="px-4 py-3">
                           {p.aiScore != null ? (
                             <div className="text-xs">
-                              <p className="text-white font-semibold">{p.aiScore}/10</p>
-                              {p.legalScore != null && <p className="text-zinc-500">Legal: {p.legalScore}/100</p>}
+                              <p className="text-gray-900 font-semibold">{p.aiScore}/10</p>
+                              {p.legalScore != null && <p className="text-gray-500">Legal: {p.legalScore}/100</p>}
                             </div>
                           ) : (
                             <button onClick={() => runScore(p.id)} disabled={scoringId === p.id}
-                              className="text-xs px-2.5 py-1 rounded-lg border border-white/10 text-zinc-400 hover:text-white hover:border-[#D6A63E] disabled:opacity-50">
+                              className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-[#D6A63E] disabled:opacity-50">
                               {scoringId === p.id ? "Scoring…" : "Score"}
                             </button>
                           )}
@@ -1618,11 +1618,11 @@ function AdminDashboardInner() {
                             </button>
                             {p.documents && (p.documents as DocFile[]).length > 0 && (
                               <button onClick={() => setViewDocsFor(p)}
-                                className="bg-white/10 border border-white/15 text-zinc-300 text-xs px-3 py-1.5 rounded-lg hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all flex items-center gap-1">
+                                className="bg-gray-100 border border-gray-300 text-gray-700 text-xs px-3 py-1.5 rounded-lg hover:border-[#D6A63E] hover:text-[#D6A63E] transition-all flex items-center gap-1">
                                 <FileText size={11} /> {(p.documents as DocFile[]).length} Doc{(p.documents as DocFile[]).length > 1 ? "s" : ""}
                               </button>
                             )}
-                            <button onClick={() => handleDelete(p.id)} className="text-zinc-500 hover:text-red-400 transition-colors p-1.5">
+                            <button onClick={() => handleDelete(p.id)} className="text-gray-500 hover:text-red-400 transition-colors p-1.5">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -1643,7 +1643,7 @@ function AdminDashboardInner() {
 
 export default function AdminDashboard() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-navy" />}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
       <AdminDashboardInner />
     </Suspense>
   );

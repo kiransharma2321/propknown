@@ -84,40 +84,40 @@ export default function IntegrationsSettingsPage() {
 
   const StatusBadge = ({ provider }: { provider: Provider }) => {
     const s = statusOf(provider);
-    if (loading) return <span className="text-xs text-zinc-500">Loading…</span>;
-    if (s === "connected") return <span className="flex items-center gap-1.5 text-xs font-semibold text-green-400"><CheckCircle2 size={13} /> Connected &amp; Working</span>;
-    if (s === "error") return <span className="flex items-center gap-1.5 text-xs font-semibold text-red-400"><XCircle size={13} /> Error</span>;
-    return <span className="text-xs font-semibold text-zinc-500">Not Connected</span>;
+    if (loading) return <span className="text-xs text-gray-500">Loading…</span>;
+    if (s === "connected") return <span className="flex items-center gap-1.5 text-xs font-semibold text-green-600"><CheckCircle2 size={13} /> Connected &amp; Working</span>;
+    if (s === "error") return <span className="flex items-center gap-1.5 text-xs font-semibold text-red-600"><XCircle size={13} /> Error</span>;
+    return <span className="text-xs font-semibold text-gray-500">Not Connected</span>;
   };
 
-  const inp = "w-full bg-black/30 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#D6A63E]";
-  const label = "text-zinc-400 text-xs mb-1 block";
+  const inp = "input-dark text-sm px-3 py-2";
+  const label = "text-gray-500 text-xs mb-1 block";
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--navy)" }}>
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center gap-3 mb-8">
-          <Link href="/admin/dashboard?tab=settings" className="text-zinc-400 hover:text-white"><ArrowLeft size={18} /></Link>
-          <PKLogo dark />
+          <Link href="/admin/dashboard?tab=settings" className="text-gray-400 hover:text-gray-900"><ArrowLeft size={18} /></Link>
+          <PKLogo />
         </div>
 
-        <h1 className="font-playfair text-white text-xl font-bold mb-1">Integrations — API Keys</h1>
-        <p className="text-zinc-400 text-sm mb-8">Credentials are encrypted at rest (AES-256-GCM). Once saved, the raw value is never displayed again — only a live-tested status.</p>
+        <h1 className="font-playfair text-gray-900 text-xl font-bold mb-1">Integrations — API Keys</h1>
+        <p className="text-gray-500 text-sm mb-8">Credentials are encrypted at rest (AES-256-GCM). Once saved, the raw value is never displayed again — only a live-tested status.</p>
 
         {/* Meta / Facebook / Instagram — real, functional */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Megaphone size={18} style={{ color: "var(--gold)" }} />
-              <h2 className="text-white font-semibold text-sm">Facebook / Instagram Lead Ads</h2>
+              <h2 className="text-gray-900 font-semibold text-sm">Facebook / Instagram Lead Ads</h2>
             </div>
             <StatusBadge provider="meta" />
           </div>
 
-          <p className="text-zinc-500 text-xs mb-4 leading-relaxed">
+          <p className="text-gray-500 text-xs mb-4 leading-relaxed">
             Generate a Page Access Token for your own Facebook Page via{" "}
             <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--gold)" }}>Graph API Explorer</a>{" "}
-            (permissions: <code className="text-zinc-400">leads_retrieval, pages_show_list, pages_manage_ads, pages_read_engagement, ads_management</code>). Use a System User token from Business Manager for one that doesn&apos;t expire.
+            (permissions: <code className="text-gray-500">leads_retrieval, pages_show_list, pages_manage_ads, pages_read_engagement, ads_management</code>). Use a System User token from Business Manager for one that doesn&apos;t expire.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
@@ -135,26 +135,26 @@ export default function IntegrationsSettingsPage() {
               <Save size={14} /> {saving === "meta" ? "Saving…" : "Save"}
             </button>
             <button onClick={() => test("meta", d => `Connected — Page: "${d.pageName as string}"`)} disabled={testing === "meta" || !statusOf("meta")}
-              className="text-sm px-4 py-2 rounded-lg border border-white/20 text-white hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
+              className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-900 hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
               {testing === "meta" ? <Loader2 size={14} className="animate-spin" /> : null} {testing === "meta" ? "Testing…" : "Test Connection"}
             </button>
           </div>
-          {testResults.meta && <p className={`text-xs mt-3 ${testResults.meta.ok ? "text-green-400" : "text-red-400"}`}>{testResults.meta.message}</p>}
-          <p className="text-zinc-600 text-[11px] mt-4 leading-relaxed">
-            Once connected, point your Meta App&apos;s webhook subscription (field: <code>leadgen</code>) at <code className="text-zinc-500">https://propknown.com/api/leads/inbound</code>, verify token: see the value provided when this was set up.
+          {testResults.meta && <p className={`text-xs mt-3 ${testResults.meta.ok ? "text-green-600" : "text-red-600"}`}>{testResults.meta.message}</p>}
+          <p className="text-gray-400 text-[11px] mt-4 leading-relaxed">
+            Once connected, point your Meta App&apos;s webhook subscription (field: <code>leadgen</code>) at <code className="text-gray-500">https://propknown.com/api/leads/inbound</code>, verify token: see the value provided when this was set up.
           </p>
         </div>
 
         {/* Twilio (WhatsApp/SMS) — real, functional */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <MessageSquare size={18} style={{ color: "var(--gold)" }} />
-              <h2 className="text-white font-semibold text-sm">Twilio — WhatsApp &amp; SMS</h2>
+              <h2 className="text-gray-900 font-semibold text-sm">Twilio — WhatsApp &amp; SMS</h2>
             </div>
             <StatusBadge provider="twilio" />
           </div>
-          <p className="text-zinc-500 text-xs mb-4 leading-relaxed">
+          <p className="text-gray-500 text-xs mb-4 leading-relaxed">
             Once connected, Follow-Up Management&apos;s WhatsApp/SMS reminder buttons activate immediately — no separate step. Account SID and Auth Token from your{" "}
             <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--gold)" }}>Twilio Console</a>.
           </p>
@@ -174,20 +174,20 @@ export default function IntegrationsSettingsPage() {
               <Save size={14} /> {saving === "twilio" ? "Saving…" : "Save"}
             </button>
             <button onClick={() => test("twilio", d => `Connected — Account: "${d.accountName as string}"`)} disabled={testing === "twilio" || !statusOf("twilio")}
-              className="text-sm px-4 py-2 rounded-lg border border-white/20 text-white hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
+              className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-900 hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
               {testing === "twilio" ? <Loader2 size={14} className="animate-spin" /> : null} {testing === "twilio" ? "Testing…" : "Test Connection"}
             </button>
           </div>
-          {testResults.twilio && <p className={`text-xs mt-3 ${testResults.twilio.ok ? "text-green-400" : "text-red-400"}`}>{testResults.twilio.message}</p>}
+          {testResults.twilio && <p className={`text-xs mt-3 ${testResults.twilio.ok ? "text-green-600" : "text-red-600"}`}>{testResults.twilio.message}</p>}
         </div>
 
         {/* Google Ads — real form + real test call, but no approved credentials exist tonight */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold text-sm">Google Ads</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Google Ads</h2>
             <StatusBadge provider="google_ads" />
           </div>
-          <p className="text-zinc-500 text-xs mb-4 leading-relaxed">
+          <p className="text-gray-500 text-xs mb-4 leading-relaxed">
             Requires a Google Ads Developer Token (separate approval from Google, independent of this form) plus an OAuth2 Client ID/Secret and Refresh Token. This form and its Test Connection are fully real — nothing here fabricates a connected status — but there is nothing approved to test successfully with tonight.
           </p>
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
@@ -208,21 +208,21 @@ export default function IntegrationsSettingsPage() {
               <Save size={14} /> {saving === "google_ads" ? "Saving…" : "Save"}
             </button>
             <button onClick={() => test("google_ads", () => "Connected")} disabled={testing === "google_ads" || !statusOf("google_ads")}
-              className="text-sm px-4 py-2 rounded-lg border border-white/20 text-white hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
+              className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-900 hover:border-[#D6A63E] disabled:opacity-40 flex items-center gap-1.5">
               {testing === "google_ads" ? <Loader2 size={14} className="animate-spin" /> : null} {testing === "google_ads" ? "Testing…" : "Test Connection"}
             </button>
           </div>
-          {testResults.google_ads && <p className={`text-xs mt-3 ${testResults.google_ads.ok ? "text-green-400" : "text-red-400"}`}>{testResults.google_ads.message}</p>}
+          {testResults.google_ads && <p className={`text-xs mt-3 ${testResults.google_ads.ok ? "text-green-600" : "text-red-600"}`}>{testResults.google_ads.message}</p>}
         </div>
 
         {/* YouTube — setup required, out of scope tonight */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 opacity-60">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 opacity-60">
           <div className="flex items-center justify-between">
-            <h2 className="text-white font-semibold text-sm">YouTube</h2>
-            <span className="text-xs font-semibold text-zinc-500">Setup required</span>
+            <h2 className="text-gray-900 font-semibold text-sm">YouTube</h2>
+            <span className="text-xs font-semibold text-gray-500">Setup required</span>
           </div>
-          <p className="text-zinc-500 text-xs mt-2">Needs its own Google Cloud OAuth consent screen and API approval — out of tonight&apos;s scope. Placeholder slot only.</p>
-          <button disabled className="mt-3 text-sm px-4 py-2 rounded-lg border border-white/10 text-zinc-500 cursor-not-allowed">Connect YouTube</button>
+          <p className="text-gray-500 text-xs mt-2">Needs its own Google Cloud OAuth consent screen and API approval — out of tonight&apos;s scope. Placeholder slot only.</p>
+          <button disabled className="mt-3 text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-500 cursor-not-allowed">Connect YouTube</button>
         </div>
       </div>
     </div>

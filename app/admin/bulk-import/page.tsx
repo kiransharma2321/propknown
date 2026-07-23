@@ -88,24 +88,24 @@ export default function BulkImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <Link href="/admin/dashboard" className="text-zinc-400 hover:text-white transition-colors">
+          <Link href="/admin/dashboard" className="text-gray-500 hover:text-gray-900 transition-colors">
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="font-playfair text-white text-xl font-bold">Bulk Listing Import</h1>
-            <p className="text-zinc-500 text-sm">Import multiple property listings via CSV paste or upload</p>
+            <h1 className="font-playfair text-gray-900 text-xl font-bold">Bulk Listing Import</h1>
+            <p className="text-gray-500 text-sm">Import multiple property listings via CSV paste or upload</p>
           </div>
         </div>
 
         {/* Download template */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6 flex items-center justify-between">
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 flex items-center justify-between">
           <div>
-            <p className="text-white text-sm font-semibold mb-1">CSV Format</p>
-            <p className="text-zinc-500 text-xs">Required columns: title, priceDisplay, city, ownerName, ownerPhone</p>
-            <p className="text-zinc-600 text-xs mt-1">Set approve=yes to auto-approve, or leave blank for pending review</p>
+            <p className="text-gray-900 text-sm font-semibold mb-1">CSV Format</p>
+            <p className="text-gray-500 text-xs">Required columns: title, priceDisplay, city, ownerName, ownerPhone</p>
+            <p className="text-gray-400 text-xs mt-1">Set approve=yes to auto-approve, or leave blank for pending review</p>
           </div>
           <button onClick={downloadTemplate} className="btn-primary text-sm px-4 py-2.5">
             <Download size={15} /> Download Template
@@ -113,21 +113,21 @@ export default function BulkImportPage() {
         </div>
 
         {/* Paste area */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-5">
-          <label className="block text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Paste CSV Data</label>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
+          <label className="block text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Paste CSV Data</label>
           <textarea
             value={csv}
             onChange={e => { setCsv(e.target.value); setParsed([]); setResults(null); }}
             rows={10}
             placeholder={CSV_TEMPLATE}
-            className="w-full bg-black/30 border border-white/10 text-white text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] placeholder-zinc-700 resize-none"
+            className="w-full bg-white border border-gray-300 text-gray-900 text-xs font-mono rounded-xl px-4 py-3 focus:outline-none focus:border-[#D6A63E] placeholder-gray-400 resize-none"
           />
           <div className="flex items-center gap-3 mt-3">
             <button onClick={parseCSV} disabled={!csv.trim()} className="btn-primary text-sm px-5 py-2.5 disabled:opacity-40">
               <Upload size={15} /> Parse & Preview
             </button>
             {parseErrors.length > 0 && (
-              <div className="flex items-center gap-1.5 text-red-400 text-xs">
+              <div className="flex items-center gap-1.5 text-red-600 text-xs">
                 <XCircle size={14} /> {parseErrors[0]}
               </div>
             )}
@@ -136,11 +136,11 @@ export default function BulkImportPage() {
 
         {/* Preview table */}
         {parsed.length > 0 && !results && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-5">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-white text-sm font-semibold">{parsed.length} rows ready to import</p>
+              <p className="text-gray-900 text-sm font-semibold">{parsed.length} rows ready to import</p>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-zinc-400 text-xs cursor-pointer">
+                <label className="flex items-center gap-2 text-gray-500 text-xs cursor-pointer">
                   <input type="checkbox" checked={autoApprove} onChange={e => setAuto(e.target.checked)}
                     className="rounded" />
                   Auto-approve all
@@ -152,7 +152,7 @@ export default function BulkImportPage() {
             </div>
 
             {autoApprove && (
-              <div className="flex items-center gap-2 text-amber-400 text-xs bg-amber-900/20 border border-amber-700/30 rounded-xl p-3 mb-4">
+              <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-900/20 border border-amber-700/30 rounded-xl p-3 mb-4">
                 <AlertTriangle size={13} /> Auto-approve will publish all imported listings immediately without review.
               </div>
             )}
@@ -160,7 +160,7 @@ export default function BulkImportPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 text-zinc-500">
+                  <tr className="border-b border-gray-200 text-gray-500">
                     <th className="text-left py-2 px-2">#</th>
                     <th className="text-left py-2 px-2">Title</th>
                     <th className="text-left py-2 px-2">City / Area</th>
@@ -172,18 +172,18 @@ export default function BulkImportPage() {
                 </thead>
                 <tbody>
                   {parsed.map((r, i) => (
-                    <tr key={i} className="border-b border-white/10">
-                      <td className="py-2 px-2 text-zinc-600">{i + 1}</td>
-                      <td className="py-2 px-2 text-white max-w-[180px] truncate">{r.title || <span className="text-red-400">Missing!</span>}</td>
-                      <td className="py-2 px-2 text-zinc-400">{r.city} {r.area && `/ ${r.area}`}</td>
-                      <td className="py-2 px-2 text-green-400">{r.priceDisplay || <span className="text-red-400">Missing!</span>}</td>
-                      <td className="py-2 px-2 text-zinc-400">{r.ownerName || <span className="text-red-400">Missing!</span>}</td>
-                      <td className="py-2 px-2 text-zinc-400">{r.ownerPhone || <span className="text-red-400">Missing!</span>}</td>
+                    <tr key={i} className="border-b border-gray-200">
+                      <td className="py-2 px-2 text-gray-400">{i + 1}</td>
+                      <td className="py-2 px-2 text-gray-900 max-w-[180px] truncate">{r.title || <span className="text-red-600">Missing!</span>}</td>
+                      <td className="py-2 px-2 text-gray-500">{r.city} {r.area && `/ ${r.area}`}</td>
+                      <td className="py-2 px-2 text-green-600">{r.priceDisplay || <span className="text-red-600">Missing!</span>}</td>
+                      <td className="py-2 px-2 text-gray-500">{r.ownerName || <span className="text-red-600">Missing!</span>}</td>
+                      <td className="py-2 px-2 text-gray-500">{r.ownerPhone || <span className="text-red-600">Missing!</span>}</td>
                       <td className="py-2 px-2">
                         {(autoApprove || r.approve === "yes") ? (
-                          <span className="text-green-400">Auto</span>
+                          <span className="text-green-600">Auto</span>
                         ) : (
-                          <span className="text-zinc-500">Pending</span>
+                          <span className="text-gray-500">Pending</span>
                         )}
                       </td>
                     </tr>
@@ -196,28 +196,28 @@ export default function BulkImportPage() {
 
         {/* Results */}
         {results && summary && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center gap-4 mb-5">
-              <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
+              <div className="flex items-center gap-2 text-green-600 text-sm font-semibold">
                 <CheckCircle size={16} /> {summary.ok} imported
               </div>
               {summary.errors > 0 && (
-                <div className="flex items-center gap-2 text-red-400 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-red-600 text-sm font-semibold">
                   <XCircle size={16} /> {summary.errors} failed
                 </div>
               )}
-              <span className="text-zinc-500 text-xs ml-auto">{summary.total} total</span>
+              <span className="text-gray-500 text-xs ml-auto">{summary.total} total</span>
             </div>
 
             <div className="space-y-1.5">
               {results.map(r => (
                 <div key={r.row} className={`flex items-center gap-3 text-xs px-3 py-2 rounded-lg ${r.status === "ok" ? "bg-green-900/20 border border-green-700/30" : "bg-red-900/20 border border-red-700/30"}`}>
                   {r.status === "ok"
-                    ? <CheckCircle size={12} className="text-green-400 shrink-0" />
-                    : <XCircle size={12} className="text-red-400 shrink-0" />}
-                  <span className="text-zinc-400">Row {r.row}</span>
-                  {r.id && <span className="text-green-400">ID: {r.id}</span>}
-                  {r.error && <span className="text-red-400 truncate">{r.error}</span>}
+                    ? <CheckCircle size={12} className="text-green-600 shrink-0" />
+                    : <XCircle size={12} className="text-red-600 shrink-0" />}
+                  <span className="text-gray-500">Row {r.row}</span>
+                  {r.id && <span className="text-green-600">ID: {r.id}</span>}
+                  {r.error && <span className="text-red-600 truncate">{r.error}</span>}
                 </div>
               ))}
             </div>
@@ -228,7 +228,7 @@ export default function BulkImportPage() {
                   Go to Dashboard →
                 </Link>
                 <button onClick={() => { setResults(null); setSummary(null); setParsed([]); setCsv(""); }}
-                  className="btn-secondary-dark text-sm px-5 py-2.5">
+                  className="btn-secondary text-sm px-5 py-2.5">
                   Import More
                 </button>
               </div>
