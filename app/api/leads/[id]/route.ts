@@ -28,9 +28,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     // Safely extract only allowed fields
     const allowed: Record<string, unknown> = {};
-    // docIds added for Lead Detail's Documents tab (Section 2) -- additive, same allowlist
-    // pattern, no change to how the other fields behave.
-    const allowedKeys = ["status", "notes", "assignedTo", "followUpDate", "leadValue", "tags", "docIds"];
+    // docIds added for Lead Detail's Documents tab (Section 2); partnerId for Channel Partner
+    // lead attribution (Section 9) -- both additive, same allowlist pattern, no change to how
+    // the other fields behave.
+    const allowedKeys = ["status", "notes", "assignedTo", "followUpDate", "leadValue", "tags", "docIds", "partnerId"];
     for (const k of allowedKeys) {
       if (k in body) allowed[k] = body[k];
     }

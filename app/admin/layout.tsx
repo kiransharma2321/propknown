@@ -1,3 +1,5 @@
+import { ToastProvider } from "@/components/ui/Toast";
+
 // Internal tool, no public content to rank -- inherited the root layout's sitewide
 // index:true/follow:true with no override, so /admin/* was indexable by Google.
 export const metadata = { title: "PropKnown Admin", robots: { index: false, follow: false } };
@@ -11,7 +13,7 @@ export const metadata = { title: "PropKnown Admin", robots: { index: false, foll
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-white min-h-screen" style={{ background: "var(--navy)", fontFamily: "Inter, sans-serif" }}>
-      {children}
+      <ToastProvider>{children}</ToastProvider>
     </div>
   );
 }

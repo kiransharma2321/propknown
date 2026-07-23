@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Megaphone, MessageSquare, CheckCircle2, XCircle, Loader2, Save } from "lucide-react";
 import PKLogo from "@/components/layout/PKLogo";
+import { useToast } from "@/components/ui/Toast";
 
 interface CredentialView {
   provider: string;
@@ -45,6 +46,7 @@ export default function IntegrationsSettingsPage() {
   };
   useEffect(() => { load(); }, []);
 
+  const toast = useToast();
   const statusOf = (p: Provider) => creds.find(c => c.provider === p)?.status;
 
   const save = async (provider: Provider, fields: Record<string, string>, clear: () => void) => {
@@ -57,6 +59,7 @@ export default function IntegrationsSettingsPage() {
     });
     clear();
     setSaving(null);
+    toast(`${provider} credentials saved`);
     await load();
   };
 
@@ -70,6 +73,7 @@ export default function IntegrationsSettingsPage() {
         body: JSON.stringify({ provider }),
       });
       const d = await r.json() as { ok: boolean; error?: string } & Record<string, unknown>;
+      toast(d.ok ? `${provider}: connected` : `${provider}: ${d.error ?? "connection failed"}`, d.ok ? "success" : "error");
       setTestResults(prev => ({ ...prev, [provider]: { ok: d.ok, message: d.ok ? extract(d) : (d.error ?? "Connection failed") } }));
     } catch (e) {
       setTestResults(prev => ({ ...prev, [provider]: { ok: false, message: e instanceof Error ? e.message : "Request failed" } }));

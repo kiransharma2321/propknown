@@ -1,3 +1,5 @@
+import { ToastProvider } from "@/components/ui/Toast";
+
 // Internal tool, no public content to rank -- inherited the root layout's sitewide
 // index:true/follow:true with no override, so /crm/* was indexable by Google.
 export const metadata = { title: "PropKnown CRM", robots: { index: false, follow: false } };
@@ -8,7 +10,7 @@ export const metadata = { title: "PropKnown CRM", robots: { index: false, follow
 export default function CRMLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-white min-h-screen" style={{ background: "var(--navy)", fontFamily: "Inter, sans-serif" }}>
-      {children}
+      <ToastProvider>{children}</ToastProvider>
     </div>
   );
 }

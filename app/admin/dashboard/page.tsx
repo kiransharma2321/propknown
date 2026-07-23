@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
-import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download } from "lucide-react";
+import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download, History } from "lucide-react";
 import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
@@ -17,10 +17,12 @@ interface DocFile {
 
 interface Property {
   id: string; title: string; location: string; city: string;
-  price: number; currency: string; status: string;
+  price: number; currency: string; status: string; propertyType?: string;
   reraVerified: boolean; realPhotos: boolean; accuratePrice: boolean; ownerConsent: boolean;
   createdAt: string;
   documents?: DocFile[];
+  // AI scores (Section 5 / Q) -- populated only by the "Score" action below, never fabricated.
+  aiScore?: number | null; legalScore?: number | null; aiScoredAt?: string | null;
 }
 
 const EMPTY_FORM = {
@@ -118,7 +120,7 @@ function AiBrainTab() {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 bg-white/5/50 rounded-xl border border-white/10 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 bg-white/5 rounded-xl border border-white/10 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-8">
             <Brain size={36} className="mb-3 text-zinc-700" />
@@ -144,7 +146,7 @@ function AiBrainTab() {
               </div>
             ) : (
               <div className="max-w-2xl w-full">
-                <div className="bg-white/10/50 border border-white/10/40 rounded-2xl rounded-tl-sm px-4 py-3">
+                <div className="bg-white/10 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
                       <Brain size={11} style={{ color: "var(--gold)" }} />
@@ -161,7 +163,7 @@ function AiBrainTab() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white/10/50 border border-white/10/40 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+            <div className="bg-white/10 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
               <Loader2 size={13} className="animate-spin" style={{ color: "var(--gold)" }} />
               <span className="text-zinc-400 text-sm">AI Brain is thinkingâ€¦</span>
             </div>
@@ -637,7 +639,7 @@ function SubmissionsTab() {
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden mb-6">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/10/50 border-b border-white/10">
+            <thead className="bg-white/10 border-b border-white/10">
               <tr>
                 {["Property", "Location", "Price", "Contact", "Files", "Status", "Date", ""].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
@@ -650,7 +652,7 @@ function SubmissionsTab() {
               ) : list.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-10 text-zinc-500">No {statusFilter} submissions.</td></tr>
               ) : list.map(s => (
-                <tr key={s.id} className="hover:bg-white/10/30 transition-colors">
+                <tr key={s.id} className="hover:bg-white/10 transition-colors">
                   <td className="px-4 py-3">
                     <p className="text-white font-medium line-clamp-1">{s.title}</p>
                     <p className="text-zinc-500 text-xs">{s.propType}{s.bhk ? ` · ${s.bhk}` : ""}</p>
@@ -770,13 +772,13 @@ function SubmissionsTab() {
                     )}
 
                     {/* Description */}
-                    <div className="bg-white/10/50 rounded-xl p-4">
+                    <div className="bg-white/10 rounded-xl p-4">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Description</p>
                       <p className="text-zinc-200 text-sm leading-relaxed whitespace-pre-line">{reviewing.description}</p>
                     </div>
 
                     {reviewing.features && (
-                      <div className="bg-white/10/50 rounded-xl p-4">
+                      <div className="bg-white/10 rounded-xl p-4">
                         <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Features</p>
                         <p className="text-zinc-200 text-sm">{reviewing.features}</p>
                       </div>
@@ -813,7 +815,7 @@ function SubmissionsTab() {
                   {/* Right: Info + Actions */}
                   <div className="space-y-4">
                     {/* Property info */}
-                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2 text-sm">
+                    <div className="bg-white/10 rounded-xl p-4 space-y-2 text-sm">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">Property Info</p>
                       {[
                         ["Price",    reviewing.priceDisplay],
@@ -830,7 +832,7 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Submitter contact */}
-                    <div className="bg-white/10/50 rounded-xl p-4 space-y-3">
+                    <div className="bg-white/10 rounded-xl p-4 space-y-3">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Submitter Contact</p>
                       <p className="text-white font-semibold text-sm">{reviewing.ownerName}</p>
                       <a href={`tel:${reviewing.ownerPhone}`} className="flex items-center gap-2 text-[#D6A63E] hover:underline text-sm">
@@ -849,13 +851,13 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Doc summary */}
-                    <div className="text-zinc-500 text-xs bg-white/10/30 rounded-lg p-3">
+                    <div className="text-zinc-500 text-xs bg-white/10 rounded-lg p-3">
                       Docs: {reviewing.docFiles.length} uploaded · Photos: {reviewing.photoFiles.length} · Videos: {reviewing.videoFiles.length + reviewing.videoUrls.length}
                     </div>
 
                     {/* PropKnown Verified checks — honesty-first: stamp only reflects what's
                         actually ticked here. Independent of approve/reject status. */}
-                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2.5">
+                    <div className="bg-white/10 rounded-xl p-4 space-y-2.5">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> PropKnown Verified Checks
                       </p>
@@ -903,7 +905,7 @@ function SubmissionsTab() {
                     </div>
 
                     {/* Legal Safety Checklist — 3-way status per item, honest defaults to "pending" */}
-                    <div className="bg-white/10/50 rounded-xl p-4 space-y-2.5">
+                    <div className="bg-white/10 rounded-xl p-4 space-y-2.5">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Shield size={12} /> Legal Safety Checklist
                       </p>
@@ -940,7 +942,7 @@ function SubmissionsTab() {
 
                     {/* Construction Progress — only appears on the property page once at
                         least one milestone exists here; there's no separate on/off flag. */}
-                    <div className="bg-white/10/50 rounded-xl p-4 space-y-3">
+                    <div className="bg-white/10 rounded-xl p-4 space-y-3">
                       <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
                         <Home size={12} /> Construction Progress
                       </p>
@@ -1088,6 +1090,7 @@ function AdminDashboardInner() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading]       = useState(true);
   const [showForm, setShowForm]     = useState(false);
+  const [scoringId, setScoringId]   = useState<string | null>(null);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [saving, setSaving]         = useState(false);
   const [propTab, setPropTab]       = useState<"pending" | "approved">("pending");
@@ -1140,6 +1143,17 @@ function AdminDashboardInner() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "rejected" }),
     });
+    fetchProperties();
+  };
+
+  // Property Inventory AI scores (Section 5 / Q) -- calls the real AI Intelligence engine +
+  // Legal Shield, same as everywhere else in the app. Manually triggered per property.
+  const runScore = async (id: string) => {
+    setScoringId(id);
+    try {
+      await fetch(`/api/crm/properties/${id}/score`, { method: "POST" });
+    } catch { /* honest no-op -- fetchProperties below reflects whatever actually got saved */ }
+    setScoringId(null);
     fetchProperties();
   };
 
@@ -1250,6 +1264,9 @@ function AdminDashboardInner() {
           <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Zap size={15} /> Integrations
           </a>
+          <a href="/admin/audit-log" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
+            <History size={15} /> Audit Trail
+          </a>
           <a href="/nri" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
             <Home size={15} /> NRI Page
           </a>
@@ -1285,7 +1302,7 @@ function AdminDashboardInner() {
             <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-white/10/50 border-b border-white/10">
+                  <thead className="bg-white/10 border-b border-white/10">
                     <tr>
                       {["Name","Phone","Email","Source","Status","Date","WhatsApp"].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
@@ -1304,7 +1321,7 @@ function AdminDashboardInner() {
                           .filter(Boolean).join("\n")
                       )}`;
                       return (
-                      <tr key={l.id} className="hover:bg-white/10/30 transition-colors">
+                      <tr key={l.id} className="hover:bg-white/10 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{l.name}</td>
                         <td className="px-4 py-3"><a href={`tel:${l.phone}`} className="text-[#D6A63E] hover:underline">{l.phone}</a></td>
                         <td className="px-4 py-3 text-zinc-400 text-xs">{l.email ?? "—"}</td>
@@ -1547,20 +1564,20 @@ function AdminDashboardInner() {
             <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-white/10/50 border-b border-white/10">
+                  <thead className="bg-white/10 border-b border-white/10">
                     <tr>
-                      {["Property", "City", "Price", "Checklist", "Actions"].map((h) => (
+                      {["Property", "City", "Price", "Checklist", "AI Score", "Actions"].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-zinc-400 font-medium text-xs uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800">
                     {loading ? (
-                      <tr><td colSpan={5} className="text-center py-10 text-zinc-500">Loading...</td></tr>
+                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500">Loading...</td></tr>
                     ) : properties.length === 0 ? (
-                      <tr><td colSpan={5} className="text-center py-10 text-zinc-500">No {propTab} properties found.</td></tr>
+                      <tr><td colSpan={6} className="text-center py-10 text-zinc-500">No {propTab} properties found.</td></tr>
                     ) : properties.map((p) => (
-                      <tr key={p.id} className="hover:bg-white/10/30 transition-colors">
+                      <tr key={p.id} className="hover:bg-white/10 transition-colors">
                         <td className="px-4 py-3">
                           <p className="text-white font-medium line-clamp-1">{p.title}</p>
                           <p className="text-zinc-500 text-xs">{p.location}</p>
@@ -1575,6 +1592,19 @@ function AdminDashboardInner() {
                               </span>
                             ))}
                           </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {p.aiScore != null ? (
+                            <div className="text-xs">
+                              <p className="text-white font-semibold">{p.aiScore}/10</p>
+                              {p.legalScore != null && <p className="text-zinc-500">Legal: {p.legalScore}/100</p>}
+                            </div>
+                          ) : (
+                            <button onClick={() => runScore(p.id)} disabled={scoringId === p.id}
+                              className="text-xs px-2.5 py-1 rounded-lg border border-white/10 text-zinc-400 hover:text-white hover:border-[#D6A63E] disabled:opacity-50">
+                              {scoringId === p.id ? "Scoring…" : "Score"}
+                            </button>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2 flex-wrap">

@@ -172,7 +172,7 @@ export default function BulkImportPage() {
                 </thead>
                 <tbody>
                   {parsed.map((r, i) => (
-                    <tr key={i} className="border-b border-white/10/50">
+                    <tr key={i} className="border-b border-white/10">
                       <td className="py-2 px-2 text-zinc-600">{i + 1}</td>
                       <td className="py-2 px-2 text-white max-w-[180px] truncate">{r.title || <span className="text-red-400">Missing!</span>}</td>
                       <td className="py-2 px-2 text-zinc-400">{r.city} {r.area && `/ ${r.area}`}</td>

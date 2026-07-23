@@ -3,6 +3,7 @@ import { getAdminSession, canRole } from "@/lib/rbac";
 import { saveCredential, listCredentialViews, getCredentialFields, setCredentialStatus } from "@/lib/apiCredentials";
 import { testTwilioConnection } from "@/lib/twilio";
 import { testGoogleAdsConnection } from "@/lib/googleAds";
+import { logAudit } from "@/lib/auditLog";
 
 // Settings -> API Keys (Section 15 / Section D). Gated on the new "settings" permission --
 // master (via "all") and the new C-suite/COO roles can reach this; manager/agent's existing
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
   }
 
   await saveCredential(provider, fields);
+  // Note what changed, never the credential values themselves.
+  logAudit({ actorId: session.userId, actorName: session.name, action: "credentials.save", entity: "ApiCredential", entityId: provider }).catch(() => null);
   return NextResponse.json({ ok: true });
 }
 

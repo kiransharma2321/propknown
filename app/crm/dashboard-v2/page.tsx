@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Flame, Clock, AlertTriangle, MapPin, Home,
-  TrendingUp, Award, Megaphone, Activity, Sparkles, Loader2, LayoutDashboard,
+  TrendingUp, Award, Megaphone, Activity, Sparkles, Loader2, LayoutDashboard, Handshake,
 } from "lucide-react";
 import PKLogo from "@/components/layout/PKLogo";
 
@@ -77,7 +77,14 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         <h1 className="font-playfair text-white text-xl font-bold mb-1">Executive Dashboard</h1>
-        <p className="text-zinc-400 text-sm mb-6">Real-time, real data only — anything without underlying data shows an honest empty state.</p>
+        <p className="text-zinc-400 text-sm mb-4">Real-time, real data only — anything without underlying data shows an honest empty state.</p>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Link href="/crm/site-visits" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white hover:border-[#D6A63E]"><MapPin size={12} /> Site Visits</Link>
+          <Link href="/crm/bookings" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white hover:border-[#D6A63E]"><Home size={12} /> Bookings</Link>
+          <Link href="/crm/partners" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white hover:border-[#D6A63E]"><Handshake size={12} /> Channel Partners</Link>
+          <Link href="/crm/campaigns" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-zinc-300 hover:text-white hover:border-[#D6A63E]"><Megaphone size={12} /> Campaigns</Link>
+        </div>
 
         {loading || !stats ? (
           <p className="text-zinc-500 text-sm">Loading…</p>

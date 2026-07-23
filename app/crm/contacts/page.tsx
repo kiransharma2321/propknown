@@ -79,7 +79,7 @@ export default function ContactsPage() {
               </thead>
               <tbody>
                 {filtered.map(lead => (
-                  <tr key={lead.id} className="border-b border-white/10/50 hover:bg-white/10/30 transition-colors">
+                  <tr key={lead.id} className="border-b border-white/10 hover:bg-white/10 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">

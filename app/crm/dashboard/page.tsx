@@ -356,7 +356,7 @@ export default function CRMDashboard() {
                     return (
                       <tr key={lead.id}
                         onClick={() => openLead(lead)}
-                        className="border-b border-white/10/50 hover:bg-white/5 cursor-pointer transition-colors">
+                        className="border-b border-white/10 hover:bg-white/5 cursor-pointer transition-colors">
                         <td className="py-2.5 px-3 text-white font-medium">{lead.name}</td>
                         <td className="py-2.5 px-3 text-zinc-400">{lead.phone}</td>
                         <td className="py-2.5 px-3 text-zinc-500 text-xs">{SOURCE_LABELS[lead.source] ?? lead.source}</td>

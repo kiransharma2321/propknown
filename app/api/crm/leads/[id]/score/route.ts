@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/rbac";
+import { logAudit } from "@/lib/auditLog";
 
 // AI Lead Scoring (Section 3). Manually triggered per lead ("Score this lead"), never automatic.
 // Grounded entirely in what's actually stored on the lead -- message, notes, timeline, source,
@@ -93,6 +94,7 @@ Respond with ONLY this JSON shape, no markdown fences:
       },
     });
 
+    logAudit({ actorId: session.userId, actorName: session.name, action: "lead.ai_score", entity: "Lead", entityId: params.id, details: { leadScore: parsed.leadScore } }).catch(() => null);
     return NextResponse.json({ ok: true, ...parsed });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "AI scoring failed." }, { status: 200 });

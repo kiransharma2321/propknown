@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword, ROLE_LABELS } from "@/lib/rbac";
 import { cookies } from "next/headers";
+import { logAudit } from "@/lib/auditLog";
 
 async function isMasterAdmin(): Promise<boolean> {
   const cookieStore = await cookies();
@@ -10,6 +11,16 @@ async function isMasterAdmin(): Promise<boolean> {
   const [userId] = rbacToken.split(":");
   const user = await prisma.adminUser.findUnique({ where: { id: userId }, select: { role: true } });
   return user?.role === "master";
+}
+
+// Additive, logging-only -- does not change isMasterAdmin's own logic or the access check above.
+async function getActorInfo(): Promise<{ id?: string; name?: string }> {
+  const cookieStore = await cookies();
+  const rbacToken = cookieStore.get("rbac_auth")?.value;
+  if (!rbacToken) return {};
+  const [userId] = rbacToken.split(":");
+  const user = await prisma.adminUser.findUnique({ where: { id: userId }, select: { id: true, name: true } });
+  return user ? { id: user.id, name: user.name } : {};
 }
 
 export async function GET() {
@@ -42,6 +53,8 @@ export async function POST(req: NextRequest) {
       data: { name, email: email.toLowerCase(), passwordHash: await hashPassword(password), role },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
+    const actor = await getActorInfo();
+    logAudit({ actorId: actor.id, actorName: actor.name, action: "user.create", entity: "AdminUser", entityId: user.id, details: { role } }).catch(() => null);
     return NextResponse.json(user, { status: 201 });
   } catch (e: unknown) {
     if (e instanceof Error && e.message.includes("Unique constraint")) {
