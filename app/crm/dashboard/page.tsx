@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp, BarChart3, CalendarClock } from "lucide-react";
+import { Phone, MessageSquare, Calendar, Trophy, X, Home, LogOut, Activity, LayoutDashboard, Search, IndianRupee, Clock, AlertCircle, Plus, Users, TrendingUp, BarChart3, CalendarClock, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toIndianWaNumber } from "@/lib/phone";
 import PKLogo from "@/components/layout/PKLogo";
@@ -215,6 +215,12 @@ export default function CRMDashboard() {
           </a>
           <a href="/crm/deals" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <TrendingUp size={15} /> Deals
+          </a>
+          <a href="/crm/leaderboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+            <Trophy size={15} /> Sales Champions
+          </a>
+          <a href="/crm/training" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+            <GraduationCap size={15} /> My Training
           </a>
           <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Home size={15} /> Admin

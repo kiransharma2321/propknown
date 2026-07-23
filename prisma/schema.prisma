@@ -482,3 +482,48 @@ model ApiCredential {
   lastTestedAt DateTime?
   updatedAt    DateTime  @updatedAt
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Employee Training Tracker (new feature) -- links + completion tracking only, deliberately
+// no quiz/certification system. TrainingItem is admin-authored content (a link, not a file --
+// video/document links live wherever the admin hosts them, e.g. YouTube/Google Drive).
+// TrainingAssignment is per-employee (assigneeId references AdminUser.id, not enforced as a
+// DB-level FK since AdminUser rows can be soft-deleted/deactivated and we want assignment
+// history to survive that, same reasoning as Lead.assignedTo being a bare string elsewhere).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TrainingItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  link        String
+  linkType    String   @default("other") // "video" | "document" | "other" -- display hint only
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments TrainingAssignment[]
+}
+
+model TrainingAssignment {
+  id             String       @id @default(cuid())
+  trainingItemId String
+  trainingItem   TrainingItem @relation(fields: [trainingItemId], references: [id], onDelete: Cascade)
+  assigneeId     String       // AdminUser.id -- soft reference, see note above
+  assigneeName   String       // denormalised at assignment time so completion dashboards don't
+                               // break if the assignee is later deactivated/renamed
+  completed      Boolean      @default(false)
+  completedAt    DateTime?
+  assignedAt     DateTime     @default(now())
+
+  @@unique([trainingItemId, assigneeId])
+  @@index([assigneeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sales Champions Leaderboard (new feature) -- no new table needed. Ranking is computed live
+// from real Lead data (status="won", assignedTo, leadValue) via the same aggregation pattern
+// already used by the Executive Dashboard's "Top Sales Executives" card -- see
+// app/api/crm/leaderboard/route.ts. Kept here as a note so the absence of a Leaderboard model
+// isn't mistaken for an oversight.
+// ─────────────────────────────────────────────────────────────────────────────
