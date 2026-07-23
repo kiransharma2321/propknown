@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 
 interface Assignment { id: string; assigneeId: string; completed: boolean }
 interface TrainingItem { id: string; title: string; description: string | null; link: string; linkType: string; createdAt: string; assignments: Assignment[] }
-interface AdminUserOption { id: string; name: string; email: string; isActive: boolean }
+interface AdminUserOption { id: string; name: string }
 
 const LINK_ICON: Record<string, React.ReactNode> = { video: <Video size={14} />, document: <FileText size={14} />, other: <LinkIcon size={14} /> };
 
@@ -28,9 +28,9 @@ export default function AdminTrainingPage() {
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
 
   const load = async () => {
-    const [ir, ur] = await Promise.all([fetch("/api/admin/training-items"), fetch("/api/admin/users")]);
+    const [ir, ur] = await Promise.all([fetch("/api/admin/training-items"), fetch("/api/admin/training-items/assignable-users")]);
     if (ir.ok) setItems((await ir.json() as { items: TrainingItem[] }).items);
-    if (ur.ok) setUsers((await ur.json() as AdminUserOption[]).filter(u => u.isActive));
+    if (ur.ok) setUsers((await ur.json() as { users: AdminUserOption[] }).users);
     else setUsersError(true);
     setLoading(false);
   };
@@ -71,7 +71,7 @@ export default function AdminTrainingPage() {
 
         {usersError && (
           <p className="text-amber-700 text-xs bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-            Couldn&apos;t load the team list to assign training — this action is restricted to the Master Admin account specifically (a separate, stricter check than the rest of Settings). You can still add training items below.
+            Couldn&apos;t load the team list to assign training. You can still add training items below.
           </p>
         )}
 

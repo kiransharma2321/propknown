@@ -22,6 +22,8 @@ export default function SiteVisitsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ leadId: "", scheduledAt: "", assignedTo: "", mapsLink: "" });
   const [saving, setSaving] = useState(false);
+  const [completingId, setCompletingId] = useState<string | null>(null);
+  const [completeForm, setCompleteForm] = useState({ rating: 0, feedback: "" });
 
   const load = async () => {
     const [vr, lr] = await Promise.all([fetch("/api/crm/site-visits"), fetch("/api/leads")]);
@@ -43,6 +45,16 @@ export default function SiteVisitsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     await fetch("/api/crm/site-visits", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) });
+    await load();
+  };
+
+  const completeVisit = async (id: string) => {
+    await fetch("/api/crm/site-visits", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: "completed", rating: completeForm.rating || undefined, feedback: completeForm.feedback.trim() || undefined }),
+    });
+    setCompletingId(null);
+    setCompleteForm({ rating: 0, feedback: "" });
     await load();
   };
 
@@ -92,11 +104,30 @@ export default function SiteVisitsPage() {
                   {v.mapsLink && <a href={v.mapsLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-gray-900"><ExternalLink size={11} /> Maps</a>}
                 </p>
                 {v.rating && <p className="text-amber-600 text-xs mt-1 flex items-center gap-1"><Star size={11} /> {v.rating}/5{v.feedback && ` — ${v.feedback}`}</p>}
-                {v.status === "scheduled" && (
+                {v.status === "scheduled" && completingId !== v.id && (
                   <div className="flex gap-2 mt-2">
-                    <button onClick={() => updateStatus(v.id, "completed")} className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-700 hover:text-gray-900">Mark Completed</button>
+                    <button onClick={() => { setCompletingId(v.id); setCompleteForm({ rating: 0, feedback: "" }); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-700 hover:text-gray-900">Mark Completed</button>
                     <button onClick={() => updateStatus(v.id, "cancelled")} className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-700 hover:text-gray-900">Cancel</button>
                     <button onClick={() => updateStatus(v.id, "no_show")} className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-700 hover:text-gray-900">No-show</button>
+                  </div>
+                )}
+                {completingId === v.id && (
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} type="button" onClick={() => setCompleteForm(f => ({ ...f, rating: n }))} aria-label={`Rate ${n}`}>
+                          <Star size={16} className={n <= completeForm.rating ? "text-amber-500 fill-amber-500" : "text-gray-300"} />
+                        </button>
+                      ))}
+                      <span className="text-gray-400 text-xs ml-1">{completeForm.rating > 0 ? `${completeForm.rating}/5 (optional)` : "Rating (optional)"}</span>
+                    </div>
+                    <textarea value={completeForm.feedback} onChange={e => setCompleteForm(f => ({ ...f, feedback: e.target.value }))}
+                      placeholder="Visit feedback (optional)" rows={2}
+                      className="w-full bg-white border border-gray-200 text-gray-900 text-xs rounded-lg px-3 py-2 resize-none" />
+                    <div className="flex gap-2">
+                      <button onClick={() => completeVisit(v.id)} className="btn-primary text-xs px-3 py-1.5">Save &amp; Complete</button>
+                      <button onClick={() => setCompletingId(null)} className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-700 hover:text-gray-900">Cancel</button>
+                    </div>
                   </div>
                 )}
               </div>

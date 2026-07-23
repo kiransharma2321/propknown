@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Megaphone, MessageSquare, CheckCircle2, XCircle, Loader2, Save } from "lucide-react";
 import PKLogo from "@/components/layout/PKLogo";
 import { useToast } from "@/components/ui/Toast";
+import SettingsNav from "@/components/admin/SettingsNav";
 
 interface CredentialView {
   provider: string;
@@ -102,7 +103,8 @@ export default function IntegrationsSettingsPage() {
         </div>
 
         <h1 className="font-playfair text-gray-900 text-xl font-bold mb-1">Integrations — API Keys</h1>
-        <p className="text-gray-500 text-sm mb-8">Credentials are encrypted at rest (AES-256-GCM). Once saved, the raw value is never displayed again — only a live-tested status.</p>
+        <p className="text-gray-500 text-sm mb-4">Credentials are encrypted at rest (AES-256-GCM). Once saved, the raw value is never displayed again — only a live-tested status.</p>
+        <SettingsNav />
 
         {/* Meta / Facebook / Instagram — real, functional */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
