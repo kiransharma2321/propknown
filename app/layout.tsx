@@ -74,13 +74,15 @@ export const metadata: Metadata = {
   },
 
   icons: {
+    // No /favicon.ico -- app/favicon.ico used to be Next's special-file convention for it, but
+    // that file was a bloated 56KB multi-frame .ico transferred on every fresh visit. Removed
+    // outright rather than replaced: these two PNGs (533B/1.3KB) already covered the same sizes,
+    // so there was nothing the .ico was doing that they don't.
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
       { url: "/logo.png", type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
