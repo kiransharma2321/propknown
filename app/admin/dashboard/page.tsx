@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
-import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download, History, GraduationCap, Trophy } from "lucide-react";
+import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download, History, GraduationCap, Trophy, Lock } from "lucide-react";
 import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
@@ -1100,7 +1100,15 @@ function AdminDashboardInner() {
   const [docFiles, setDocFiles]         = useState<DocFile[]>([]);
   const [docDragging, setDocDragging]   = useState(false);
   const [viewDocsFor, setViewDocsFor]   = useState<Property | null>(null);
+  const [isMaster, setIsMaster]         = useState(false);
   const docInputRef = useRef<HTMLInputElement>(null);
+
+  // Permission Matrix link below is Master-Admin-only -- matches the API's own hardcoded
+  // requireMaster() check (app/api/admin/permissions/route.ts), so the link never promises
+  // access the backend won't actually grant.
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => r.ok ? r.json() : null).then(d => setIsMaster(d?.role === "master")).catch(() => {});
+  }, []);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -1261,6 +1269,11 @@ function AdminDashboardInner() {
           <a href="/admin/users" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Shield size={15} /> Team / RBAC
           </a>
+          {isMaster && (
+            <a href="/admin/settings/permissions" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+              <Lock size={15} /> Permission Matrix
+            </a>
+          )}
           <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Zap size={15} /> Integrations
           </a>
