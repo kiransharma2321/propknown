@@ -94,6 +94,7 @@ export default function CRMDashboard() {
   const [editValue, setEditValue]   = useState("");
   const [saving, setSaving]         = useState(false);
   const [view, setView]             = useState<"kanban" | "list">("kanban");
+  const [isMaster, setIsMaster]     = useState(false);
 
   // Add lead modal
   const [addOpen, setAddOpen]       = useState(false);
@@ -109,6 +110,13 @@ export default function CRMDashboard() {
     } catch { setLeads([]); }
     finally { setLoading(false); }
   };
+
+  // Admin link in the sidebar below is Master-Admin-only -- everyone else's access to /admin/*
+  // pages (if any) is still governed by the Permission Matrix, this just stops the link itself
+  // from being offered to roles that mostly won't have anything to do there.
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => r.ok ? r.json() : null).then(d => setIsMaster(d?.role === "master")).catch(() => {});
+  }, []);
 
   useEffect(() => { fetchLeads(); }, []);
 
@@ -222,9 +230,11 @@ export default function CRMDashboard() {
           <a href="/crm/training" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <GraduationCap size={15} /> My Training
           </a>
-          <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
-            <Home size={15} /> Admin
-          </a>
+          {isMaster && (
+            <a href="/admin/dashboard" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+              <Home size={15} /> Admin
+            </a>
+          )}
         </nav>
         <div className="p-3 border-t border-gray-200">
           <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-600 transition-colors">

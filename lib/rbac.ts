@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 
 // Role/ROLE_LABELS now live in lib/roles.ts (no server-only imports there, so it's safe for
@@ -49,4 +50,18 @@ export async function getAdminSession(): Promise<{ role: "master" | Role; name: 
 
     return { role: user.role as Role, name: user.name, email: user.email, userId: user.id };
   } catch { return null; }
+}
+
+// Admin-separation gate: any logged-out (or stale/deactivated-user) visitor hitting a protected
+// /admin/* page gets bounced to the login form. Deliberately does NOT check role -- which areas
+// a given role can reach past login is the Permission Matrix's job (canRole(), enforced per
+// route/page), not this gate's. This can't live in app/admin/layout.tsx itself: that layout also
+// wraps app/admin/page.tsx (the login form), which must stay reachable with no session, and Next
+// gives layouts no pathname to tell the two apart. So it's called from a small layout.tsx in each
+// protected /admin/* subdirectory instead (dashboard, users, settings, bulk-import, audit-log,
+// training) -- everywhere except the login page itself.
+export async function requireAdminSession() {
+  const session = await getAdminSession();
+  if (!session) redirect("/admin");
+  return session;
 }

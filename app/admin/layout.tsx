@@ -4,6 +4,12 @@ import { ToastProvider } from "@/components/ui/Toast";
 // index:true/follow:true with no override, so /admin/* was indexable by Google.
 export const metadata = { title: "PropKnown Admin", robots: { index: false, follow: false } };
 
+// Admin-separation gate (session required to reach any protected /admin/* page) is NOT here --
+// this layout also wraps app/admin/page.tsx, the public login form, and Next gives layouts no
+// pathname to exempt it with. See lib/rbac.ts's requireAdminSession() and the layout.tsx it's
+// called from in each protected subdirectory (dashboard, users, settings, bulk-import,
+// audit-log, training).
+
 // Nested layouts must NOT render their own <html>/<head>/<body> -- only the root layout
 // (app/layout.tsx) may. This used to do exactly that, which produced two nested <html> roots
 // and broke React hydration on every /admin page. The Playfair Display + Inter fonts it was
