@@ -1,9 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PropertyCard from "@/components/ui/PropertyCard";
 import { ALL_LISTINGS } from "@/lib/listings";
+
+// No "use client" -- nothing here is interactive (no hooks, no handlers), so this can render
+// entirely on the server. It used to ship as client JS purely to filter/display 6 static cards,
+// which meant the full ALL_LISTINGS dataset (22KB) got parsed and filtered in the browser on
+// every homepage load for no reason. PropertyCard's own interactive bits (FavoriteButton,
+// CurrencyPrice) are already separate "use client" islands, so they still hydrate individually.
 
 // Was previously its own hardcoded copy of prop-1..6 (with its own drifted image URLs) --
 // consolidated to read from the single ALL_LISTINGS source so fixes there (photos, RERA

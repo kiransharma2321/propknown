@@ -1,12 +1,12 @@
-import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import ChatLauncher from "@/components/chatbot/ChatLauncher";
 
-// Code-split off the initial JS bundle -- it's a closed floating widget with its own state,
-// message history, and SVG orb animations, and nobody sees any of that on first paint. Keeping
-// it out of the critical hydration path was worth ~2s of LCP render-delay on mobile.
-const KnownAIChat = dynamic(() => import("@/components/chatbot/KnownAIChat"), { ssr: false });
+// ChatLauncher renders just the closed-state button/pill and only dynamically imports the real
+// KnownAIChat component (message state, quick replies, send/fetch logic) on hover/focus/click --
+// previously this loaded and mounted on every homepage visit regardless of whether anyone ever
+// touched it.
 
 // The public marketing site's chrome (nav, footer, WhatsApp button, KnownAI chat) lives here,
 // scoped to the (public) route group, rather than in the root layout -- so /admin and /crm
@@ -21,7 +21,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main>{children}</main>
       <Footer />
       <WhatsAppButton />
-      <KnownAIChat />
+      <ChatLauncher />
     </>
   );
 }

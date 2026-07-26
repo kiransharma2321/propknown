@@ -15,8 +15,14 @@ const QUICK_REPLIES = [
   "NRI property investment",
 ];
 
-export default function KnownAIChat() {
-  const [open,     setOpen]     = useState(false);
+interface KnownAIChatProps {
+  /** ChatLauncher passes true when this mount was triggered by an actual click (user meant to
+   *  open it), false when it was just a hover/focus preload -- stay closed until they click. */
+  initialOpen?: boolean;
+}
+
+export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
+  const [open,     setOpen]     = useState(initialOpen);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input,    setInput]    = useState("");
   const [typing,   setTyping]   = useState(false);
