@@ -5,7 +5,7 @@ import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 
-interface PropertyCardProps {
+export interface PropertyCardProps {
   id: string;
   title: string;
   location: string;

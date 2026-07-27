@@ -1,37 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import PropertyCard from "@/components/ui/PropertyCard";
-import { ALL_LISTINGS } from "@/lib/listings";
+import FeaturedPropertiesGrid from "./FeaturedPropertiesGrid";
 
-// No "use client" -- nothing here is interactive (no hooks, no handlers), so this can render
-// entirely on the server. It used to ship as client JS purely to filter/display 6 static cards,
-// which meant the full ALL_LISTINGS dataset (22KB) got parsed and filtered in the browser on
-// every homepage load for no reason. PropertyCard's own interactive bits (FavoriteButton,
-// CurrencyPrice) are already separate "use client" islands, so they still hydrate individually.
-
-// Was previously its own hardcoded copy of prop-1..6 (with its own drifted image URLs) --
-// consolidated to read from the single ALL_LISTINGS source so fixes there (photos, RERA
-// numbers, pricing) don't have to be made twice.
-const FEATURED_IDS = ["prop-1", "prop-2", "prop-3", "prop-4", "prop-5", "prop-6"];
-const SAMPLE_PROPERTIES = ALL_LISTINGS
-  .filter(l => FEATURED_IDS.includes(l.id))
-  .map(l => ({
-    id: l.id,
-    title: `${l.title}, ${l.city}`,
-    location: l.location,
-    city: l.city,
-    price: l.price,
-    currency: l.currency,
-    beds: l.beds, baths: l.baths, sqft: l.sqft,
-    propertyType: l.type.toLowerCase(),
-    listingType: l.listingType ?? "sale",
-    images: l.images,
-    aiScore: l.aiScore,
-    reraNumber: l.badge === "RERA" ? l.badgeNo : undefined,
-    featured: l.id !== "prop-3" && l.id !== "prop-5", // matches the original curation
-    verified: true,
-  }));
-
+// No "use client" here -- the header/CTA are static and render on the server as before. The
+// actual 6 property cards moved to FeaturedPropertiesGrid, a client component that fetches them
+// from /api/featured-properties after initial paint instead of either shipping the full 22KB
+// ALL_LISTINGS dataset to the browser (the old client-component version) or baking all 6 cards'
+// full markup into the static homepage HTML (the server-component version that replaced it --
+// that added ~30KB to the initial document and measurably hurt FCP/LCP). This keeps both wins.
 export default function FeaturedProperties() {
   return (
     <section className="py-20 bg-brand-black">
@@ -52,12 +28,7 @@ export default function FeaturedProperties() {
           </Link>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SAMPLE_PROPERTIES.map((p) => (
-            <PropertyCard key={p.id} {...p} />
-          ))}
-        </div>
+        <FeaturedPropertiesGrid />
       </div>
     </section>
   );
