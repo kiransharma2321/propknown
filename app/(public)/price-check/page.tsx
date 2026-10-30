@@ -30,6 +30,9 @@ interface CheckResult {
   currencySymbol?: string;
   locationName?: string;
   dataSourceLabel?: string;
+  fetchedAt?:  string;
+  location?:   string;
+  propertyType?: string;
   message:     string;
 }
 
@@ -159,7 +162,7 @@ export default function PriceCheckPage() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Asking Price (₹, total)</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Asking Price (total, local currency — ₹ / AED)</label>
               <input
                 type="number" value={price} onChange={e => setPrice(e.target.value)}
                 placeholder="e.g. 12000000"
@@ -256,7 +259,10 @@ export default function PriceCheckPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-5">{result.message}</p>
+                <p className="text-gray-700 text-sm leading-relaxed mb-2">{result.message}</p>
+                {result.fetchedAt && (
+                  <p className="text-gray-400 text-[11px] mb-5">Market data last updated {new Date(result.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · AI estimate, not a certified valuation</p>
+                )}
                 <div className="flex items-center gap-3 flex-wrap">
                   <button onClick={share} className="btn-secondary">
                     <Share2 size={15} /> {shareCopied ? "Copied to clipboard!" : "Share this result"}

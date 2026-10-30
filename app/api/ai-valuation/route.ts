@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getMarketPrice } from "@/lib/engine";
+
+// RETIRED: the hardcoded LOCATIONS table below is not live data and must never be served.
+// This endpoint has no callers in the app; it now answers from the shared engine only. The
+// table is kept untouched pending the owner's OK to delete this file (see automation-v1 notes).
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Risk  = "Low" | "Medium" | "High" | "Very High";
@@ -289,6 +294,13 @@ export async function GET() {
 
 // ─── POST → full valuation ───────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  const { location, propertyType = "apartment" } = await req.clone().json().catch(() => ({}));
+  if (!location) return NextResponse.json({ error: "Location is required" }, { status: 400 });
+  return NextResponse.json(await getMarketPrice({ location: String(location), propertyType: String(propertyType), tool: "ai_intel" }));
+}
+
+// Legacy handler, unreachable -- retained only so no lines are deleted without approval.
+async function legacyPOST_unused(req: NextRequest) {
   try {
     const { location, sqft, propertyType = "apartment" } = await req.json();
 
@@ -390,3 +402,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Valuation failed. Please try again." }, { status: 500 });
   }
 }
+void legacyPOST_unused;

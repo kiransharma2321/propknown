@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getMarketPrice, remaining, ENGINE_TIMEOUT_MS, UNAVAILABLE_MESSAGE } from "@/lib/engine";
+import { reraGuidance, type ReraGuidance } from "@/lib/engine/rera";
 
 // Same model as AI Intelligence — kept independent of jarvis's flash-lite so a spike in chat
 // traffic can't starve this feature's quota, and vice versa.
@@ -10,7 +12,12 @@ interface RedFlagResult {
   riskLevel: RiskLevel;
   areaAvgPrice: number | null;
   areaAvgUnit: string | null;
+  areaAvgCurrency: string | null;
+  areaAvgSymbol: string | null;
   priceComparisonNote: string;
+  rera: ReraGuidance;
+  aiAnalysis: "ok" | "unavailable";
+  aiNote?: string;
   redFlags: { flag: string; explanation: string }[];
   whatToVerifyNext: string[];
   educationalNote: string;
@@ -44,16 +51,12 @@ function detectHeuristicFlags(body: ShieldRequest, areaAvg: number | null): { fl
     });
   }
 
-  if (!body.reraNumber || !body.reraNumber.trim()) {
-    flags.push({
-      flag: "No RERA number provided",
-      explanation: "Most residential projects and agents are required to register with RERA. A listing with no RERA number (or one that isn't verifiable on the state RERA portal) needs extra scrutiny.",
-    });
-  } else if (!/^[A-Z]{1,5}\d*\/?[A-Z0-9\/-]{3,}$/i.test(body.reraNumber.trim())) {
-    flags.push({
-      flag: "RERA number format looks unusual",
-      explanation: "This doesn't resemble a typical RERA registration number format. Always cross-check it directly on your state's RERA website rather than trusting what's printed in an ad.",
-    });
+  const rera = reraGuidance({ location: body.location, reraNumber: body.reraNumber });
+  const isUae = rera.jurisdiction.startsWith("Dubai");
+  if (rera.format === "missing") {
+    flags.push({ flag: isUae ? "No DLD permit number provided" : "No RERA number provided", explanation: rera.formatNote });
+  } else if (rera.format === "unusual_format") {
+    flags.push({ flag: isUae ? "Permit number format looks unusual" : "RERA number format looks unusual", explanation: rera.formatNote });
   }
 
   const claims = (body.sellerClaims ?? "").toLowerCase();
@@ -88,20 +91,32 @@ function riskLevelFromFlagCount(n: number): RiskLevel {
 
 const DISCLAIMER = "This is an educational red-flag check, not legal advice; always verify with professionals and PropKnown.";
 
-function fallbackResult(body: ShieldRequest, areaAvg: number | null, areaUnit: string | null): RedFlagResult {
-  const flags = detectHeuristicFlags(body, areaAvg);
+interface AreaAvg { price: number | null; unit: string | null; currency: string | null; symbol: string | null }
+
+// Rule-based result: real checks on what the buyer entered, no invented figures. Used on its own
+// when the Gemini narrative is unavailable -- clearly labelled as such via aiAnalysis.
+function fallbackResult(body: ShieldRequest, avg: AreaAvg, aiNote?: string): RedFlagResult {
+  const flags = detectHeuristicFlags(body, avg.price);
   const risk = riskLevelFromFlagCount(flags.length);
+  const rera = reraGuidance({ location: body.location, reraNumber: body.reraNumber });
   return {
     riskLevel: risk,
-    areaAvgPrice: areaAvg,
-    areaAvgUnit: areaUnit,
-    priceComparisonNote: areaAvg && body.askingPrice
-      ? `Asking price is ${Math.round((body.askingPrice / areaAvg) * 100)}% of the area average.`
-      : "Area average price wasn't available for direct comparison — verify current rates with PropKnown's AI Intelligence tool.",
+    areaAvgPrice: avg.price,
+    areaAvgUnit: avg.unit,
+    areaAvgCurrency: avg.currency,
+    areaAvgSymbol: avg.symbol,
+    rera,
+    aiAnalysis: aiNote ? "unavailable" : "ok",
+    aiNote,
+    priceComparisonNote: avg.price && body.askingPrice
+      ? `Asking price is ${Math.round((body.askingPrice / avg.price) * 100)}% of the area average.`
+      : `Area average: ${UNAVAILABLE_MESSAGE}`,
     redFlags: flags,
     whatToVerifyNext: [
-      "Confirm the RERA registration directly on your state's RERA portal (e.g. rera.telangana.gov.in), not just the number printed in the ad.",
-      "Request the original sale deed, encumbrance certificate (EC), and property tax receipts before paying anything.",
+      ...rera.steps.slice(0, 1),
+      rera.jurisdiction.startsWith("Dubai")
+        ? "Request the title deed (or Oqood for off-plan) and confirm the seller's identity matches DLD records before paying anything."
+        : "Request the original sale deed, encumbrance certificate (EC), and property tax receipts before paying anything.",
       "Meet the seller in person (or via verified video call) and confirm their identity matches the ownership documents.",
       "Never pay a booking amount or advance before a lawyer or PropKnown has reviewed the title chain.",
     ],
@@ -112,21 +127,15 @@ function fallbackResult(body: ShieldRequest, areaAvg: number | null, areaUnit: s
 
 // ── Gemini-enhanced analysis (adds plain-language framing on top of the heuristic flags) ──
 
-async function fetchAreaAverage(req: NextRequest, location: string, propertyType: string, unit: string): Promise<{ price: number | null; unit: string | null }> {
-  try {
-    const origin = new URL(req.url).origin;
-    const res = await fetch(`${origin}/api/market-intel`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ location, propertyType, unit }),
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) return { price: null, unit: null };
-    const data = await res.json();
-    return { price: Number(data.currentPricePerSqft) || null, unit: data.pricePerSqftUnit ?? null };
-  } catch {
-    return { price: null, unit: null };
-  }
+async function fetchAreaAverage(location: string, propertyType: string, unit: string, timeoutMs: number): Promise<AreaAvg> {
+  const m = await getMarketPrice({ location, propertyType, unit, tool: "legal_shield", timeoutMs });
+  if (!m.available) return { price: null, unit: null, currency: null, symbol: null };
+  return {
+    price: Number(m.currentPricePerSqft) || null,
+    unit: (m.pricePerSqftUnit as string) ?? null,
+    currency: (m.currency as string) ?? null,
+    symbol: (m.currencySymbol as string) ?? null,
+  };
 }
 
 function parseGeminiJson(text: string): Record<string, unknown> | null {
@@ -145,21 +154,23 @@ async function callGeminiForRiskNarrative(
   apiKey: string,
   body: ShieldRequest,
   heuristicFlags: { flag: string; explanation: string }[],
-  areaAvg: number | null,
-  areaUnit: string | null
+  avg: AreaAvg,
+  rera: ReraGuidance,
+  timeoutMs: number
 ): Promise<Partial<RedFlagResult> | null> {
-  const prompt = `You are KnownAI, PropKnown's real estate assistant, helping a buyer sanity-check a property listing for common Indian real estate scam signals. Be honest, plain-language, and never give false legal certainty — this is educational guidance, not a legal verdict.
+  const prompt = `You are KnownAI, PropKnown's real estate assistant, helping a buyer sanity-check a property listing for common real estate scam signals (Indian or UAE, depending on the location). Be honest, plain-language, and never give false legal certainty — this is educational guidance, not a legal verdict.
 
 LISTING DETAILS PROVIDED BY BUYER:
 - Location: ${body.location || "not provided"}
 - Property type: ${body.propertyType || "not provided"}
-- Asking price: ${body.askingPrice ?? "not provided"} (unit: ${body.unit ?? "sqft"})
+- Asking price: ${body.askingPrice ?? "not provided"} ${avg.currency ?? ""} per ${body.unit ?? "sqft"}
 - RERA number given: ${body.reraNumber || "none provided"}
 - Listing source: ${body.listingSource || "not provided"}
 - Seller claims / notes from buyer: ${body.sellerClaims || "none provided"}
 
 REFERENCE DATA:
-- Area average price for this location/type: ${areaAvg ? `${areaAvg} per ${areaUnit}` : "not available"}
+- Area average price for this location/type (PropKnown live engine): ${avg.price ? `${avg.currency} ${avg.price} per ${avg.unit}` : "not available — do NOT estimate or mention any area price"}
+- Registration jurisdiction: ${rera.jurisdiction} (${rera.authority}); number format check: ${rera.format} — ${rera.formatNote}
 
 ALREADY-DETECTED RULE-BASED FLAGS (do not contradict these, incorporate them):
 ${heuristicFlags.length ? heuristicFlags.map(f => `- ${f.flag}: ${f.explanation}`).join("\n") : "(none detected by rules)"}
@@ -174,7 +185,7 @@ Return ONLY a valid JSON object, no markdown/code fences:
   "summary": "2-3 sentence honest overall summary of the risk level and why"
 }
 
-Never claim certainty about fraud — always frame as "signals to check", not accusations. If almost nothing looks wrong, say so honestly rather than inventing concerns.`;
+Never claim certainty about fraud — always frame as "signals to check", not accusations. If almost nothing looks wrong, say so honestly rather than inventing concerns. Never state any price or number that isn't given above.`;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
@@ -184,7 +195,7 @@ Never claim certainty about fraud — always frame as "signals to check", not ac
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.3, maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } },
     }),
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(Math.max(500, timeoutMs)),
   });
 
   const data = await res.json();
@@ -211,51 +222,51 @@ export async function POST(req: NextRequest) {
 
   const propertyType = body.propertyType || "apartment";
   const unit = body.unit || "sqft";
+  // One 10s budget for the whole check: up to ~5.5s for the area average (usually an instant
+  // cache hit), the rest for the Gemini narrative. Whatever doesn't finish in time is reported
+  // as unavailable -- the rule-based checks always come back.
+  const deadlineAt = Date.now() + ENGINE_TIMEOUT_MS - 300;
 
-  // Area average — best-effort, never blocks the rest of the check
-  const { price: areaAvg, unit: areaUnit } = await fetchAreaAverage(req, body.location, propertyType, unit);
-
-  // Rule-based flags always run first — these never depend on Gemini being available
-  const heuristicFlags = detectHeuristicFlags(body, areaAvg);
+  const avg = await fetchAreaAverage(body.location!.trim(), propertyType, unit, 5500);
+  const heuristicFlags = detectHeuristicFlags(body, avg.price);
+  const rera = reraGuidance({ location: body.location, reraNumber: body.reraNumber });
+  const aiDown = "KnownAI's written analysis is unavailable right now — the rule-based checks below still ran. Try again in a moment for the full analysis.";
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "ADD-YOUR-GEMINI-KEY-HERE") {
-    return NextResponse.json(fallbackResult(body, areaAvg, areaUnit));
+  if (!apiKey || apiKey === "ADD-YOUR-GEMINI-KEY-HERE" || remaining(deadlineAt) < 1500) {
+    return NextResponse.json(fallbackResult(body, avg, aiDown));
   }
 
   try {
-    const aiResult = await callGeminiForRiskNarrative(apiKey, body, heuristicFlags, areaAvg, areaUnit);
+    const aiResult = await callGeminiForRiskNarrative(apiKey, body, heuristicFlags, avg, rera, remaining(deadlineAt));
     if (!aiResult) {
-      return NextResponse.json(fallbackResult(body, areaAvg, areaUnit));
+      return NextResponse.json(fallbackResult(body, avg, aiDown));
     }
 
-    const additionalFlags = Array.isArray(aiResult.redFlags)
-      ? [] // not expected in this shape
-      : Array.isArray((aiResult as Record<string, unknown>).additionalRedFlags)
-        ? ((aiResult as Record<string, unknown>).additionalRedFlags as string[]).map(f => ({ flag: f, explanation: "" }))
-        : [];
+    const extra = (aiResult as Record<string, unknown>).additionalRedFlags;
+    const additionalFlags = Array.isArray(extra) ? (extra as string[]).map(f => ({ flag: f, explanation: "" })) : [];
 
     const allFlags = [...heuristicFlags, ...additionalFlags];
     const riskLevel: RiskLevel = ["Low", "Medium", "High"].includes(aiResult.riskLevel as string)
       ? (aiResult.riskLevel as RiskLevel)
       : riskLevelFromFlagCount(allFlags.length);
+    const base = fallbackResult(body, avg);
 
     const result: RedFlagResult = {
+      ...base,
       riskLevel,
-      areaAvgPrice: areaAvg,
-      areaAvgUnit: areaUnit,
-      priceComparisonNote: (aiResult.priceComparisonNote as string) || fallbackResult(body, areaAvg, areaUnit).priceComparisonNote,
+      priceComparisonNote: (aiResult.priceComparisonNote as string) || base.priceComparisonNote,
       redFlags: allFlags,
       whatToVerifyNext: Array.isArray(aiResult.whatToVerifyNext) && aiResult.whatToVerifyNext.length
-        ? aiResult.whatToVerifyNext as string[]
-        : fallbackResult(body, areaAvg, areaUnit).whatToVerifyNext,
-      educationalNote: (aiResult.educationalNote as string) || fallbackResult(body, areaAvg, areaUnit).educationalNote,
+        ? [...rera.steps.slice(0, 1), ...(aiResult.whatToVerifyNext as string[])]
+        : base.whatToVerifyNext,
+      educationalNote: (aiResult.educationalNote as string) || base.educationalNote,
       summary: `${(aiResult.summary as string) || `This listing shows ${allFlags.length} potential red flag(s).`} ${DISCLAIMER}`,
     };
 
     return NextResponse.json(result);
   } catch (e) {
-    console.error("[legal-shield] Gemini analysis failed, using rule-based fallback:", e);
-    return NextResponse.json(fallbackResult(body, areaAvg, areaUnit));
+    console.error("[legal-shield] Gemini analysis failed, returning rule-based checks only:", e);
+    return NextResponse.json(fallbackResult(body, avg, aiDown));
   }
 }

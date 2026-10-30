@@ -25,6 +25,10 @@ interface RedFlagResult {
   riskLevel: "Low" | "Medium" | "High";
   areaAvgPrice: number | null;
   areaAvgUnit: string | null;
+  areaAvgSymbol?: string | null;
+  aiAnalysis?: "ok" | "unavailable";
+  aiNote?: string;
+  rera?: { jurisdiction: string; authority: string; portalUrl: string | null; format: string; formatNote: string };
   priceComparisonNote: string;
   redFlags: { flag: string; explanation: string }[];
   whatToVerifyNext: string[];
@@ -145,7 +149,7 @@ export default function LegalShieldPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Asking Price ({form.unit === "sqyard" ? "₹/sq.yard" : "₹/sq.ft"})</label>
+                <label className="text-xs font-semibold text-gray-600 mb-1 block">Asking Price (local currency per {form.unit === "sqyard" ? "sq.yard" : "sq.ft"})</label>
                 <input type="number" value={form.askingPrice} onChange={e => setForm(f => ({ ...f, askingPrice: e.target.value }))}
                   placeholder="e.g. 8500" className={inp} />
               </div>
@@ -193,9 +197,27 @@ export default function LegalShieldPage() {
                   <p className="text-sm text-gray-600 leading-relaxed">{result.summary}</p>
                 </div>
 
+                {result.aiAnalysis === "unavailable" && result.aiNote && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">{result.aiNote}</div>
+                )}
+
+                {result.rera && (
+                  <div className="border border-gray-200 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1.5">
+                      <Shield size={13} style={{ color: GOLD }} /> RERA scan — {result.rera.jurisdiction} ({result.rera.authority})
+                    </p>
+                    <p className="text-[11px] text-gray-600 leading-relaxed">{result.rera.formatNote}</p>
+                    {result.rera.portalUrl && (
+                      <a href={result.rera.portalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold mt-2 underline" style={{ color: GOLD }}>
+                        Verify on the official portal <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {result.areaAvgPrice != null && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 mb-1">Area average: ₹{result.areaAvgPrice.toLocaleString("en-IN")} / {result.areaAvgUnit}</p>
+                    <p className="text-xs text-gray-500 mb-1">Area average: {result.areaAvgSymbol ?? ""}{result.areaAvgPrice.toLocaleString("en-IN")} / {result.areaAvgUnit}</p>
                     <p className="text-sm text-gray-700">{result.priceComparisonNote}</p>
                   </div>
                 )}

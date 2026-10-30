@@ -16,6 +16,12 @@
 const GEMINI_MODEL_PRIMARY  = "gemini-2.5-flash";
 const GEMINI_MODEL_FALLBACK = "gemini-2.5-flash-lite";
 
+// Combines the caller's overall deadline (lib/engine's 10s budget) with a per-request timeout,
+// so a slow upstream can never hold a request past the engine's deadline.
+function timeoutSignal(ms: number, outer?: AbortSignal): AbortSignal {
+  return outer ? AbortSignal.any([outer, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms);
+}
+
 // ─── Country / currency ────────────────────────────────────────────────────────
 
 interface CurrencyInfo { code: string; symbol: string; name: string; }
@@ -167,7 +173,7 @@ interface BayutAutocompleteHit {
 }
 
 // Step 1: Resolve location to Bayut externalID via autocomplete
-async function bayutAutoComplete(location: string, apiKey: string): Promise<string | null> {
+async function bayutAutoComplete(location: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
   // Strip trailing country qualifier for Bayut search (e.g. "Dubai Marina, Dubai" → "Dubai Marina")
   const q = location.split(",")[0].trim();
   try {
@@ -178,7 +184,7 @@ async function bayutAutoComplete(location: string, apiKey: string): Promise<stri
           "x-rapidapi-host": "bayut14.p.rapidapi.com",
           "x-rapidapi-key": apiKey,
         },
-        signal: AbortSignal.timeout(6000),
+        signal: timeoutSignal(6000, signal),
       }
     );
     if (!res.ok) return null;
@@ -197,7 +203,8 @@ async function bayutAutoComplete(location: string, apiKey: string): Promise<stri
 async function bayutSearchListings(
   locationExternalID: string,
   propertyType: string,
-  apiKey: string
+  apiKey: string,
+  signal?: AbortSignal
 ): Promise<BayutHit[]> {
   const categoryMap: Record<string, string> = {
     apartment: "4", villa: "3", house: "3",
@@ -221,7 +228,7 @@ async function bayutSearchListings(
         "x-rapidapi-host": "bayut14.p.rapidapi.com",
         "x-rapidapi-key": apiKey,
       },
-      signal: AbortSignal.timeout(10000),
+      signal: timeoutSignal(10000, signal),
     }
   );
   if (!res.ok) throw new Error(`Bayut search ${res.status}`);
@@ -241,17 +248,18 @@ interface BayutResult {
 async function fetchBayutData(
   location: string,
   propertyType: string,
-  apiKey: string
+  apiKey: string,
+  signal?: AbortSignal
 ): Promise<BayutResult | null> {
   // Step 1 — autocomplete
-  const locId = await bayutAutoComplete(location, apiKey);
+  const locId = await bayutAutoComplete(location, apiKey, signal);
   if (!locId) {
     console.warn("Bayut autocomplete returned no ID for:", location);
     return null;
   }
 
   // Step 2 — listings
-  const hits = await bayutSearchListings(locId, propertyType, apiKey);
+  const hits = await bayutSearchListings(locId, propertyType, apiKey, signal);
   if (!hits.length) return null;
 
   // Compute price-per-sqft from each listing
@@ -361,7 +369,8 @@ async function fetchTavilyContext(
   propertyType: string,
   unit: string,
   countryCode: string,
-  apiKey: string
+  apiKey: string,
+  signal?: AbortSignal
 ): Promise<{ snippets: string; hasData: boolean; sourceUrls: string[]; rawText: string; extractionText: string }> {
   const query = buildTavilyQuery(location, propertyType, unit, countryCode);
 
@@ -375,8 +384,11 @@ async function fetchTavilyContext(
       include_answer: true,
       max_results:    6,
     }),
-    signal: AbortSignal.timeout(6000),
+    signal: timeoutSignal(6000, signal),
   });
+  // 432 = Tavily plan/credit limit reached -- named explicitly in the log because it looks like
+  // "no data" to visitors but is actually a billing problem only the account owner can fix.
+  if (res.status === 432) throw new Error("Tavily 432: plan usage limit reached (upgrade plan or replace TAVILY_API_KEY)");
   if (!res.ok) throw new Error(`Tavily ${res.status}`);
 
   const data: TavilyResponse = await res.json();
@@ -909,11 +921,18 @@ function normalise(
     throw new Error("no usable price could be derived from either the search data or Gemini's response");
   }
 
-  const rate = (Number(raw.growthRate) || 8);
+  // No invented defaults: a figure Gemini didn't actually return is reported as null (shown as
+  // "—" in the UI), never silently replaced with a plausible-looking constant. The trend series
+  // can only be rebuilt from a real growth rate; with neither series nor rate, they stay empty.
+  const finiteOrNull = (v: unknown): number | null => {
+    const n = Number(v);
+    return v != null && v !== "" && Number.isFinite(n) && n !== 0 ? n : null;
+  };
+  const growthRate = finiteOrNull(raw.growthRate);
   let hist = raw.priceHistory5yr as { year: number; value: number }[] | undefined;
   let fore = raw.priceForecast5yr as { year: number; value: number }[] | undefined;
   if (!Array.isArray(hist) || hist.length < 2 || !Array.isArray(fore) || fore.length < 2) {
-    const built = buildTrendSeries(now, rate, y);
+    const built = growthRate != null ? buildTrendSeries(now, growthRate, y) : { hist: [], fore: [] };
     hist = Array.isArray(hist) && hist.length >= 2 ? hist : built.hist;
     fore = Array.isArray(fore) && fore.length >= 2 ? fore : built.fore;
   }
@@ -941,23 +960,23 @@ function normalise(
     typicalListings:     (raw.typicalListings as string) || "Mix of property types typical for this micro-market — verify specifics with a PropKnown advisor.",
     priceHistory5yr:     hist,
     priceForecast5yr:    fore,
-    growthRate:          Number(raw.growthRate)     || 8,
+    growthRate,
     trend,
-    rentalYield:         Number(raw.rentalYield)    || 3.5,
-    investmentRating:    Number(raw.investmentRating) || 6.5,
+    rentalYield:         finiteOrNull(raw.rentalYield),
+    investmentRating:    finiteOrNull(raw.investmentRating),
     bestFor:             (raw.bestFor  as string) || "long-term investment",
     dataSource,
     dataSourceLabel,
     groundedBy,
     sourceUrls:          sourceUrls?.slice(0, 5) ?? [],
-    summary:             (raw.summary as string) || `${location} shows stable market dynamics.`,
-    keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : ["Strong demand", "Good connectivity", "Infrastructure growth", "Growing employment"],
+    summary:             (raw.summary as string) || "",
+    keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : [],
   };
 }
 
 class GeminiQuotaError extends Error {}
 
-async function callGemini(apiKey: string, prompt: string, model: string): Promise<string> {
+async function callGemini(apiKey: string, prompt: string, model: string, signal?: AbortSignal): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
@@ -970,6 +989,7 @@ async function callGemini(apiKey: string, prompt: string, model: string): Promis
       // generic, non-area-specific estimate. Disabling thinking fixes this.
       generationConfig: { temperature: 0.25, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
     }),
+    signal: timeoutSignal(9000, signal),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -1019,7 +1039,8 @@ export function setCache(key: string, data: Record<string, unknown>) {
 export async function computeMarketIntel(
   loc: string,
   propType: string,
-  resolvedUnit: string
+  resolvedUnit: string,
+  signal?: AbortSignal
 ): Promise<Record<string, unknown>> {
   const geminiKey   = process.env.GEMINI_API_KEY;
   const tavilyKey   = process.env.TAVILY_API_KEY;
@@ -1045,7 +1066,7 @@ export async function computeMarketIntel(
   if (countryCode === "ae" && rapidApiKey) {
     // ── Bayut for UAE ───────────────────────────────────────────────────────
     try {
-      const bayutResult = await fetchBayutData(loc, propType, rapidApiKey);
+      const bayutResult = await fetchBayutData(loc, propType, rapidApiKey, signal);
       if (bayutResult && bayutResult.count >= 2) {
         realDataBlock  = bayutResult.snippets;
         dataSource     = "bayut_data";
@@ -1068,7 +1089,7 @@ export async function computeMarketIntel(
     try {
       const tavilyQuery = buildTavilyQuery(loc, propType, resolvedUnit, countryCode);
       console.log(`[Tavily] query for "${loc}": ${tavilyQuery}`);
-      const tavilyPromise = fetchTavilyContext(loc, propType, resolvedUnit, countryCode, tavilyKey);
+      const tavilyPromise = fetchTavilyContext(loc, propType, resolvedUnit, countryCode, tavilyKey, signal);
       const timeout       = new Promise<null>((res) => setTimeout(() => res(null), 5500));
       const tavilyResult  = await Promise.race([tavilyPromise, timeout]);
       if (tavilyResult && tavilyResult.hasData) {
@@ -1110,7 +1131,8 @@ export async function computeMarketIntel(
   //       primary attempt -> (if a transient non-quota error) retry primary once -> (if that
   //       also hits quota) fallback attempt, done.
   async function attemptGemini(model: string): Promise<Record<string, unknown>> {
-    return parseGemini(await callGemini(geminiKey!, prompt, model));
+    if (signal?.aborted) throw new Error("deadline reached");
+    return parseGemini(await callGemini(geminiKey!, prompt, model, signal));
   }
 
   let raw: Record<string, unknown> | undefined;

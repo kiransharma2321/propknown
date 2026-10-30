@@ -114,10 +114,10 @@ interface MarketIntelResult {
   dataSourceLabel?:   string;
   groundedBy?:        "bayut" | "search_data" | "gemini";
   sourceUrls?:        string[];
-  growthRate:         number;
+  growthRate:         number | null;
   trend:              "Bullish" | "Stable" | "Cautious";
-  rentalYield:        number;
-  investmentRating:   number;
+  rentalYield:        number | null;
+  investmentRating:   number | null;
   bestFor:            string;
   summary:            string;
   keyDrivers:         string[];
@@ -837,9 +837,9 @@ function AIIntelligenceInner() {
                   {/* 4 stat cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: "Annual Growth",     val: `${r.growthRate}%`,          color: "text-green-600"  },
-                      { label: "Rental Yield",      val: `${r.rentalYield}% p.a.`,    color: "text-[#7A5C1A]" },
-                      { label: "Investment Rating", val: `${r.investmentRating}/10`,  color: ratingColor       },
+                      { label: "Annual Growth",     val: r.growthRate != null ? `${r.growthRate}%` : "—",          color: "text-green-600"  },
+                      { label: "Rental Yield",      val: r.rentalYield != null ? `${r.rentalYield}% p.a.` : "—",    color: "text-[#7A5C1A]" },
+                      { label: "Investment Rating", val: r.investmentRating != null ? `${r.investmentRating}/10` : "—",  color: ratingColor       },
                       { label: "Best For",          val: r.bestFor,                   color: "text-gray-700"   },
                     ].map((m) => (
                       <div key={m.label} className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
@@ -870,7 +870,9 @@ function AIIntelligenceInner() {
                         Illustrative, not historical record
                       </span>
                     </h3>
-                    <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} />
+                    {r.priceHistory5yr.length >= 2
+                      ? <LineChart id="hist" points={r.priceHistory5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} />
+                      : <p className="text-gray-400 text-xs py-8 text-center">Trend data not available for this area.</p>}
                   </div>
 
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -882,8 +884,10 @@ function AIIntelligenceInner() {
                         Illustrative projection
                       </span>
                     </h3>
-                    <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} dashed />
-                    <p className="text-center text-gray-400 text-xs mt-1">
+                    {r.priceForecast5yr.length >= 2
+                      ? <LineChart id="fore" points={r.priceForecast5yr.map(p => ({ year: p.year, value: Math.round(toDisplay(p.value * unitConvFactor)) }))} formatFn={fmtFn} dashed />
+                      : <p className="text-gray-400 text-xs py-8 text-center">Forecast not available for this area.</p>}
+                    {r.priceForecast5yr[4] && <p className="text-center text-gray-400 text-xs mt-1">
                       {r.priceForecast5yr[4]?.year} illustrative projection:
                       <span className="text-green-600 font-semibold ml-1">
                         {sym}{Math.round(toDisplay((r.priceForecast5yr[4]?.value ?? 0) * unitConvFactor)).toLocaleString()}/{displayUnitLabel}
@@ -891,7 +895,7 @@ function AIIntelligenceInner() {
                       <span className="text-green-500 ml-2">
                         (+{Math.round(((r.priceForecast5yr[4]?.value ?? 0) / r.currentPricePerSqft - 1) * 100)}%)
                       </span>
-                    </p>
+                    </p>}
                   </div>
                 </div>
 

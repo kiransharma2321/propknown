@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession, canRole } from "@/lib/rbac";
-import { computeMarketIntel } from "@/lib/marketIntel";
+import { getMarketPrice } from "@/lib/engine";
 import { logAudit } from "@/lib/auditLog";
 
 // Property Inventory AI scores (Section 5 / Q). Reuses the existing AI Intelligence engine
@@ -17,11 +17,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const property = await prisma.property.findUnique({ where: { id: params.id } });
   if (!property) return NextResponse.json({ error: "Property not found" }, { status: 404 });
 
-  const marketData = await computeMarketIntel(
-    `${property.location}, ${property.city}`,
-    property.propertyType,
-    "sqft"
-  ) as Record<string, unknown>;
+  const marketData = await getMarketPrice({
+    location: `${property.location}, ${property.city}`,
+    propertyType: property.propertyType,
+    unit: "sqft",
+    tool: "crm_score",
+  }) as Record<string, unknown>;
 
   if (marketData.available === false) {
     return NextResponse.json({ error: "Live market data unavailable for this location right now — try again shortly." }, { status: 200 });

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getMarketPrice, logAiQuery, remaining, unitLabel, ENGINE_TIMEOUT_MS, UNAVAILABLE_MESSAGE, type EngineResult } from "@/lib/engine";
+import { matchLocality } from "@/lib/localities";
 
 // flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies.
 // flash is used as a cross-model fallback on the final retry — an "UNAVAILABLE / high demand"
@@ -30,7 +32,7 @@ REAL ESTATE EXPERTISE:
 - Legal verification — title deed, patta, FMB, EC, occupancy certificate
 - NRI investment: FEMA rules, repatriation, NRO/NRE accounts, TDS on NRI property
 - Market trends: price appreciation, rental yields, upcoming corridors
-- Area analysis for Hyderabad: Kokapet (high-growth IT corridor, premium plots ₹40K-90K/sq.yd), Gachibowli (IT hub, apartments ₹8K-16K/sqft), Nallagandla/Tellapur (emerging, good connectivity), Medchal (outer ring, affordable ₹3K-6K/sqft), Financial District (premium commercial+residential), Nizampet/Bachupally (mid-budget residential), Shamshabad (airport zone, logistics/industrial)
+- Area analysis for Hyderabad: Kokapet (high-growth IT corridor), Gachibowli (IT hub), Nallagandla/Tellapur (emerging, good connectivity), Medchal (outer ring, more affordable), Financial District (premium commercial+residential), Nizampet/Bachupally (mid-budget residential), Shamshabad (airport zone, logistics/industrial)
 
 EMI FORMULA: EMI = P × r × (1+r)^n / ((1+r)^n - 1) where P = principal, r = monthly rate (annual%/1200), n = tenure in months. Always calculate and show the actual EMI when asked.
 
@@ -76,9 +78,9 @@ This rule applies to: "Which builder is good?", "Is XYZ builder good?", "Which c
 ═══════════════════════════════════════
 GENERAL GUIDELINES:
 - Be warm, professional, and specific (3-5 sentences usually; longer when detail is needed)
-- Give REAL, USEFUL answers — if asked about an area, give genuine pricing insights and pros/cons. If asked to calculate EMI, show the actual calculation.
+- Give REAL, USEFUL answers — if asked about an area, give genuine pros/cons. If asked to calculate EMI, show the actual calculation.
 - Use proper Indian currency formatting: ₹X lakhs, ₹X crores
-- When asked for live prices you cannot guarantee, give a realistic estimate range and mention: "For exact current pricing, use PropKnown's AI Intelligence tool or WhatsApp our team on 70130 16003"
+- PRICES — STRICT RULE: never state a property price, rate per sqft/sq.yd, rental yield or growth figure from your own knowledge. Only quote figures that appear in a "LIVE PRICE DATA" block in this conversation, exactly as given, and say they are an AI estimate from PropKnown's live engine. If there is no such block, say you can't quote a price right now and point to PropKnown's AI Intelligence tool (propknown.com/ai-intelligence) or WhatsApp 70130 16003.
 - For serious enquiries (buying/selling/investing), offer to connect: "WhatsApp our team directly on 70130 16003 for a personalised consultation"
 - For general knowledge questions unrelated to real estate, answer helpfully and concisely, then relate back if relevant
 - Never invent fake RERA numbers, fake listing prices, or fake project names
@@ -116,13 +118,15 @@ const SAFETY_SETTINGS = [
 async function callGemini(
   endpoint: string,
   contents: GeminiContent[],
-  temperature = 0.7
+  temperature = 0.7,
+  timeoutMs = 9000,
+  extraSystem = ""
 ): Promise<{ reply: string | null; blocked: boolean; reason: string; quotaExceeded?: boolean; transient?: boolean }> {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      system_instruction: { parts: [{ text: extraSystem ? `${SYSTEM_PROMPT}\n\n${extraSystem}` : SYSTEM_PROMPT }] },
       contents,
       safetySettings: SAFETY_SETTINGS,
       generationConfig: {
@@ -134,7 +138,7 @@ async function callGemini(
         thinkingConfig: { thinkingBudget: 0 },
       },
     }),
-    signal: AbortSignal.timeout(22000),
+    signal: AbortSignal.timeout(Math.max(500, timeoutMs)),
   });
 
   const data = await res.json().catch(() => ({})) as {
@@ -199,6 +203,50 @@ Every buyer's "best" depends on their budget, timeline, and location preference 
 
 For specific verified recommendations tailored to your exact needs, I'd suggest a quick chat with our team on WhatsApp **70130 16003**. We personally visit and verify projects before recommending them.`;
 
+// ─── Price grounding ───────────────────────────────────────────────────────
+// Price questions are answered ONLY from the shared engine (lib/engine) -- the same number
+// Price Check, AI Intelligence and the /prices pages show. No engine data => an honest
+// "unavailable" reply with no numbers, without asking Gemini (which would otherwise be
+// tempted to fill the gap from stale training data).
+
+const PRICE_INTENT = /\b(price|prices|pricing|rate|rates|cost|costs|per\s*sq|sq\.?\s?ft|sqft|sq\.?\s?y(?:ar)?d|gaj|how much|valuation|worth|psf|rental yield)\b/i;
+
+function detectPropertyType(t: string): string {
+  if (/\b(plot|plots|land|site|open plot|gaj|sq\.?\s?y(?:ar)?d)\b/i.test(t)) return /\b(farm|agri)/i.test(t) ? "agriculture" : "plot";
+  if (/\bvilla/i.test(t)) return "villa";
+  if (/\b(independent house|individual house)\b/i.test(t)) return "house";
+  if (/\b(commercial|office|shop)\b/i.test(t)) return "commercial";
+  if (/\b(farm ?land|agricultur)/i.test(t)) return "agriculture";
+  return "apartment";
+}
+
+function extractLocation(t: string): string | null {
+  const known = matchLocality(t);
+  if (known) return `${known.name}, ${known.city}`;
+  const m = t.match(/\b(?:in|at|near|around|for)\s+([A-Za-z][A-Za-z .'-]{2,50}?)(?=\s*(?:[?.!,]|$|\bfor\b|\bwith\b|\bright now\b|\btoday\b))/i);
+  return m ? m[1].trim() : null;
+}
+
+function liveDataBlock(d: EngineResult): string {
+  const u = unitLabel(d.pricePerSqftUnit as string);
+  const sym = String(d.currencySymbol ?? "");
+  const fmt = (n: unknown) => (typeof n === "number" ? `${sym}${n.toLocaleString("en-IN")}` : "not available");
+  return [
+    `LIVE PRICE DATA (PropKnown engine, ${d.dataSourceLabel ?? "AI estimate based on live web search"}, fetched ${d.fetchedAt ? new Date(d.fetchedAt as string).toDateString() : "today"}):`,
+    `Location: ${d.locationName}`,
+    `Typical rate: ${fmt(d.currentPricePerSqft)}/${u} (range ${fmt(d.priceRangeMin)}–${fmt(d.priceRangeMax)}/${u})`,
+    `Annual growth: ${d.growthRate != null ? `${d.growthRate}%` : "not available"}; rental yield: ${d.rentalYield != null ? `${d.rentalYield}%` : "not available"}; trend: ${d.trend ?? "not available"}`,
+    d.summary ? `Context: ${d.summary}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+function plainPriceReply(d: EngineResult): string {
+  const u = unitLabel(d.pricePerSqftUnit as string);
+  const sym = String(d.currencySymbol ?? "");
+  const n = (v: unknown) => `${sym}${Number(v).toLocaleString("en-IN")}`;
+  return `PropKnown's live engine puts ${d.locationName} at about **${n(d.currentPricePerSqft)}/${u}** (typical range ${n(d.priceRangeMin)}–${n(d.priceRangeMax)}/${u}). This is an AI estimate from live web data, not a valuation — for a specific property, run a free Price Check on propknown.com/price-check or WhatsApp us on 70130 16003.`;
+}
+
 const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp our team on 70130 16003 — we respond within minutes!";
 
 export async function POST(req: NextRequest) {
@@ -220,7 +268,35 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const contents = buildContents(history, message.trim());
+  const started = Date.now();
+  const deadlineAt = started + ENGINE_TIMEOUT_MS - 300;
+  const text = message.trim();
+
+  // Price questions: ground in the shared engine first.
+  let extraSystem = "";
+  let grounded: boolean | undefined;
+  let priceData: EngineResult | null = null;
+  if (PRICE_INTENT.test(text)) {
+    const location = extractLocation(text);
+    if (location) {
+      const d = await getMarketPrice({ location, propertyType: detectPropertyType(text), tool: "chat", timeoutMs: 5500 });
+      if (!d.available) {
+        return NextResponse.json({
+          grounded: false,
+          reply: `${UNAVAILABLE_MESSAGE} I won't guess a price for ${location} — PropKnown only quotes figures from live market data. You can also WhatsApp our team on **70130 16003** for a manual opinion.`,
+        });
+      }
+      priceData = d;
+      grounded = true;
+      extraSystem = `${liveDataBlock(d)}\n\nAnswer the user's price question using ONLY the LIVE PRICE DATA above. Quote its figures exactly; don't add any other price figures.`;
+    } else {
+      await logAiQuery({ tool: "chat", result: "no_location", durationMs: Date.now() - started });
+    }
+  } else {
+    await logAiQuery({ tool: "chat", result: "ok", durationMs: Date.now() - started });
+  }
+
+  const contents = buildContents(history, text);
   const retryContents: GeminiContent[] = [
     ...contents.slice(0, -1),
     { role: "user", parts: [{ text: `Please answer this real estate question helpfully: ${message.trim()}` }] },
@@ -238,13 +314,18 @@ export async function POST(req: NextRequest) {
     { endpoint: geminiEndpoint(GEMINI_MODEL_FALLBACK, apiKey), contents: retryContents, temperature: 0.5, delayMs: 1200 },
   ];
 
+  // Engine-backed reply without Gemini, used if Gemini can't answer in time -- real numbers only.
+  const groundedFallback = () => NextResponse.json({ grounded: true, reply: plainPriceReply(priceData!) });
+
   for (let i = 0; i < attempts.length; i++) {
     const attempt = attempts[i];
+    // Everything (engine + Gemini retries) must fit in the 10s budget.
+    if (remaining(deadlineAt) < attempt.delayMs + 1500) break;
     if (attempt.delayMs > 0) await sleep(attempt.delayMs);
 
     try {
-      const r = await callGemini(attempt.endpoint, attempt.contents, attempt.temperature);
-      if (r.reply) return NextResponse.json({ reply: r.reply });
+      const r = await callGemini(attempt.endpoint, attempt.contents, attempt.temperature, remaining(deadlineAt), extraSystem);
+      if (r.reply) return NextResponse.json({ reply: r.reply, grounded });
 
       if (r.blocked) {
         // Safety block: return a curated helpful answer instead of a generic error
@@ -252,6 +333,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (r.quotaExceeded) {
+        if (priceData) return groundedFallback();
         // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
         console.warn(`[KnownAI] Attempt ${i + 1}: quota exceeded — skipping remaining retries:`, r.reason);
         return NextResponse.json({ reply: QUOTA_FALLBACK });
@@ -263,7 +345,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Final fallback — only reached after all 3 attempts (across 2 models) genuinely failed
+  if (priceData) return groundedFallback();
+
+  // Final fallback — only reached after every attempt that fit in the time budget failed
   return NextResponse.json({
     reply: "I'm having a moment of difficulty right now. For immediate help on this question, please WhatsApp our team on **70130 16003** — we respond within minutes and can answer any property question directly!",
   });

@@ -1274,6 +1274,11 @@ function AdminDashboardInner() {
               <Lock size={15} /> Permission Matrix
             </a>
           )}
+          {isMaster && (
+            <a href="/admin/automation" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+              <Brain size={15} /> Growth & Automation
+            </a>
+          )}
           <a href="/admin/settings" className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
             <Zap size={15} /> Integrations
           </a>

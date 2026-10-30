@@ -1,83 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { computeMarketIntel } from "@/lib/marketIntel";
+import { getMarketPrice } from "@/lib/engine";
+import { isCronAuthorized } from "@/lib/cron";
 import { HOT_MARKETS, PROPERTY_TYPES, hotMarketCacheId } from "@/lib/hotMarkets";
 
-// Without this, Next.js's build step probes GET route handlers to check whether they can be
-// statically optimized -- which means it actually CALLS this GET function with a dummy request
-// during `next build`/`npm run build`, no real HTTP request involved. Confirmed the hard way:
-// a build run without this line fired all 60 real Gemini/Tavily calls and wrote to the live
-// HotMarketCache table as a side effect of building, since isAuthorized() correctly no-ops when
-// CRON_SECRET isn't set (as it wasn't, locally). force-dynamic opts this route out of that
-// static-optimization probe entirely, so it only ever runs on a genuine request.
+// Without this, `next build` probes GET handlers for static optimisation -- which once fired
+// all the live Gemini/Tavily calls during a build. force-dynamic keeps this request-only.
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
-// Vercel Cron invokes this via GET on the schedule in vercel.json, sending
-// `Authorization: Bearer ${CRON_SECRET}` automatically when CRON_SECRET is set as a project env
-// var. Same Bearer-stripping check style as app/api/leads/inbound/route.ts (the one existing
-// precedent for this in the codebase) -- optional (no-ops if CRON_SECRET isn't set) so local
-// testing without the env var still works, but required in production once it's configured.
-const CRON_SECRET = process.env.CRON_SECRET ?? "";
-
-function isAuthorized(req: NextRequest): boolean {
-  if (!CRON_SECRET) return true;
-  const authHeader = req.headers.get("authorization") ?? "";
-  const provided = authHeader.replace(/^Bearer\s+/i, "");
-  return provided === CRON_SECRET;
-}
-
-// Runs `fn` over every item in `items`, at most `limit` in flight at once -- 60 combinations
-// (10 hot markets x 6 property types) fired all at once would hammer Tavily/Gemini
-// simultaneously; small batches keep this closer to how a real user's traffic actually arrives.
-async function runWithConcurrency<T>(items: T[], limit: number, fn: (item: T) => Promise<void>): Promise<void> {
-  let i = 0;
-  async function worker() {
-    while (i < items.length) {
-      const item = items[i++];
-      await fn(item);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
-}
+// Previously refreshed all 60 hot-market combos (10 markets x 6 types) every day -- ~1,800
+// Tavily searches a month, more than Tavily's free plan allows, which is how the key hit its
+// limit (HTTP 432). Now: refresh only combos whose cached price is older than STALE_DAYS, at
+// most PER_RUN per day, oldest first, all through the shared engine (lib/engine) so the hot
+// market pages show exactly the figure every other tool shows.
+const STALE_DAYS = 7;
+const PER_RUN = 12;
 
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const started = Date.now();
   const combos = HOT_MARKETS.flatMap((m) => PROPERTY_TYPES.map((pt) => ({ market: m, propType: pt })));
+  const existing = await prisma.hotMarketCache.findMany({ select: { id: true, updatedAt: true } });
+  const age = new Map(existing.map((r) => [r.id, r.updatedAt.getTime()]));
+  const staleBefore = Date.now() - STALE_DAYS * 86_400_000;
+  const due = combos
+    .map((c) => ({ ...c, ts: age.get(hotMarketCacheId(c.market.city, c.market.area, c.propType.value)) ?? 0 }))
+    .filter((c) => c.ts < staleBefore)
+    .sort((a, b) => a.ts - b.ts)
+    .slice(0, PER_RUN);
 
   let succeeded = 0;
-  let failed = 0;
   const failures: { city: string; area: string; propertyType: string; reason: string }[] = [];
 
-  await runWithConcurrency(combos, 4, async ({ market, propType }) => {
-    const { city, area } = market;
-    const loc = `${area}, ${city}`;
-    try {
-      const result = await computeMarketIntel(loc, propType.value, propType.defaultUnit);
-      if (result.available === false) {
-        failed++;
-        failures.push({ city, area, propertyType: propType.value, reason: (result.message as string) ?? "unavailable" });
+  // Sequential, two at a time -- gentle on upstream rate limits and well inside maxDuration.
+  for (let i = 0; i < due.length; i += 2) {
+    await Promise.all(due.slice(i, i + 2).map(async ({ market, propType }) => {
+      const { city, area } = market;
+      const result = await getMarketPrice({
+        location: `${area}, ${city}`, propertyType: propType.value, unit: propType.defaultUnit,
+        tool: "cron_refresh", forceRefresh: true, timeoutMs: 20_000,
+      });
+      if (!result.available) {
+        failures.push({ city, area, propertyType: propType.value, reason: String(result.reason ?? "unavailable") });
         return;
       }
-      const jsonData = result as unknown as Prisma.InputJsonValue;
+      const data = result as unknown as Prisma.InputJsonValue;
+      const id = hotMarketCacheId(city, area, propType.value);
       await prisma.hotMarketCache.upsert({
-        where:  { id: hotMarketCacheId(city, area, propType.value) },
-        create: { id: hotMarketCacheId(city, area, propType.value), city, area, propertyType: propType.value, unit: propType.defaultUnit, data: jsonData },
-        update: { data: jsonData },
+        where: { id },
+        create: { id, city, area, propertyType: propType.value, unit: propType.defaultUnit, data },
+        update: { data },
       });
       succeeded++;
-    } catch (e) {
-      failed++;
-      failures.push({ city, area, propertyType: propType.value, reason: e instanceof Error ? e.message : String(e) });
-    }
-  });
+    }));
+  }
 
   const durationMs = Date.now() - started;
-  console.log(`[cron/refresh-hot-markets] ${succeeded} succeeded, ${failed} failed, ${durationMs}ms`);
-
-  return NextResponse.json({ succeeded, failed, failures, durationMs });
+  console.log(`[cron/refresh-hot-markets] ${succeeded}/${due.length} refreshed, ${failures.length} failed, ${durationMs}ms`);
+  return NextResponse.json({ due: due.length, succeeded, failed: failures.length, failures, durationMs });
 }

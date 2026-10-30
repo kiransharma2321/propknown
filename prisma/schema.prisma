@@ -532,6 +532,56 @@ model RolePermission {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Shared AI engine (lib/engine) -- one cached price per (location, property type), read by
+// every AI feature so the same place shows the same number everywhere. Stored in the
+// property type's canonical unit (apartment/villa/house/commercial: sqft, plot: sqyard,
+// agriculture: acres) and converted on the way out. `data` is computeMarketIntel()'s exact
+// normalised output. previousPrice/previousAt keep the prior refresh's figure so Content
+// Studio can find the biggest real movers without a separate history table.
+// ─────────────────────────────────────────────────────────────────────────────
+model LocationMarketCache {
+  id            String    @id // `${locationKey}|${propertyType}`
+  locationKey   String
+  locationName  String
+  city          String?
+  propertyType  String
+  unit          String
+  currency      String
+  pricePerUnit  Float
+  data          Json
+  previousPrice Float?
+  previousAt    DateTime?
+  fetchedAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([locationKey])
+  @@index([fetchedAt])
+  @@map("location_market_cache")
+}
+
+// Every AI query from every tool (price check, AI intel, legal shield, chat, voice...) --
+// feeds the admin "AI Demand" page. location is what the visitor typed; locationKey is the
+// engine's canonical key so "Kokapet" and "kokapet, hyderabad" count as one locality.
+model AiQuery {
+  id           String   @id @default(cuid())
+  tool         String
+  location     String?
+  locationKey  String?
+  propertyType String?
+  result       String // ok | unavailable | timeout | error | no_location
+  pricePerUnit Float?
+  unit         String?
+  currency     String?
+  cached       Boolean  @default(false)
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([locationKey])
+  @@map("ai_queries")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Sales Champions Leaderboard (new feature) -- no new table needed. Ranking is computed live
 // from real Lead data (status="won", assignedTo, leadValue) via the same aggregation pattern
 // already used by the Executive Dashboard's "Top Sales Executives" card -- see

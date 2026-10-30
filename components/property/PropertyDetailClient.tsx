@@ -45,7 +45,7 @@ interface MarketData {
   priceRangeMin?: number;
   priceRangeMax?: number;
   pricePerSqftUnit: string;
-  growthRate: number;
+  growthRate: number | null;
   trend: "Bullish" | "Stable" | "Cautious";
   summary: string;
   typicalListings?: string;
@@ -704,7 +704,7 @@ out body qt 30;`;
                       <span className="font-semibold" style={{ color: trendColor }}>
                         {marketData.trend === "Bullish" ? "↑" : marketData.trend === "Cautious" ? "↓" : "→"} {marketData.trend}
                       </span>
-                      {marketData.growthRate > 0 && (
+                      {(marketData.growthRate ?? 0) > 0 && (
                         <span className="text-gray-500">· {marketData.growthRate}% p.a.</span>
                       )}
                       {(marketData.dataSource === "real_data" || marketData.dataSource === "bayut_data") && (
@@ -719,7 +719,7 @@ out body qt 30;`;
                         <InvestmentScoreGauge
                           score={marketData.investmentRating}
                           rentalYield={marketData.rentalYield}
-                          growthRate={marketData.growthRate}
+                          growthRate={marketData.growthRate ?? undefined}
                         />
                       </div>
                     )}
