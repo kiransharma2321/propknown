@@ -34,6 +34,17 @@ export const PROPERTY_TYPES: PropertyTypeOption[] = [
   { value: "agriculture", label: "Agriculture / Farm Land", defaultUnit: "acres"  },
 ];
 
+// Plots are quoted per sq.yard ("gaj") in Telangana/AP and North India, but per sq.ft in these
+// markets -- so a Whitefield or Dubai plot gets its price in the unit locals actually use.
+const SQFT_PLOT_MARKETS = /bangalore|bengaluru|mysore|mysuru|mangalore|mumbai|thane|navi mumbai|pune|chennai|coimbatore|kochi|dubai|abu dhabi|sharjah|ajman|uae|london|singapore|toronto|sydney|melbourne|new york|usa|united states|united kingdom|uk|canada|australia/;
+
+/** The locally-correct default unit for a property type in a given location. */
+export function defaultUnitFor(propertyType: string, location = ""): string {
+  const base = PROPERTY_TYPES.find((p) => p.value === propertyType)?.defaultUnit ?? "sqft";
+  if (propertyType !== "plot") return base;
+  return SQFT_PLOT_MARKETS.test(location.toLowerCase()) ? "sqft" : base;
+}
+
 // URL-safe slug for the /ai-intelligence/[city]/[area] dynamic route segments.
 export function slugify(s: string): string {
   return s.toLowerCase().trim().replace(/\s+/g, "-");

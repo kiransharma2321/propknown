@@ -631,3 +631,46 @@ model EmailSuppression {
 
   @@map("email_suppressions")
 }
+
+// Daily outbound API usage for the admin "Engine Health" page: one row per provider per UTC day
+// (gemini | tavily | rapidapi). calls = every request made, errors = non-2xx / timeouts,
+// rateLimited = 429/432 quota responses. Incremented by lib/engine/usage.ts.
+model ApiUsage {
+  day         String   // YYYY-MM-DD (UTC)
+  provider    String
+  calls       Int      @default(0)
+  errors      Int      @default(0)
+  rateLimited Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@id([day, provider])
+  @@map("api_usage")
+}
+
+// Official government guidance / market values ("circle rates"), entered BY HAND from the
+// published source (Telangana IGRS first). Never AI-generated: every row carries the source
+// it was copied from and the date the rate took effect. Shown next to the AI estimate as
+// "Govt guidance value".
+model GuidanceRate {
+  id            String   @id @default(cuid())
+  state         String   // e.g. "Telangana"
+  district      String?
+  mandal        String?
+  locality      String   // village / locality name as published
+  localityKey   String   // the engine locationKey, e.g. "hyderabad/kokapet" (lib/engine resolveLocation)
+  propertyType  String   // apartment | villa | house | plot | commercial | agriculture
+  unit          String   // sqft | sqyard | acres
+  ratePerUnit   Float
+  currency      String   @default("INR")
+  sourceName    String   // e.g. "IGRS Telangana -- Market Value Guidelines"
+  sourceUrl     String?
+  effectiveDate DateTime // date the published rate took effect
+  notes         String?
+  enteredBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([localityKey, propertyType])
+  @@index([state])
+  @@map("guidance_rates")
+}

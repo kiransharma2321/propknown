@@ -8,6 +8,9 @@
 // Every line of logic below is verbatim from the pre-refactor route.ts -- this file is a pure
 // relocation, not a rewrite. No pricing, grounding, extraction, or honesty behavior changed.
 
+import { recordApiCall } from "@/lib/engine/usage";
+import { isPriceSource } from "@/lib/engine/sources";
+
 // The ONE place the AI Intel model is chosen -- override with the GEMINI_MODEL env var.
 // gemini-2.5-flash is deprecated (Google routes it to gemini-3.5-flash-lite from Dec 1 2026);
 // gemini-3.6-flash is the current stable Flash. Google Search grounding on Gemini 3.x needs a
@@ -18,6 +21,11 @@
 export const GEMINI_MODEL       = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const GEMINI_GROUNDING_BACKUP   = "gemini-2.5-flash";
 const GEMINI_MODEL_FALLBACK     = "gemini-2.5-flash-lite";
+
+// Bayut via RapidAPI (bayut14) is off: as of Nov 2026 RapidAPI answers every bayut14 endpoint
+// with 404 "API doesn't exists", so each lookup only added latency before falling back to web
+// search. Set BAYUT_ENABLED=true only after subscribing to a working, licensed Bayut API.
+const BAYUT_ENABLED = process.env.BAYUT_ENABLED === "true";
 
 // Combines the caller's overall deadline (lib/engine's 10s budget) with a per-request timeout,
 // so a slow upstream can never hold a request past the engine's deadline.
@@ -145,8 +153,13 @@ const UNIT_TO_SQFT: Record<string, number> = {
 };
 
 function targetUnitFactor(propertyType: string, unit: string): number {
-  if (unit === "acres" || propertyType === "agriculture") return UNIT_TO_SQFT.acre;
-  if (unit === "sqyard" || propertyType === "plot") return UNIT_TO_SQFT.sqyard;
+  // The requested unit wins (a Bengaluru or Dubai plot is priced per sq.ft); the type only
+  // decides when no standard unit was asked for.
+  if (unit === "acres" || unit === "acre") return UNIT_TO_SQFT.acre;
+  if (unit === "sqyard") return UNIT_TO_SQFT.sqyard;
+  if (unit === "sqft") return UNIT_TO_SQFT.sqft;
+  if (propertyType === "agriculture") return UNIT_TO_SQFT.acre;
+  if (propertyType === "plot") return UNIT_TO_SQFT.sqyard;
   return UNIT_TO_SQFT.sqft;
 }
 
@@ -190,6 +203,7 @@ async function bayutAutoComplete(location: string, apiKey: string, signal?: Abor
         signal: timeoutSignal(6000, signal),
       }
     );
+    recordApiCall("rapidapi", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
     if (!res.ok) return null;
     const data = await res.json();
     const hits: BayutAutocompleteHit[] = data?.hits ?? (Array.isArray(data) ? data : []);
@@ -234,6 +248,7 @@ async function bayutSearchListings(
       signal: timeoutSignal(10000, signal),
     }
   );
+  recordApiCall("rapidapi", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
   if (!res.ok) throw new Error(`Bayut search ${res.status}`);
   const data = await res.json();
   return data?.hits ?? data?.data ?? (Array.isArray(data) ? data : []);
@@ -342,6 +357,9 @@ function buildTavilyQuery(
 
   // Plot / residential land — explicit area, unit, and "current asking rate" framing so
   // results are plot-specific and don't drift toward a "starting from" teaser price.
+  if (propertyType === "plot" && unit === "sqft") {
+    return `${locQuoted} residential plot land price per sqft ${year} current rate for sale ${portals}`;
+  }
   if (propertyType === "plot" || unit === "sqyard") {
     return `${locQuoted} residential plot land price per square yard per sqft ${year} current rate gaj site rate for sale ${portals}`;
   }
@@ -388,7 +406,8 @@ async function fetchTavilyContext(
       max_results:    6,
     }),
     signal: timeoutSignal(6000, signal),
-  });
+  }).catch((e) => { recordApiCall("tavily", "error"); throw e; });
+  recordApiCall("tavily", res.ok ? "ok" : [429, 432].includes(res.status) ? "rate_limited" : "error");
   // 432 = Tavily plan/credit limit reached -- named explicitly in the log because it looks like
   // "no data" to visitors but is actually a billing problem only the account owner can fix.
   if (res.status === 432) throw new Error("Tavily 432: plan usage limit reached (upgrade plan or replace TAVILY_API_KEY)");
@@ -425,6 +444,21 @@ async function fetchTavilyContext(
     if (isLandQuery) return /apartment|flat|villa\s+for|multistorey/.test(t);
     return /\bland\b|\bplot(s)?\b/.test(t);
   };
+  // Area-specific evidence only: a city-wide market report (e.g. "Dubai sales market H1") quotes
+  // emirate-wide rates, and parsing those made Business Bay and Dubai Marina show the identical
+  // range. A snippet only feeds the numeric pass if it names the area itself. When the location
+  // is just a city, there is no narrower area to check for.
+  const area = location.split(",")[0].trim().toLowerCase();
+  const city = (location.split(",")[1] ?? "").trim().toLowerCase();
+  const wholeLocation = !area || area === city;
+  // The text of a result that is actually about this area: the whole snippet when the page
+  // title names the area (an area listings/price page), otherwise only the sentences that name
+  // it -- a multi-area market report lists many areas' rates in one snippet.
+  const areaText = (r: TavilyResult): string => {
+    const text = r.content.slice(0, 900);
+    if (wholeLocation || (r.title ?? "").toLowerCase().includes(area)) return text;
+    return text.split(/(?<=[.!?;])\s+|\n+/).filter((s) => s.toLowerCase().includes(area)).join(" ");
+  };
   let snippetsOnly = "";
   if (Array.isArray(data.results)) {
     // 900 chars (was 450) -- the price-extraction pass below needs the fuller snippet to have
@@ -432,11 +466,12 @@ async function fetchTavilyContext(
     // sentence containing the actual rate gets truncated away before it can be parsed.
     snippetsOnly = data.results
       .slice(0, 6)
-      .filter((r) => r.content?.trim())
+      .filter((r) => r.content?.trim() && isPriceSource(r.url))
       .map((r, i) => {
         sourceUrls.push(r.url);
         const block = `[${i + 1}] ${r.title}\n${r.content.slice(0, 900).trim()}`;
-        if (!offType(r.title ?? "")) extractionParts.push(block);
+        const evidence = offType(r.title ?? "") ? "" : areaText(r).trim();
+        if (evidence) extractionParts.push(`[${i + 1}] ${r.title}\n${evidence}`);
         return block;
       })
       .join("\n\n");
@@ -763,6 +798,10 @@ that real-world premium rather than silently reusing an apartment-level rate for
 
 ⚠️ Every locality is priced independently from what's actually in the data above for THAT
 locality — never substitute a different area's figure or a generic city-wide average.
+A city-wide or emirate-wide market report (e.g. "Dubai average price per sqft") is NOT a price
+for "${location}". Only use figures the source explicitly attributes to this locality (or a
+named project inside it). If no such figure exists, return 0 for "currentPricePerSqft" — saying
+"not enough data" is better than a city average dressed up as a local price.
 
 CRITICAL RULES:
 1. "currency" MUST be "${currency.code}" and "currencySymbol" MUST be "${currency.symbol}" — never use a different currency.
@@ -859,6 +898,10 @@ function parseGemini(text: string): Record<string, unknown> {
 
 type DataSource = "bayut_data" | "real_data" | "ai_only";
 
+// The model found no price attributable to this specific locality (it answered 0, as told to
+// rather than guess). Retrying the same step would give the same answer, so move on.
+class NoAreaDataError extends Error {}
+
 // Builds the two 5-year series when Gemini didn't return usable ones — same illustrative-trend
 // math as before, unrelated to the hardcoded-benchmark removal (these were never area-specific
 // preset tables, just a growth-rate projection off whatever the real current price turned out
@@ -948,7 +991,7 @@ function normalise(
   }
 
   if (now <= 0) {
-    throw new Error("no usable price could be derived from either the search data or Gemini's response");
+    throw new NoAreaDataError("no usable price could be derived from either the search data or Gemini's response");
   }
 
   // No invented defaults: a figure Gemini didn't actually return is reported as null (shown as
@@ -982,7 +1025,7 @@ function normalise(
     locationName:        (raw.locationName    as string) || location,
     currency:            currency.code,                   // enforced from detection
     currencySymbol:      currency.symbol,                 // enforced from detection
-    currentPricePerSqft: now,
+    currentPricePerSqft: Math.round(now),
     priceRangeMin:       range.min,
     priceRangeMax:       range.max,
     rangeNote,
@@ -998,7 +1041,13 @@ function normalise(
     dataSource,
     dataSourceLabel,
     groundedBy,
-    sourceUrls:          sourceUrls?.slice(0, 5) ?? [],
+    // Area-specific rate mentions parsed from the sources (requested unit) -- what the
+    // confidence badge measures agreement against. null when the sources had none.
+    evidence:            searchAgg && searchAgg.count > 0 ? {
+      count: searchAgg.count, min: Math.round(searchAgg.min * factor),
+      median: Math.round(searchAgg.median * factor), max: Math.round(searchAgg.max * factor),
+    } : null,
+    sourceUrls:          sourceUrls?.slice(0, 8) ?? [],
     summary:             (raw.summary as string) || "",
     keyDrivers:          Array.isArray(raw.keyDrivers) ? raw.keyDrivers : [],
   };
@@ -1031,7 +1080,8 @@ async function callGemini(
     }),
     // Grounded calls run a live Google Search first -- measured at 19-27s in practice.
     signal: timeoutSignal(grounded ? 40_000 : 20_000, signal),
-  });
+  }).catch((e) => { recordApiCall("gemini", "error"); throw e; });
+  recordApiCall("gemini", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
   const data = await res.json();
   if (!res.ok) {
     const msg = data.error?.message ?? `Gemini ${res.status}`;
@@ -1114,7 +1164,7 @@ export async function computeMarketIntel(
   let searchAgg:       SearchAggregate | null = null;
   let sourceUrls:      string[] = [];
 
-  if (countryCode === "ae" && rapidApiKey) {
+  if (BAYUT_ENABLED && countryCode === "ae" && rapidApiKey) {
     // ── Bayut for UAE ───────────────────────────────────────────────────────
     try {
       const bayutResult = await fetchBayutData(loc, propType, rapidApiKey, signal);
@@ -1154,7 +1204,9 @@ export async function computeMarketIntel(
         dataSourceLabel = "AI estimate based on live web search";
         dataType       = "tavily";
         sourceUrls     = tavilyResult.sourceUrls;
-        searchAgg      = aggregateRates(extractRatesPerSqft(tavilyResult.extractionText || tavilyResult.rawText, currency.code));
+        // extractionText only (no rawText fallback): it holds just the area-specific, on-type
+        // snippets, and an empty one must mean "no area evidence", not "use city-wide figures".
+        searchAgg      = aggregateRates(extractRatesPerSqft(tavilyResult.extractionText, currency.code));
         console.log(`[Tavily] got data for "${loc}"${searchAgg ? ` — parsed ${searchAgg.count} rate mention(s), per-sqft median ${Math.round(searchAgg.median)}` : " — no cleanly-parseable rate mentions, will trust Gemini's extraction"}`);
       } else {
         console.warn(`[Tavily] no/slow data for "${loc}"`);
@@ -1195,7 +1247,7 @@ export async function computeMarketIntel(
         // Grounded answers come from Gemini's own live web search -- same honest label as
         // the Tavily path; their source domains are listed ahead of any Tavily ones.
         const result = grounded
-          ? normalise(raw, loc, propType, resolvedUnit, "real_data", "AI estimate based on live web search", currency, undefined, undefined, searchAgg, Array.from(new Set([...reply.sourceUrls, ...sourceUrls])))
+          ? normalise(raw, loc, propType, resolvedUnit, "real_data", "AI estimate based on live web search", currency, undefined, undefined, searchAgg, Array.from(new Set([...reply.sourceUrls, ...sourceUrls])).filter(isPriceSource))
           : normalise(raw, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange, searchAgg, sourceUrls);
         console.log(`[market-intel] RESULT: "${loc}" (${propType}) → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (model: ${model}${grounded ? " + google search" : ""}, grounded by: ${result.groundedBy})`);
         return result;
@@ -1203,7 +1255,7 @@ export async function computeMarketIntel(
         lastError = e;
         console.error(`[market-intel] ${model}${grounded ? " (grounded)" : ""} attempt ${attempt} failed for "${loc}": ${e instanceof Error ? e.message : String(e)}`);
         // A timed-out step won't get faster on retry -- spend the remaining budget on the next one.
-        if (e instanceof GeminiModelUnavailableError || (e instanceof Error && e.name === "TimeoutError")) break;
+        if (e instanceof GeminiModelUnavailableError || e instanceof NoAreaDataError || (e instanceof Error && e.name === "TimeoutError")) break;
       }
     }
   }

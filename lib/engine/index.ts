@@ -21,7 +21,10 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { computeMarketIntel } from "@/lib/marketIntel";
 import { matchLocality, type Locality } from "@/lib/localities";
-import { PROPERTY_TYPES } from "@/lib/hotMarkets";
+import { defaultUnitFor } from "@/lib/hotMarkets";
+import { computeConfidence, type Confidence, type ConfidenceInput } from "@/lib/engine/confidence";
+import { getGuidanceValue, type GuidanceValue } from "@/lib/engine/guidance";
+import { isPriceSource } from "@/lib/engine/sources";
 
 export const ENGINE_TIMEOUT_MS = 10_000;
 // AI Intelligence + Price Reality Check: grounded search needs more than 10s, and those routes
@@ -53,6 +56,8 @@ export type EngineResult = Record<string, unknown> & {
   fetchedAt?: string;
   reason?: string;
   stale?: boolean;     // live refresh failed; this is the last good cached result
+  confidence?: Confidence;
+  guidanceValue?: GuidanceValue | null;
 };
 
 // ─── Location resolution ─────────────────────────────────────────────────────
@@ -78,8 +83,10 @@ export function resolveLocation(input: string): ResolvedLocation {
 
 const UNIT_SQFT: Record<string, number> = { sqft: 1, sqyard: 9, sqm: 10.764, acres: 43560, acre: 43560 };
 
-export function canonicalUnit(propertyType: string): string {
-  return PROPERTY_TYPES.find((p) => p.value === propertyType)?.defaultUnit ?? "sqft";
+// Canonical (stored) unit: per type, and for plots per local convention (sq.yard in Telangana,
+// sq.ft in Bengaluru/Mumbai/Dubai...). Cached rows keep their own unit and convert on the way out.
+export function canonicalUnit(propertyType: string, location = ""): string {
+  return defaultUnitFor(propertyType, location);
 }
 
 // Rescales every per-area figure in a result from one unit to another. Percentages (growth,
@@ -100,6 +107,14 @@ export function convertResult(data: Record<string, unknown>, from: string, to: s
     priceForecast5yr: series(data.priceForecast5yr),
     pricePerSqftUnit: to === "acre" ? "acres" : to,
   };
+}
+
+// Area-specific rate evidence is stored in the canonical unit; rescale it alongside the price.
+function scaleEvidence(ev: NonNullable<ConfidenceInput["evidence"]>, from: string, to: string): NonNullable<ConfidenceInput["evidence"]> {
+  const f = UNIT_SQFT[from], t = UNIT_SQFT[to];
+  if (!f || !t || from === to) return ev;
+  const k = t / f, sc = (v?: number) => (typeof v === "number" ? Math.round(v * k) : v);
+  return { ...ev, min: sc(ev.min), max: sc(ev.max), median: sc(ev.median) };
 }
 
 // ─── Logging ─────────────────────────────────────────────────────────────────
@@ -151,14 +166,14 @@ function unavailable(reason: string, resolved?: ResolvedLocation): EngineResult 
 export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> {
   const started = Date.now();
   const propertyType = req.propertyType || "apartment";
-  const baseUnit = canonicalUnit(propertyType);
-  const outUnit = req.unit && UNIT_SQFT[req.unit] ? req.unit : baseUnit;
-
   if (!req.location?.trim()) return unavailable("no location");
   const resolved = resolveLocation(req.location);
+  const baseUnit = canonicalUnit(propertyType, resolved.display);
+  const outUnit = req.unit && UNIT_SQFT[req.unit] ? req.unit : baseUnit;
   const id = `${resolved.key}|${propertyType}`;
 
-  const finish = async (result: EngineResult, cached: boolean): Promise<EngineResult> => {
+  const finish = async (raw: EngineResult, cached: boolean): Promise<EngineResult> => {
+    const result = await enrich(raw);
     if (!req.skipLog) {
       await logAiQuery({
         tool: req.tool, location: req.location, locationKey: resolved.key, propertyType,
@@ -179,6 +194,23 @@ export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> 
     cached,
     fetchedAt: row.fetchedAt.toISOString(),
   });
+
+  // Confidence (recomputed every time, so it drops as a cached row ages) and the official
+  // guidance value, attached to every available result on the way out.
+  const enrich = async (r: EngineResult): Promise<EngineResult> => {
+    if (!r.available) return r;
+    // Older cached rows predate the source filter; drop non-source hosts (and duplicates) here too.
+    const sourceUrls = Array.isArray(r.sourceUrls)
+      ? Array.from(new Set((r.sourceUrls as unknown[]).map(String).filter(isPriceSource)))
+      : [];
+    const evidence = (r.evidence ?? null) as ConfidenceInput["evidence"];
+    const confidence = computeConfidence({
+      sourceUrls, evidence: evidence ? scaleEvidence(evidence, baseUnit, outUnit) : null,
+      currentPricePerSqft: r.currentPricePerSqft, fetchedAt: r.fetchedAt, stale: r.stale,
+    });
+    const guidanceValue = await getGuidanceValue(resolved.key, propertyType, String(r.pricePerSqftUnit ?? outUnit));
+    return { ...r, sourceUrls, confidence, guidanceValue };
+  };
 
   // 1. Cache
   let row: Awaited<ReturnType<typeof prisma.locationMarketCache.findUnique>> = null;

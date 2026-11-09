@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Scale, Loader2, AlertCircle, Share2, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
 import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
 import ReportLeadForm from "@/components/leads/ReportLeadForm";
+import { ConfidenceBadge, ThreeWayPrice, HowWeGotThis, AI_DISCLAIMER, type Confidence, type GuidanceValue } from "@/components/ai-intel/PriceTrust";
 
 const PROPERTY_TYPES = [
   { value: "apartment",   label: "Apartment",               defaultUnit: "sqft"   },
@@ -32,6 +33,11 @@ interface CheckResult {
   locationName?: string;
   dataSourceLabel?: string;
   fetchedAt?:  string;
+  currentPricePerSqft?: number;
+  sourceUrls?: string[];
+  confidence?: Confidence;
+  guidanceValue?: GuidanceValue | null;
+  evidence?: { count: number } | null;
   location?:   string;
   propertyType?: string;
   message:     string;
@@ -262,8 +268,27 @@ export default function PriceCheckPage() {
                 </div>
                 <p className="text-gray-700 text-sm leading-relaxed mb-2">{result.message}</p>
                 {result.fetchedAt && (
-                  <p className="text-gray-400 text-[11px] mb-5">Market data last updated {new Date(result.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · AI estimate, not a certified valuation</p>
+                  <p className="text-gray-400 text-[11px] mb-2">Market data last updated {new Date(result.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · AI estimate, not a certified valuation</p>
                 )}
+                <p className="text-gray-500 text-[11px] mb-3">{AI_DISCLAIMER}</p>
+                <ConfidenceBadge confidence={result.confidence} />
+                {result.currentPricePerSqft != null && (
+                  <ThreeWayPrice
+                    guidance={result.guidanceValue}
+                    aiPrice={result.currentPricePerSqft}
+                    asking={result.pricePerUnit}
+                    unitLabel={UNITS.find((u) => u.value === result.unit)?.label ?? result.unit}
+                    fmt={(v) => `${result.currencySymbol ?? "₹"}${Math.round(v).toLocaleString("en-IN")}`}
+                  />
+                )}
+                <HowWeGotThis
+                  sourceUrls={result.sourceUrls}
+                  fetchedAt={result.fetchedAt}
+                  dataSourceLabel={result.dataSourceLabel}
+                  guidance={result.guidanceValue}
+                  evidenceCount={result.evidence?.count}
+                />
+                <div className="mb-5" />
                 <div className="flex items-center gap-3 flex-wrap">
                   <button onClick={share} className="btn-secondary">
                     <Share2 size={15} /> {shareCopied ? "Copied to clipboard!" : "Share this result"}

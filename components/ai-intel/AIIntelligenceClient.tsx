@@ -15,8 +15,9 @@ import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/currency";
 import AiIntelRegisterGate from "@/components/ui/AiIntelRegisterGate";
-import { HOT_MARKETS, PROPERTY_TYPES, slugify } from "@/lib/hotMarkets";
+import { HOT_MARKETS, PROPERTY_TYPES, slugify, defaultUnitFor } from "@/lib/hotMarkets";
 import PropertyTypeSummaryCard, { type PropertyTypeSummaryData } from "@/components/ai-intel/PropertyTypeSummaryCard";
+import { ConfidenceBadge, ThreeWayPrice, HowWeGotThis, AI_DISCLAIMER, type Confidence, type GuidanceValue } from "@/components/ai-intel/PriceTrust";
 
 const LOADING_STEPS = [
   "Searching live web data…",
@@ -119,6 +120,9 @@ interface MarketIntelResult {
   cached?:            boolean;
   stale?:             boolean;
   fetchedAt?:         string;
+  confidence?:        Confidence;
+  guidanceValue?:     GuidanceValue | null;
+  evidence?:          { count: number } | null;
   growthRate:         number | null;
   trend:              "Bullish" | "Stable" | "Cautious";
   rentalYield:        number | null;
@@ -630,8 +634,7 @@ function AIIntelligenceInner() {
                   <div className="relative">
                     <select value={propType} onChange={(e) => {
                       setPropType(e.target.value);
-                      const t = PROPERTY_TYPES.find((p) => p.value === e.target.value);
-                      if (t) setUnit(t.defaultUnit);
+                      setUnit(defaultUnitFor(e.target.value, `${areaValue} ${cityValue}`));
                     }}
                       className="input-dark appearance-none pr-7 text-sm">
                       {PROPERTY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -805,6 +808,8 @@ function AIIntelligenceInner() {
                         /{displayUnitLabel}
                       </span>
                     </p>
+                    <p className="text-gray-500 text-[11px] mt-1">{AI_DISCLAIMER}</p>
+                    <div className="mt-2"><ConfidenceBadge confidence={r.confidence} /></div>
                     {r.priceRangeMin != null && r.priceRangeMax != null && (
                       <p className="text-gray-500 text-sm mt-1">
                         Realistic range: <span className="font-semibold text-gray-700">
@@ -828,21 +833,19 @@ function AIIntelligenceInner() {
                         <span className="font-semibold text-gray-500">Typical listings: </span>{r.typicalListings}
                       </p>
                     )}
-                    {r.sourceUrls && r.sourceUrls.length > 0 && (
-                      <p className="text-gray-400 text-[10px] mt-2 leading-relaxed max-w-lg">
-                        <span className="font-semibold text-gray-500">Sources: </span>
-                        {r.sourceUrls.map((u, i) => {
-                          let host = u;
-                          try { host = new URL(u).hostname.replace(/^www\./, ""); } catch { /* keep raw url */ }
-                          return (
-                            <span key={u}>
-                              {i > 0 && ", "}
-                              <a href={u} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{host}</a>
-                            </span>
-                          );
-                        })}
-                      </p>
-                    )}
+                    <ThreeWayPrice
+                      guidance={r.guidanceValue}
+                      aiPrice={r.currentPricePerSqft}
+                      unitLabel={displayUnitLabel}
+                      fmt={(v) => `${sym}${Math.round(toDisplay(v * unitConvFactor)).toLocaleString()}`}
+                    />
+                    <HowWeGotThis
+                      sourceUrls={r.sourceUrls}
+                      fetchedAt={r.fetchedAt}
+                      dataSourceLabel={r.dataSourceLabel}
+                      guidance={r.guidanceValue}
+                      evidenceCount={r.evidence?.count}
+                    />
                     {r.cached && r.fetchedAt && (
                       <p className={`text-[11px] mt-2 ${r.stale ? "text-amber-700" : "text-gray-400"}`}>
                         Last updated {new Date(r.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}

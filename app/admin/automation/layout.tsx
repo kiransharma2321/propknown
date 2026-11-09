@@ -9,6 +9,8 @@ const LINKS = [
   { href: "/admin/automation", label: "Overview" },
   { href: "/admin/automation/ai-demand", label: "AI Demand" },
   { href: "/admin/automation/sequences", label: "Sequences" },
+  { href: "/admin/automation/engine-health", label: "Engine Health" },
+  { href: "/admin/automation/guidance-rates", label: "Guidance Rates" },
   { href: "/admin/automation/content-studio", label: "Content Studio" },
   { href: "/admin/approval-queue", label: "Approval Queue" },
   { href: "/admin/automation/calls", label: "Calls" },
