@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/db";
 import { ALL_LOCALITIES } from "@/lib/localities";
-import GuidanceRateForm from "./GuidanceRateForm";
+import GuidanceRateForm, { type GuidanceRow } from "./GuidanceRateForm";
 
 export const dynamic = "force-dynamic";
 
 const day = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
-export default async function GuidanceRatesPage() {
+export default async function GuidanceRatesPage({ searchParams }: { searchParams: { edit?: string } }) {
   let rows: Awaited<ReturnType<typeof prisma.guidanceRate.findMany>> = [];
   let tableMissing = false;
   try {
@@ -14,6 +14,13 @@ export default async function GuidanceRatesPage() {
   } catch {
     tableMissing = true;
   }
+  const editingRow = searchParams.edit ? rows.find((r) => r.id === searchParams.edit) : undefined;
+  const editing: GuidanceRow | null = editingRow ? {
+    id: editingRow.id, state: editingRow.state, district: editingRow.district, mandal: editingRow.mandal,
+    locality: editingRow.locality, localityKey: editingRow.localityKey, propertyType: editingRow.propertyType,
+    unit: editingRow.unit, ratePerUnit: editingRow.ratePerUnit, sourceName: editingRow.sourceName,
+    sourceUrl: editingRow.sourceUrl, effectiveDate: editingRow.effectiveDate.toISOString().slice(0, 10), notes: editingRow.notes,
+  } : null;
   const localities = ALL_LOCALITIES
     .filter((l) => l.country === "India")
     .map((l) => ({ key: `${l.citySlug}/${l.slug}`, label: `${l.name}, ${l.city}` }));
@@ -24,7 +31,7 @@ export default async function GuidanceRatesPage() {
       <p className="text-gray-500 text-sm mb-2 max-w-3xl">
         Official guidance / market values, copied by hand from the published source (Telangana IGRS first). They show
         next to the AI estimate as &ldquo;Govt guidance value&rdquo;, with the source and effective date. Never enter an estimate here.
-        To correct or update a rate, add a new row with the new effective date; the newest one is shown.
+        When a rate is revised, add a new row with the new effective date (the newest one is shown); use Edit only to fix a mistake.
       </p>
       <p className="text-gray-400 text-xs mb-5">Telangana rates: registration.telangana.gov.in → Market Value → choose district, mandal and village.</p>
 
@@ -33,7 +40,7 @@ export default async function GuidanceRatesPage() {
           The guidance_rates table hasn&apos;t been created yet: run the pending database update (prisma db push) first.
         </p>
       ) : (
-        <div className="mb-6"><GuidanceRateForm localities={localities} /></div>
+        <div className="mb-6"><GuidanceRateForm localities={localities} editing={editing} /></div>
       )}
 
       <div className="overflow-x-auto">
@@ -41,11 +48,11 @@ export default async function GuidanceRatesPage() {
           <thead>
             <tr className="text-left text-gray-400 text-xs">
               <th className="py-2 pr-3">Locality</th><th className="pr-3">State / district / mandal</th><th className="pr-3">Type</th>
-              <th className="pr-3">Rate</th><th className="pr-3">Effective</th><th className="pr-3">Source</th><th>Entered</th>
+              <th className="pr-3">Rate</th><th className="pr-3">Effective</th><th className="pr-3">Source</th><th className="pr-3">Entered</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={7} className="py-3 text-gray-400">No official rates entered yet.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={8} className="py-3 text-gray-400">No official rates entered yet.</td></tr>}
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-gray-100 align-top">
                 <td className="py-2 pr-3">{r.locality}<div className="text-[11px] text-gray-400">{r.localityKey}</div></td>
@@ -54,7 +61,8 @@ export default async function GuidanceRatesPage() {
                 <td className="pr-3 tabular-nums">₹{r.ratePerUnit.toLocaleString("en-IN")}/{r.unit}</td>
                 <td className="pr-3 tabular-nums">{day(r.effectiveDate)}</td>
                 <td className="pr-3">{r.sourceUrl ? <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{r.sourceName}</a> : r.sourceName}{r.notes && <div className="text-[11px] text-gray-400">{r.notes}</div>}</td>
-                <td className="text-xs text-gray-500">{r.enteredBy ?? "—"}<div>{day(r.createdAt)}</div></td>
+                <td className="pr-3 text-xs text-gray-500">{r.enteredBy ?? "—"}<div>{day(r.createdAt)}</div></td>
+                <td><a href={`?edit=${r.id}`} className="text-xs underline">Edit</a></td>
               </tr>
             ))}
           </tbody>

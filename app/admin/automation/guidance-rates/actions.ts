@@ -11,8 +11,9 @@ const UNITS = ["sqft", "sqyard", "acres"];
 
 export interface GuidanceFormState { ok: boolean; message: string }
 
-// Adds one hand-entered official rate. Rows are never edited in place: a correction or a new
-// revision is a new row with its own effective date (the newest effective date is shown).
+// Adds one hand-entered official rate, or (with an "id" field) corrects an existing one. A new
+// revision of a rate should be a new row with its own effective date (the newest one is shown);
+// edit is for fixing a typo in a row. Every change is written to the audit log.
 export async function addGuidanceRate(_prev: GuidanceFormState, form: FormData): Promise<GuidanceFormState> {
   const session = await masterApiSession();
   if (!session) return { ok: false, message: "Only the master admin can add official rates." };
@@ -31,16 +32,18 @@ export async function addGuidanceRate(_prev: GuidanceFormState, form: FormData):
   const sourceUrl = s("sourceUrl");
   if (sourceUrl && !/^https?:\/\//i.test(sourceUrl)) return { ok: false, message: "Source link must start with http(s)://" };
 
-  const row = await prisma.guidanceRate.create({
-    data: {
+  const id = s("id");
+  const data = {
       state: s("state") || "Telangana", district: s("district") || null, mandal: s("mandal") || null,
       locality: s("locality") || loc.name, localityKey: `${loc.citySlug}/${loc.slug}`,
       propertyType: s("propertyType"), unit: s("unit"), ratePerUnit: rate, currency: "INR",
       sourceName: s("sourceName"), sourceUrl: sourceUrl || null, effectiveDate: effective,
       notes: s("notes") || null, enteredBy: session.name,
-    },
-  });
-  logAudit({ actorId: session.userId, actorName: session.name, action: "guidance_rate.add", entity: "GuidanceRate", entityId: row.id, details: { localityKey: row.localityKey, propertyType: row.propertyType, rate } }).catch(() => null);
+  };
+  const row = id
+    ? await prisma.guidanceRate.update({ where: { id }, data })
+    : await prisma.guidanceRate.create({ data });
+  logAudit({ actorId: session.userId, actorName: session.name, action: id ? "guidance_rate.edit" : "guidance_rate.add", entity: "GuidanceRate", entityId: row.id, details: { localityKey: row.localityKey, propertyType: row.propertyType, rate } }).catch(() => null);
   revalidatePath("/admin/automation/guidance-rates");
   return { ok: true, message: `Saved: ${loc.name} ${row.propertyType} ₹${rate.toLocaleString("en-IN")}/${row.unit}.` };
 }
