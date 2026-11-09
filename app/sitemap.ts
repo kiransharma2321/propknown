@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { ALL_LISTINGS } from "@/lib/listings";
+import { PUBLIC_LISTINGS } from "@/lib/listings";
 import { prisma } from "@/lib/db";
+import { HOT_MARKETS, slugify } from "@/lib/hotMarkets";
 
 const BASE = "https://www.propknown.com";
 
@@ -27,7 +28,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/podcast`,               lastModified: new Date(), changeFrequency: "monthly", priority: 0.55 },
   ];
 
-  const propertyPages: MetadataRoute.Sitemap = ALL_LISTINGS.map(l => ({
+  // Area price pages (the canonical home for what old /prices links pointed at).
+  const areaPages: MetadataRoute.Sitemap = HOT_MARKETS.map(m => ({
+    url: `${BASE}/ai-intelligence/${slugify(m.city)}/${slugify(m.area)}`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.85,
+  }));
+
+  const propertyPages: MetadataRoute.Sitemap = PUBLIC_LISTINGS.map(l => ({
     url: `${BASE}/buy/${l.id}`,
     lastModified: new Date(),
     changeFrequency: "monthly",
@@ -49,5 +58,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.80,
   }));
 
-  return [...staticPages, ...propertyPages, ...submissionPages];
+  return [...staticPages, ...areaPages, ...propertyPages, ...submissionPages];
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCronAuthorized } from "@/lib/cron";
 import { getMarketPrice } from "@/lib/engine";
-import { matchLocality, nearbyLocalities, localityPath } from "@/lib/localities";
+import { matchLocality, nearbyLocalities, localityPath, cityPath } from "@/lib/localities";
 import { SITE_URL } from "@/lib/site";
 import { waLink } from "@/lib/whatsapp";
 import { sendTracked, unsubscribeUrl, isSuppressed } from "@/lib/emails/send";
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         link: `${SITE_URL}${localityPath(n)}`,
         snapshot: snapshotOf(await getMarketPrice({ location: `${n.name}, ${n.city}`, propertyType, tool: "seo_page", cacheOnly: true, skipLog: true })),
       })));
-      const cityLink = loc ? `${SITE_URL}/prices/${loc.citySlug}` : `${SITE_URL}/prices`;
+      const cityLink = loc ? `${SITE_URL}${cityPath({ name: loc.city })}` : `${SITE_URL}/ai-intelligence`;
       mail = day2Email({
         name: lead.name, location, propertyLabel: TYPE_LABEL[propertyType] ?? propertyType,
         nearby, link: nearby.length ? cityLink : siteLinkFor(ctx.location ?? location),

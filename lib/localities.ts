@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// EDITABLE LOCALITY LIST -- the single config file for every programmatic /prices page.
+// EDITABLE LOCALITY LIST -- the single config file for locality matching and price links.
+// (There are no /prices pages: links go to /ai-intelligence, and /prices/* 301-redirects there.)
 //
 // To add a locality: append a { name, zone } entry under its city. To remove one: delete the
 // line. Pages, the /prices index, the sitemap, the daily refresh rotation and the "nearby"
@@ -9,6 +10,8 @@
 // `aliases` are alternate spellings visitors type, so "Hitech City" and "HITEC City" resolve to
 // the same cached price.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { findHotMarketBySlug } from "@/lib/hotMarkets";
 
 export interface LocalityEntry { name: string; zone: string; aliases?: string[] }
 
@@ -174,8 +177,15 @@ export function nearbyLocalities(loc: Locality, max = 6): Locality[] {
   return ALL_LOCALITIES.filter((l) => l.citySlug === loc.citySlug && l.zone === loc.zone && l.slug !== loc.slug).slice(0, max);
 }
 
-export function localityPath(loc: Pick<Locality, "citySlug" | "slug">): string {
-  return `/prices/${loc.citySlug}/${loc.slug}`;
+// Where a locality's price lives on the site: the static /ai-intelligence/[city]/[area] page for
+// the hot markets that have one, otherwise the AI Intelligence tool pre-filled with the area.
+export function localityPath(loc: Pick<Locality, "citySlug" | "slug" | "name" | "city">): string {
+  if (findHotMarketBySlug(loc.citySlug, loc.slug)) return `/ai-intelligence/${loc.citySlug}/${loc.slug}`;
+  return `/ai-intelligence?area=${encodeURIComponent(loc.name)}&city=${encodeURIComponent(loc.city)}`;
+}
+
+export function cityPath(city: Pick<CityConfig, "name">): string {
+  return `/ai-intelligence?city=${encodeURIComponent(city.name)}`;
 }
 
 const CITY_ALIASES: Record<string, string> = {
