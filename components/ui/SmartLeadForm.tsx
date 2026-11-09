@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
+import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
 
 type FormType = "buy" | "sell" | "services" | "investor";
 
@@ -22,6 +23,7 @@ const SELLER_TYPES = ["Ready to sell now", "Evaluating options", "Planning in 6 
 const LOCATIONS = ["Hyderabad – West (Gachibowli / Kokapet)", "Hyderabad – North (Kompally / Bachupally)", "Hyderabad – East (Uppal / LB Nagar)", "Hyderabad – South (Rajendra Nagar)", "Mumbai", "Bangalore", "Delhi NCR", "Dubai / UAE", "Other"];
 
 export default function SmartLeadForm({ formType, source, propertyId, title, subtitle }: SmartLeadFormProps) {
+  const waHref = useContextualWhatsApp(`Hi PropKnown, I just sent an enquiry${title ? ` about "${title}"` : ""} on your website.`);
   const [step, setStep]       = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -85,7 +87,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
         <h3 className="heading-h3 mb-2">Enquiry Received!</h3>
         <p className="text-gray-500 text-sm max-w-xs">Our team will reach out within 2 hours. You can also WhatsApp us directly.</p>
         <a
-          href="https://wa.me/917013016003"
+          href={waHref}
           className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors duration-200"
           style={{ background: "#25d366" }}
           target="_blank" rel="noopener noreferrer"
@@ -232,7 +234,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
 
             <p className="text-center text-gray-500 text-xs">
               Or WhatsApp directly:{" "}
-              <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "var(--gold-text)" }}>
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: "var(--gold-text)" }}>
                 +91 70130 16003
               </a>
             </p>

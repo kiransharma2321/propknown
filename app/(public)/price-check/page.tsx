@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Scale, Loader2, AlertCircle, Share2, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
 import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
+import ReportLeadForm from "@/components/leads/ReportLeadForm";
 
 const PROPERTY_TYPES = [
   { value: "apartment",   label: "Apartment",               defaultUnit: "sqft"   },
@@ -270,6 +271,13 @@ export default function PriceCheckPage() {
                 </div>
               </>
             )}
+            <ReportLeadForm
+              tool="price_check"
+              location={result.location ?? location.trim()}
+              propertyType={result.propertyType ?? propType}
+              unit={result.unit}
+              askingPricePerUnit={result.pricePerUnit}
+            />
           </div>
         )}
       </div>

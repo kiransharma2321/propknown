@@ -9,6 +9,8 @@ import {
   CheckCircle, ArrowUpRight, MessageCircle, Globe,
 } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
+import ReportLeadForm from "@/components/leads/ReportLeadForm";
+import { waLink, searchContextText } from "@/lib/whatsapp";
 import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
 import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/currency";
@@ -271,6 +273,9 @@ function AIIntelligenceInner() {
   const [overviewLoading, setOverviewLoading] = useState(false);
   const [overviewCached,  setOverviewCached]  = useState(false);
   const [lastAction, setLastAction] = useState<"single" | "overview">("single");
+  // Location/type/unit of the search that produced the current result -- the report form and
+  // WhatsApp context use this, not the live input fields (which the visitor may have edited since).
+  const [searched, setSearched] = useState<{ loc: string; propType: string; unit: string } | null>(null);
 
   const [downPct,    setDownPct]    = useState(20);
   const [intRate,    setIntRate]    = useState(8.75);
@@ -419,6 +424,7 @@ function AIIntelligenceInner() {
         setUsage(data);
       } else if (res.ok && !data.error && data.available) {
         setResult(data);
+        setSearched({ loc, propType, unit: apiUnit });
         if (data.usage) setUsage(data.usage);
       } else if (res.ok && data.available === false) {
         // Honest "no fallback estimate" state — live data is the only source now, so a
@@ -463,6 +469,7 @@ function AIIntelligenceInner() {
         setUsage(data);
       } else if (res.ok && data.results) {
         setOverviewResults(data.results);
+        setSearched({ loc: areaValue ? `${areaValue}, ${cityValue}` : cityValue, propType: "apartment", unit: "sqft" });
         setOverviewCached(Boolean(data.cached));
         if (data.usage) setUsage(data.usage);
       } else {
@@ -690,7 +697,7 @@ function AIIntelligenceInner() {
                       <AlertCircle size={14} className="shrink-0 mt-0.5" />
                       <span>{error}</span>
                       {error.includes("WhatsApp") ? (
-                        <a href="https://wa.me/917013016003" target="_blank" rel="noopener noreferrer"
+                        <a href={waLink(searchContextText({ tool: "ai_intel", location: areaValue ? `${areaValue}, ${cityValue}` : cityValue || "an area", propertyType: propType }))} target="_blank" rel="noopener noreferrer"
                           className="ml-auto text-green-600 font-semibold whitespace-nowrap flex items-center gap-1 hover:underline">
                           <MessageCircle size={13} /> WhatsApp
                         </a>
@@ -752,6 +759,7 @@ function AIIntelligenceInner() {
                     />
                   ))}
                 </div>
+                {searched && <ReportLeadForm tool="ai_intel" location={searched.loc} propertyType={searched.propType} unit={searched.unit} />}
               </div>
             )}
 
@@ -928,6 +936,8 @@ function AIIntelligenceInner() {
                     ))}
                   </div>
                 </div>
+
+                {searched && <ReportLeadForm tool="ai_intel" location={searched.loc} propertyType={searched.propType} unit={searched.unit} />}
 
                 {/* EMI Calculator */}
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">

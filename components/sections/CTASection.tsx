@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone, Mail, ArrowRight } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 import { COMPANY } from "@/lib/utils";
+import { waLink } from "@/lib/whatsapp";
 
 export default function CTASection() {
   return (
@@ -42,7 +43,7 @@ export default function CTASection() {
 
             <div className="flex gap-3">
               <Link
-                href={`https://wa.me/${COMPANY.whatsapp}`}
+                href={waLink("Hi PropKnown, I'd like to talk to an advisor about a property.")}
                 target="_blank"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-sm font-semibold text-sm text-white transition-all"
                 style={{ backgroundColor: "#25D366" }}

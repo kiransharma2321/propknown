@@ -113,8 +113,20 @@ model Lead {
   siteVisits   SiteVisit[]
   bookings     Booking[]
 
+  // Report-request leads (Task 2: "Email me the full report") -- which tool + location the
+  // visitor searched, so the follow-up sequence and Hot-lead alert can reference it. All
+  // nullable/defaulted: existing leads are unaffected.
+  reportContext     Json?
+  marketingOptOut   Boolean   @default(false)
+  sequenceStep      Int       @default(0) // 0 none, 1 report sent, 2 day-2 sent, 3 day-5 sent (done)
+  sequenceStartedAt DateTime?
+  hotAlertAt        DateTime?
+
+  emailLogs    EmailLog[]
+
   @@index([status])
   @@index([assignedTo])
+  @@index([sequenceStep])
 }
 
 model AdminUser {
@@ -588,3 +600,34 @@ model AiQuery {
 // app/api/crm/leaderboard/route.ts. Kept here as a note so the absence of a Leaderboard model
 // isn't mistaken for an oversight.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Every email the automation sends (report, sequence steps, alerts, newsletter, listing
+// decisions) -- powers the admin "Sequences" view. status: sent | failed | skipped (e.g.
+// unsubscribed). Never stores the email body, only what was sent to whom and when.
+model EmailLog {
+  id         String   @id @default(cuid())
+  leadId     String?
+  lead       Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  to         String
+  kind       String // report | day2 | day5 | hot_alert | newsletter | listing_approved | listing_rejected | listing_verify | test
+  subject    String
+  status     String
+  providerId String?
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdAt])
+  @@index([to, kind])
+  @@map("email_log")
+}
+
+// Addresses that clicked "unsubscribe" -- checked before every marketing email, regardless of
+// which lead record the address appears on.
+model EmailSuppression {
+  email     String   @id
+  reason    String   @default("unsubscribe")
+  createdAt DateTime @default(now())
+
+  @@map("email_suppressions")
+}

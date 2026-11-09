@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Shield, AlertTriangle, CheckCircle2, MessageCircle, Loader2, Info, ExternalLink } from "lucide-react";
-import { COMPANY } from "@/lib/utils";
 import { RERA_STATES } from "@/lib/reraStates";
+import ReportLeadForm from "@/components/leads/ReportLeadForm";
+import { waLink, searchContextText } from "@/lib/whatsapp";
 
 // --gold-text, not the brand's usual --gold -- this page's background is white, and the
 // standard gold measures 2.2:1 contrast against white (WCAG AA requires 4.5:1 for text).
@@ -44,6 +45,8 @@ export default function LegalShieldPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RedFlagResult | null>(null);
   const [error, setError] = useState("");
+  // Snapshot of the inputs behind the current result (the form fields can change afterwards).
+  const [checked, setChecked] = useState<{ location: string; propertyType: string; unit: string; reraNumber: string } | null>(null);
 
   const check = async () => {
     if (!form.location.trim()) { setError("Please enter the property's location/area."); return; }
@@ -68,6 +71,7 @@ export default function LegalShieldPage() {
         return;
       }
       setResult(data);
+      setChecked({ location: form.location.trim(), propertyType: form.propertyType.toLowerCase(), unit: form.unit, reraNumber: form.reraNumber.trim() });
     } catch {
       setError("Could not run the check right now. Please WhatsApp us on 70130 16003.");
     } finally {
@@ -79,9 +83,9 @@ export default function LegalShieldPage() {
   const sel = "input-dark text-sm px-3 py-2.5 appearance-none";
   const risk = result ? (RISK_STYLE[result.riskLevel] ?? RISK_STYLE.Medium) : null;
 
-  const waMsg = encodeURIComponent(
-    `Hi PropKnown, I ran a Legal Shield red-flag check on a property in ${form.location || "an area"} and would like professional verification.`
-  );
+  const waHref = checked
+    ? waLink(`${searchContextText({ tool: "legal_shield", location: checked.location, propertyType: checked.propertyType })} I'd like professional verification.`)
+    : waLink("Hi, I'd like PropKnown to verify a property listing for me.");
 
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
@@ -263,11 +267,16 @@ export default function LegalShieldPage() {
                   <p className="text-xs text-blue-800 leading-relaxed">{result.educationalNote}</p>
                 </div>
 
-                <a href={`https://wa.me/${COMPANY.whatsapp}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+                <a href={waHref} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg font-bold text-white text-sm transition-colors duration-200 hover:opacity-90"
                   style={{ background: "#25D366" }}>
                   <MessageCircle size={16} /> Talk to an Expert Now for Professional Verification
                 </a>
+
+                {checked && (
+                  <ReportLeadForm tool="legal_shield" location={checked.location} propertyType={checked.propertyType}
+                    unit={checked.unit} reraNumber={checked.reraNumber || undefined} riskLevel={result.riskLevel} />
+                )}
 
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
                   This is an educational red-flag check, not legal advice; always verify with professionals and PropKnown.

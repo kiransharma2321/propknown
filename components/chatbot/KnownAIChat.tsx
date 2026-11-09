@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { X, Send, ExternalLink } from "lucide-react";
-import { COMPANY } from "@/lib/utils";
 import AIOrb from "./AIOrb";
+import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
 
 type Message = { role: "bot" | "user"; text: string };
 
@@ -22,6 +22,7 @@ interface KnownAIChatProps {
 }
 
 export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
+  const waHref = useContextualWhatsApp("Hi PropKnown! I'd like to discuss a property.");
   const [open,     setOpen]     = useState(initialOpen);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input,    setInput]    = useState("");
@@ -178,7 +179,7 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
           {/* WhatsApp CTA */}
           <div className="px-4 py-2 border-t shrink-0" style={{ borderColor: "#333" }}>
             <a
-              href={`https://wa.me/${COMPANY.whatsapp}?text=Hi%20PropKnown!%20I'd%20like%20to%20discuss%20a%20property.`}
+              href={waHref}
               target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-medium transition-opacity hover:opacity-90"
               style={{ background: "#25D366", color: "#fff" }}
