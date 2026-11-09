@@ -10,7 +10,7 @@ import { waLink, searchContextText } from "@/lib/whatsapp";
 import { notifyNewLead } from "@/lib/notifications";
 import { scoreLead, HOT_LEAD_SCORE } from "@/lib/leadScore";
 import { sendTracked, unsubscribeUrl, normaliseEmail, ADMIN_ALERT_EMAIL } from "@/lib/emails/send";
-import { reportEmail, hotLeadAlertEmail, type MarketSnapshot } from "@/lib/emails/templates";
+import { reportEmail, leadAlertEmail, type MarketSnapshot } from "@/lib/emails/templates";
 
 // "Email me the full report + 5-year forecast" (Task 2). The report is rebuilt server-side
 // from the shared engine's cached data -- nothing the browser sends is echoed into the email
@@ -145,13 +145,12 @@ export async function createReportLead(input: ReportLeadInput) {
     await prisma.lead.update({ where: { id: lead.id }, data: { sequenceStep: 1, sequenceStartedAt: new Date() } });
   }
 
-  // Score with the existing AI lead scorer; Hot => instant alert to the owner.
-  let hot = false;
+  // Score with the existing AI lead scorer, then alert the owner once (flagged HOT if it is).
   const scored = await scoreLead(lead.id, 8000);
-  if (scored.ok && scored.result.leadScore >= HOT_LEAD_SCORE) {
-    hot = true;
-    await sendHotLeadAlert(lead.id, `AI lead score ${scored.result.leadScore}/100 after requesting a report.`);
-  }
+  const hot = scored.ok && scored.result.leadScore >= HOT_LEAD_SCORE;
+  await sendLeadAlert(lead.id, scored.ok
+    ? `AI lead score ${scored.result.leadScore}/100 after requesting a report.`
+    : "Requested a report (AI lead score unavailable).");
 
   return { leadId: lead.id, emailed: sent.ok, hot, hasData: Boolean(snapshot) };
 }
@@ -164,22 +163,39 @@ export function describeSearch(ctx: unknown): string {
   return loc ? `${tool}: ${type ? `${type} in ` : ""}${loc}` : tool;
 }
 
-// Instant owner alert with a one-click WhatsApp link to the lead. At most once per lead.
+// Owner alert for every new lead: one email per lead, sent from wherever the lead is created.
+// Hot leads (AI score >= HOT_LEAD_SCORE) go through sendHotLeadAlert so the subject says 🔥 HOT.
+export async function sendLeadAlert(leadId: string, reason = "New enquiry."): Promise<boolean> {
+  const lead = await prisma.lead.findUnique({ where: { id: leadId }, select: { leadScore: true } });
+  if (!lead) return false;
+  if (lead.leadScore != null && lead.leadScore >= HOT_LEAD_SCORE) return sendHotLeadAlert(leadId, reason);
+  const already = await prisma.emailLog.count({ where: { leadId, kind: { in: ["lead_alert", "hot_alert"] }, status: "sent" } });
+  if (already > 0) return false;
+  return sendAlert(leadId, false, reason);
+}
+
+// Instant 🔥 HOT owner alert with a one-click WhatsApp link to the lead. At most once per lead
+// (also used when a lead is re-scored as hot in the CRM after its first alert).
 export async function sendHotLeadAlert(leadId: string, reason: string): Promise<boolean> {
   const claimed = await prisma.lead.updateMany({ where: { id: leadId, hotAlertAt: null }, data: { hotAlertAt: new Date() } });
   if (claimed.count === 0) return false;
+  return sendAlert(leadId, true, reason);
+}
+
+async function sendAlert(leadId: string, hot: boolean, reason: string): Promise<boolean> {
   const lead = await prisma.lead.findUnique({ where: { id: leadId } });
   if (!lead) return false;
   const c = (lead.reportContext ?? {}) as { tool?: string; locationName?: string; location?: string; propertyType?: string };
-  const search = describeSearch(lead.reportContext) || lead.source;
+  const search = lead.reportContext ? describeSearch(lead.reportContext) : lead.source;
   const ctxText = c.location || c.locationName
     ? `Hi ${lead.name}, this is Raghu from PropKnown. I saw you checked ${c.locationName || c.location} ${c.propertyType ? `${TYPE_LABEL[c.propertyType] ?? c.propertyType} ` : ""}prices on our site — happy to help with any questions.`
     : `Hi ${lead.name}, this is Raghu from PropKnown. Thanks for your enquiry — how can I help?`;
-  const { subject, html } = hotLeadAlertEmail({
-    name: lead.name, phone: lead.phone, email: lead.email, search, score: lead.leadScore, summary: lead.aiSummary,
+  const { subject, html } = leadAlertEmail({
+    hot, name: lead.name, phone: lead.phone, email: lead.email, search, score: lead.leadScore, summary: lead.aiSummary,
+    message: lead.reportContext ? null : lead.message,
     reason, waToLead: waLink(ctxText, (toE164(lead.phone) ?? lead.phone).replace(/\D/g, "")),
     crmLink: `${SITE_URL}/crm/leads/${lead.id}`,
   });
-  const r = await sendTracked({ to: ADMIN_ALERT_EMAIL, subject, html, kind: "hot_alert", leadId });
+  const r = await sendTracked({ to: ADMIN_ALERT_EMAIL, subject, html, kind: hot ? "hot_alert" : "lead_alert", leadId });
   return r.ok;
 }

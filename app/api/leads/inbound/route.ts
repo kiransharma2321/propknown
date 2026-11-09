@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { notifyNewLead } from "@/lib/notifications";
+import { sendLeadAlert } from "@/lib/leads/report";
 import { getCredentialFields } from "@/lib/apiCredentials";
 
 const WEBHOOK_SECRET = process.env.LEAD_WEBHOOK_SECRET ?? "";
@@ -52,6 +53,7 @@ async function fetchAndCreateMetaLead(leadgenId: string): Promise<{ ok: boolean;
     data: { name: String(name).trim(), phone: String(phone).trim(), email: email?.trim().toLowerCase(), source: "meta_lead_ads", status: "new" },
   });
   notifyNewLead({ id: lead.id, name: lead.name, source: lead.source, phone: lead.phone }).catch(() => null);
+  await sendLeadAlert(lead.id).catch(() => null);
   return { ok: true, leadId: lead.id };
 }
 
@@ -106,6 +108,8 @@ export async function POST(req: NextRequest) {
     });
 
     notifyNewLead({ id: lead.id, name: lead.name, source: lead.source, phone: lead.phone }).catch(() => null);
+
+    await sendLeadAlert(lead.id).catch(() => null);
 
     return NextResponse.json({ ok: true, id: lead.id }, { status: 201 });
   } catch (e) {

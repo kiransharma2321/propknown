@@ -13,7 +13,7 @@ export const ADMIN_ALERT_EMAIL = "raghupinnelli@gmail.com";
 
 export type EmailKind =
   | "report" | "day2" | "day5" | "hot_alert" | "newsletter" | "listing_verify"
-  | "listing_approved" | "listing_rejected" | "callback_alert" | "test";
+  | "listing_approved" | "listing_rejected" | "callback_alert" | "lead_alert" | "test";
 
 const MARKETING: EmailKind[] = ["day2", "day5", "newsletter"];
 

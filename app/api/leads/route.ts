@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendAdminEmail, buildLeadHtml, buildRaghuNotifyWhatsAppLink } from "@/lib/email";
+import { buildRaghuNotifyWhatsAppLink } from "@/lib/email";
+import { sendLeadAlert } from "@/lib/leads/report";
 import { notifyNewLead } from "@/lib/notifications";
 import { toIndianWaNumber } from "@/lib/phone";
 import { getAdminSession, canRole } from "@/lib/rbac";
@@ -42,12 +43,10 @@ export async function POST(req: NextRequest) {
 
     const src = source ?? "website";
 
-    // Step 1: admin email — sendAdminEmail logs per-recipient success/failure itself, never throws
-    console.log(`[leads] Step 1/2: sending admin email for lead ${lead.id}...`);
-    sendAdminEmail({
-      subject: `New Lead: ${name} via ${src}`,
-      html: buildLeadHtml({ name, phone, email, message, source: src }),
-    }).catch((e) => console.error(`[leads] Admin email step threw for lead ${lead.id}:`, e));
+    // Step 1: owner alert email (tracked in email_log; awaited so it is not cut off when the
+    // serverless function returns). Never throws -- a failed alert must not lose the lead.
+    console.log(`[leads] Step 1/2: sending lead alert for lead ${lead.id}...`);
+    await sendLeadAlert(lead.id).catch((e) => console.error(`[leads] Lead alert threw for lead ${lead.id}:`, e));
 
     // Step 2: in-admin bell notification
     console.log(`[leads] Step 2/2: creating bell notification for lead ${lead.id}...`);

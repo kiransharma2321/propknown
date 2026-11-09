@@ -122,12 +122,14 @@ export function day5Email(opts: { name: string; location: string; whatsappLink: 
   };
 }
 
-export function hotLeadAlertEmail(opts: {
-  name: string; phone: string; email?: string | null; search: string; score?: number | null;
-  summary?: string | null; reason: string; waToLead: string; crmLink: string;
+// Owner alert sent once for every new lead; hot leads (AI score >= HOT_LEAD_SCORE) are flagged
+// with "🔥 HOT" in the subject so they stand out in the inbox.
+export function leadAlertEmail(opts: {
+  hot: boolean; name: string; phone: string; email?: string | null; search: string; score?: number | null;
+  summary?: string | null; message?: string | null; reason: string; waToLead: string; crmLink: string;
 }): { subject: string; html: string } {
   const body = `
-    <h2 style="margin:0 0 6px;font-size:18px">🔥 Hot lead: ${esc(opts.name)}</h2>
+    <h2 style="margin:0 0 6px;font-size:18px">${opts.hot ? "🔥 HOT lead" : "New lead"}: ${esc(opts.name)}</h2>
     <p style="margin:0 0 14px;color:#666">${esc(opts.reason)}</p>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <tr><td style="padding:7px 10px;border:1px solid #eee;font-weight:700;width:120px">Name</td><td style="padding:7px 10px;border:1px solid #eee">${esc(opts.name)}</td></tr>
@@ -136,7 +138,9 @@ export function hotLeadAlertEmail(opts: {
       <tr><td style="padding:7px 10px;border:1px solid #eee;font-weight:700">Searched</td><td style="padding:7px 10px;border:1px solid #eee">${esc(opts.search)}</td></tr>
       ${opts.score != null ? `<tr><td style="padding:7px 10px;border:1px solid #eee;font-weight:700">AI lead score</td><td style="padding:7px 10px;border:1px solid #eee">${opts.score}/100</td></tr>` : ""}
       ${opts.summary ? `<tr><td style="padding:7px 10px;border:1px solid #eee;font-weight:700">AI summary</td><td style="padding:7px 10px;border:1px solid #eee">${esc(opts.summary)}</td></tr>` : ""}
+      ${opts.message ? `<tr><td style="padding:7px 10px;border:1px solid #eee;font-weight:700">Message</td><td style="padding:7px 10px;border:1px solid #eee">${esc(opts.message)}</td></tr>` : ""}
     </table>
     <p style="margin-top:18px">${button(opts.waToLead, `WhatsApp ${opts.name} now`, "#25D366", "#fff")}${button(opts.crmLink, "Open in CRM")}</p>`;
-  return { subject: `🔥 Hot lead: ${opts.name} — ${opts.search}`.slice(0, 140), html: layout({ preheader: `${opts.name} · ${opts.phone}`, body }) };
+  const subject = `${opts.hot ? "🔥 HOT lead" : "New lead"}: ${opts.name} — ${opts.search}`.slice(0, 140);
+  return { subject, html: layout({ preheader: `${opts.name} · ${opts.phone}`, body }) };
 }
