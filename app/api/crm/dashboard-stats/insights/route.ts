@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession, canRole } from "@/lib/rbac";
+import { recordApiCall } from "@/lib/engine/usage";
 
 // AI Dashboard Insights (Section 16). Manually triggered ("Generate Insights" button), not run
 // automatically on every page load -- same "no surprise Gemini calls" pattern as AI Lead
@@ -34,6 +35,7 @@ ${JSON.stringify(stats)}`;
         }),
       }
     );
+    recordApiCall("gemini", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
     const data = await res.json() as { candidates?: { content: { parts: { text: string }[] } }[]; error?: { message: string } };
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!res.ok || !text) {

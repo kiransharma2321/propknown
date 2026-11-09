@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { recordApiCall } from "@/lib/engine/usage";
 
 // AI Lead Scoring (Section 3) -- shared by the admin "Score this lead" action and the automatic
 // scoring that runs when a visitor requests a report (Task 2). Grounded entirely in what's
@@ -73,6 +74,7 @@ Respond with ONLY this JSON shape, no markdown fences:
         signal: AbortSignal.timeout(timeoutMs),
       }
     );
+    recordApiCall("gemini", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
     const data = await res.json() as { candidates?: { content: { parts: { text: string }[] } }[]; error?: { message: string } };
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!res.ok || !text) {

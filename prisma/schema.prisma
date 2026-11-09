@@ -674,3 +674,46 @@ model GuidanceRate {
   @@index([state])
   @@map("guidance_rates")
 }
+
+// AI-drafted listings waiting for human review (Approval Queue). Created by Quick Add (pasted
+// brochure text or a URL) and, once a permitted source exists, the Project Finder. Never shown
+// publicly: approving one (all 10 checklist items ticked) creates an approved, verified
+// Property that appears on /buy. Price is only filled when the source text states it, and then
+// carries that source's link and date.
+model ListingDraft {
+  id                 String    @id @default(cuid())
+  origin             String    // quick_add_text | quick_add_url | rera_feed
+  sourceName         String?
+  sourceUrl          String?
+  fetchedAt          DateTime  @default(now())
+  rawText            String?   @db.Text
+  reraNumber         String?   @unique
+  projectName        String
+  builder            String?
+  location           String?
+  city               String?
+  state              String?
+  propertyType       String    @default("apartment")
+  configuration      String?   // e.g. "2 & 3 BHK"
+  sizeText           String?   // e.g. "1,250 – 1,890 sq.ft"
+  sizeSqft           Float?
+  projectStatus      String?   // under construction | ready to move | new launch
+  possessionDate     String?
+  price              Float?    // total price in currency, only when the source states it
+  currency           String    @default("INR")
+  priceSourceUrl     String?
+  priceSourceDate    DateTime?
+  description        String?   @db.Text
+  checklist          Json      @default("[]") // 10 booleans, CHECKLIST_ITEMS order
+  aiPriceCheck       Json?     // engine verdict on the stated price, with its date
+  reviewStatus       String    @default("draft") // draft | approved | rejected
+  rejectReason       String?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  propertyId         String?   // the Property created on approval
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([reviewStatus, createdAt])
+  @@map("listing_drafts")
+}

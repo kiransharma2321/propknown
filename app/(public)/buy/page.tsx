@@ -42,7 +42,7 @@ export default async function BuyPage() {
   }));
 
   // Admin-added listings use the same card. Only fields we actually hold are shown -- no AI
-  // score or verification badges, since none of these rows has been marked verified.
+  // score, and verification badges only for rows approved through the 10-point checklist.
   const adminListings: Submission[] = props.map(p => ({
     id:          p.id,
     title:       p.title.trim(),
@@ -50,7 +50,8 @@ export default async function BuyPage() {
     bhk:         p.beds ? `${p.beds} BHK` : undefined,
     size:        p.sqft ? String(p.sqft) : undefined,
     sizeUnit:    p.sqft ? "sqft" : undefined,
-    priceDisplay: p.currency === "INR" ? inrDisplay(p.price) : `${p.currency} ${p.price.toLocaleString()}`,
+    // No stated price (e.g. an approved RERA project draft) -> "Price on request", never an estimate.
+    priceDisplay: !(p.price > 0) ? "Price on request" : p.currency === "INR" ? inrDisplay(p.price) : `${p.currency} ${p.price.toLocaleString()}`,
     city:        p.city,
     area:        p.location.trim().replace(/^\w/, c => c.toUpperCase()),
     reraNumber:  p.reraNumber?.trim() || undefined,

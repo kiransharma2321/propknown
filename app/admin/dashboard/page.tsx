@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
 import { Plus, Trash2, CheckCircle, XCircle, Shield, LogOut, LayoutDashboard, Home, Users, Brain, Zap, Copy, Check, Loader2, FileText, Inbox, Image as ImageIcon, Video, Phone, Mail, Download, History, GraduationCap, Trophy, Lock } from "lucide-react";
 import NotificationBell from "@/components/admin/NotificationBell";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +11,7 @@ import { LEGAL_CHECKLIST_ITEMS, type LegalChecklist, type ChecklistStatus } from
 import { PRESET_MILESTONES, type ConstructionMilestone } from "@/lib/constructionProgress";
 import { toIndianWaNumber } from "@/lib/phone";
 import PKLogo from "@/components/layout/PKLogo";
+import { QuickAddForm } from "@/app/admin/approval-queue/forms";
 
 interface DocFile {
   id: string; name: string; type: string; size: number; data: string;
@@ -33,18 +35,6 @@ const EMPTY_FORM = {
   reraVerified: false, realPhotos: false, accuratePrice: false, ownerConsent: false,
 };
 
-const CHECKLIST_ITEMS = [
-  "RERA or HMDA number verified",
-  "Owner identity verified",
-  "Title deed checked with no disputes",
-  "Real photos - not stock images",
-  "Accurate price within 20% of market rate",
-  "Correct area measurement and unit",
-  "Owner consent obtained",
-  "No false or misleading claims",
-  "Location pinned correctly on map",
-  "Contact details verified and working",
-];
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -215,180 +205,16 @@ function AiBrainTab() {
   );
 }
 
+// Quick Add: paste brochure text or a project link -> AI draft in the Approval Queue, where the
+// 10-point checklist and approve/reject live. (The old in-tab form could not publish anything.)
 function QuickAddTab() {
-  const [rawText, setRawText]       = useState("");
-  const [parsing, setParsing]       = useState(false);
-  const [photos, setPhotos]         = useState<File[]>([]);
-  const [videoUrl, setVideoUrl]     = useState("");
-  const [dragging, setDragging]     = useState(false);
-  const [checklist, setChecklist]   = useState<boolean[]>(new Array(CHECKLIST_ITEMS.length).fill(false));
-  const [rejectReason, setRejectReason] = useState("");
-  const [parsed, setParsed]         = useState<Record<string, string>>({});
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const allChecked = checklist.every(Boolean);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setDragging(false);
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
-    setPhotos(prev => [...prev, ...files].slice(0, 10));
-  }, []);
-
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    setPhotos(prev => [...prev, ...files].slice(0, 10));
-  };
-
-  const parseText = async () => {
-    if (!rawText.trim()) return;
-    setParsing(true);
-    try {
-      const res = await fetch("/api/ai-brain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: `Extract property listing data from this text and return ONLY a JSON object with these fields: title, location, city, state, price (number only, no currency symbols, in INR rupees), currency (INR/AED/USD), beds (number), baths (number), sqft (number), propertyType (apartment/villa/plot/commercial/farmland/independent_house), listingType (sale/rent), reraNumber, description. Text:\n\n${rawText}`,
-          mode: "Auto",
-          history: [],
-        }),
-      });
-      const data = await res.json();
-      try {
-        const jsonMatch = (data.reply || "")?.match(/\{[\s\S]*\}/);
-        if (jsonMatch) setParsed(JSON.parse(jsonMatch[0]));
-      } catch { setParsed({ title: rawText.substring(0, 60) }); }
-    } catch { /**/ }
-    finally { setParsing(false); }
-  };
-
-  const inpCls = "bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-[#D6A63E] placeholder-gray-400";
-
   return (
     <div>
       <div className="mb-6">
         <h1 className="font-playfair text-2xl font-bold text-gray-900 mb-1">Quick Add Listing</h1>
-        <p className="text-gray-500 text-sm">Paste any property details — AI auto-fills the form. Upload photos. Tick all 10 checklist items to approve.</p>
+        <p className="text-gray-500 text-sm">Paste any property details or a link. AI drafts the listing into the <Link href="/admin/approval-queue" className="underline">Approval Queue</Link>, where you tick the 10-point checklist and approve.</p>
       </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="space-y-5">
-          {/* Paste area */}
-          <div>
-            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Paste Property Details</label>
-            <textarea
-              value={rawText}
-              onChange={e => setRawText(e.target.value)}
-              rows={6}
-              className={`${inpCls} resize-none`}
-              placeholder="Paste any format: WhatsApp message, email, brochure text, broker notes, MagicBricks link textâ€¦"
-            />
-            <button onClick={parseText} disabled={parsing || !rawText.trim()}
-              className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-navy disabled:opacity-50 transition-all"
-              style={{ background: "var(--gold)" }}>
-              {parsing ? <><Loader2 size={14} className="animate-spin" /> Parsing...</> : <><Brain size={14} /> AI Auto-Fill</>}
-            </button>
-          </div>
-
-          {/* Parsed form */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              ["Title", "title"], ["Location", "location"], ["City", "city"], ["State", "state"],
-              ["Price", "price"], ["Beds", "beds"], ["Baths", "baths"], ["Sqft", "sqft"],
-              ["RERA No.", "reraNumber"], ["Property Type", "propertyType"],
-            ].map(([label, key]) => (
-              <div key={key}>
-                <label className="text-gray-500 text-[10px] mb-1 block">{label}</label>
-                <input value={parsed[key] ?? ""} onChange={e => setParsed({ ...parsed, [key]: e.target.value })}
-                  className={inpCls} placeholder={label} />
-              </div>
-            ))}
-            <div className="sm:col-span-2">
-              <label className="text-gray-500 text-[10px] mb-1 block">Description</label>
-              <textarea value={parsed["description"] ?? ""} onChange={e => setParsed({ ...parsed, description: e.target.value })}
-                rows={3} className={`${inpCls} resize-none`} placeholder="Property description" />
-            </div>
-          </div>
-
-          {/* Video URL */}
-          <div>
-            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Video URL (YouTube / Matterport 3D)</label>
-            <input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className={inpCls} placeholder="https://youtube.com/... or https://my.matterport.com/..." />
-          </div>
-        </div>
-
-        <div className="space-y-5">
-          {/* Photo upload */}
-          <div>
-            <label className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 block">Photos ({photos.length}/10)</label>
-            <div
-              onDrop={handleDrop}
-              onDragOver={e => { e.preventDefault(); setDragging(true); }}
-              onDragLeave={() => setDragging(false)}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${dragging ? "border-[#D6A63E] bg-[#D6A63E]/5" : "border-gray-200 hover:border-gray-300"}`}
-            >
-              <p className="text-gray-500 text-sm">Drag &amp; drop photos here or click to browse</p>
-              <p className="text-gray-400 text-xs mt-1">JPG, PNG — up to 10 photos</p>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
-            </div>
-            {photos.length > 0 && (
-              <div className="grid grid-cols-4 gap-2 mt-3">
-                {photos.map((f, i) => (
-                  <div key={i} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
-                    <button onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-red-400 text-lg">âœ•</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 10-point checklist */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Shield size={14} style={{ color: "var(--gold)" }} />
-              <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">10-Point Approval Checklist</p>
-            </div>
-            <div className="space-y-2">
-              {CHECKLIST_ITEMS.map((item, i) => (
-                <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={checklist[i]}
-                    onChange={e => setChecklist(prev => prev.map((v, j) => j === i ? e.target.checked : v))}
-                    className="w-4 h-4 rounded"
-                    style={{ accentColor: "var(--gold)" }}
-                  />
-                  <span className={`text-sm transition-colors ${checklist[i] ? "text-gray-700 line-through opacity-60" : "text-gray-500"}`}>{item}</span>
-                </label>
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-gray-400">
-              {checklist.filter(Boolean).length}/{CHECKLIST_ITEMS.length} completed
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-3">
-            <button disabled={!allChecked}
-              className="w-full py-3 rounded-lg font-bold text-navy transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "var(--gold)" }}>
-              {allChecked ? "✓ Approve & Publish" : "Complete All 10 Checklist Items to Approve"}
-            </button>
-            <div>
-              <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={2}
-                className={`${inpCls} resize-none`} placeholder="Rejection reason (required for reject)..." />
-              <button disabled={!rejectReason.trim()}
-                className="mt-2 w-full py-2 rounded-xl font-semibold text-sm border border-red-700 text-red-600 hover:bg-red-900/30 transition-all disabled:opacity-40">
-                Reject Listing
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="max-w-2xl"><QuickAddForm /></div>
     </div>
   );
 }

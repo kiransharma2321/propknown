@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMarketPrice, logAiQuery, remaining, unitLabel, ENGINE_TIMEOUT_MS, UNAVAILABLE_MESSAGE, type EngineResult } from "@/lib/engine";
 import { matchLocality } from "@/lib/localities";
+import { recordApiCall } from "@/lib/engine/usage";
 
 // flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies.
 // flash is used as a cross-model fallback on the final retry — an "UNAVAILABLE / high demand"
@@ -141,6 +142,7 @@ async function callGemini(
     signal: AbortSignal.timeout(Math.max(500, timeoutMs)),
   });
 
+  recordApiCall("gemini", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
   const data = await res.json().catch(() => ({})) as {
     candidates?: {
       content?: { parts?: { text?: string }[] };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMarketPrice, remaining, ENGINE_TIMEOUT_MS, UNAVAILABLE_MESSAGE } from "@/lib/engine";
 import { reraGuidance, type ReraGuidance } from "@/lib/engine/rera";
+import { recordApiCall } from "@/lib/engine/usage";
 
 // Same model as AI Intelligence — kept independent of jarvis's flash-lite so a spike in chat
 // traffic can't starve this feature's quota, and vice versa.
@@ -198,6 +199,7 @@ Never claim certainty about fraud — always frame as "signals to check", not ac
     signal: AbortSignal.timeout(Math.max(500, timeoutMs)),
   });
 
+  recordApiCall("gemini", res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
   const data = await res.json();
   if (!res.ok) {
     const quotaExceeded = res.status === 429 || data.error?.status === "RESOURCE_EXHAUSTED";
