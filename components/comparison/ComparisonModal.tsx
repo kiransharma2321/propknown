@@ -224,7 +224,7 @@ export default function ComparisonModal({ onClose }: { onClose: () => void }) {
         <div className="px-5 py-4 border-t border-gray-200 bg-gray-50 shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-[10px] text-gray-400 max-w-xs leading-relaxed">
             Est. True Cost includes ~7.5% stamp duty + 0.5% registration + GST + ₹75K legal/maintenance. Use the full{" "}
-            <Link href="/cost-calculator" className="underline" style={{ color: GOLD }} onClick={onClose}>Cost Calculator</Link> for exact figures.
+            <Link href="/true-cost" className="underline" style={{ color: GOLD }} onClick={onClose}>Cost Calculator</Link> for exact figures.
           </p>
           <a
             href={`https://wa.me/917013016003?text=${waText}`}

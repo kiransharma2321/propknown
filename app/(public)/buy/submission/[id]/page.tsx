@@ -8,6 +8,8 @@ import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as I
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
 import ConstructionProgress from "@/components/ui/ConstructionProgress";
+import TrueCostCalculator from "@/components/tools/TrueCostCalculator";
+import { stateFromLocation } from "@/lib/trueCost";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
 import type { LegalChecklist } from "@/lib/legalShield";
 import type { ConstructionMilestone } from "@/lib/constructionProgress";
@@ -163,6 +165,8 @@ export default function SubmissionDetailPage() {
             )}
 
             <LegalChecklistBadge id="legal-shield" checklist={sub.legalChecklist ?? {}} notes={sub.legalNotes} />
+
+            <TrueCostCalculator defaultCity={sub.city} defaultState={stateFromLocation(`${sub.area} ${sub.city}`) ?? undefined} compact />
           </div>
 
           {/* Right: Details card */}

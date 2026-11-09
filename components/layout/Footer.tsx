@@ -20,7 +20,7 @@ const footerLinks = {
     { label: "Contact",           href: "/contact" },
   ],
   Resources: [
-    { label: "True Cost Calculator", href: "/cost-calculator" },
+    { label: "True Cost Calculator", href: "/true-cost" },
     { label: "Price Reality Check",  href: "/price-check" },
     { label: "Legal Shield",         href: "/legal-shield" },
     { label: "Podcast",              href: "/podcast" },

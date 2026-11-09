@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import type { Listing } from "@/lib/listings";
 import { COMPANY } from "@/lib/utils";
-import CostCalculator from "@/components/ui/CostCalculator";
+import TrueCostCalculator from "@/components/tools/TrueCostCalculator";
+import { stateFromLocation } from "@/lib/trueCost";
 import VerificationBadge from "@/components/ui/VerificationBadge";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
@@ -451,7 +452,7 @@ out body qt 30;`;
             )}
 
             {/* ── TRUE COST CALCULATOR ── */}
-            <CostCalculator initialPrice={listing.price} compact />
+            <TrueCostCalculator basePrice={listing.price} defaultCity={listing.city} defaultState={stateFromLocation(`${listing.location} ${listing.city}`) ?? undefined} compact />
 
             {/* ── MAP ── */}
             <div>

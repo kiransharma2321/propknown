@@ -17,6 +17,8 @@ import { CURRENCY_MAP, convertPrice, toINR, type CurrencyCode } from "@/lib/curr
 import AiIntelRegisterGate from "@/components/ui/AiIntelRegisterGate";
 import { HOT_MARKETS, PROPERTY_TYPES, slugify, defaultUnitFor } from "@/lib/hotMarkets";
 import PropertyTypeSummaryCard, { type PropertyTypeSummaryData } from "@/components/ai-intel/PropertyTypeSummaryCard";
+import TrueCostCalculator from "@/components/tools/TrueCostCalculator";
+import { stateFromLocation } from "@/lib/trueCost";
 import { ConfidenceBadge, ThreeWayPrice, HowWeGotThis, AI_DISCLAIMER, type Confidence, type GuidanceValue } from "@/components/ai-intel/PriceTrust";
 
 const LOADING_STEPS = [
@@ -871,6 +873,16 @@ function AIIntelligenceInner() {
                     ))}
                   </div>
                 </div>
+
+                {/* True cost for an Indian result (rates are per Indian state) */}
+                {dispCurr === "INR" && stateFromLocation(r.locationName) && (
+                  <TrueCostCalculator
+                    defaultState={stateFromLocation(r.locationName) ?? undefined}
+                    defaultCity={cityValue}
+                    basePrice={propValue > 0 ? propValue : undefined}
+                    compact
+                  />
+                )}
 
                 {/* Charts */}
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-1">
