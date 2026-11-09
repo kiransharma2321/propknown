@@ -8,13 +8,16 @@
 // Every line of logic below is verbatim from the pre-refactor route.ts -- this file is a pure
 // relocation, not a rewrite. No pricing, grounding, extraction, or honesty behavior changed.
 
-// Quota is tracked per-model on the free tier -- when the primary model's daily quota is
-// exhausted, retrying the same model is pointless, but a different model has its own separate
-// quota bucket and can genuinely still succeed. flash-lite as fallback (not primary) here:
-// this route needs reliable structured JSON extraction from real search context, where
-// flash's extra capability is worth it as the first attempt.
-const GEMINI_MODEL_PRIMARY  = "gemini-2.5-flash";
-const GEMINI_MODEL_FALLBACK = "gemini-2.5-flash-lite";
+// The ONE place the AI Intel model is chosen -- override with the GEMINI_MODEL env var.
+// gemini-2.5-flash is deprecated (Google routes it to gemini-3.5-flash-lite from Dec 1 2026);
+// gemini-3.6-flash is the current stable Flash. Google Search grounding on Gemini 3.x needs a
+// billed AI Studio project -- until billing is on it returns 429, so the grounded step falls
+// through to GEMINI_GROUNDING_BACKUP, which still grounds on the free tier.
+// Quota is tracked per-model, so a model-unavailable error (429/503/404) moves straight on to
+// the next model rather than retrying the same one.
+export const GEMINI_MODEL       = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const GEMINI_GROUNDING_BACKUP   = "gemini-2.5-flash";
+const GEMINI_MODEL_FALLBACK     = "gemini-2.5-flash-lite";
 
 // Combines the caller's overall deadline (lib/engine's 10s budget) with a per-request timeout,
 // so a slow upstream can never hold a request past the engine's deadline.
@@ -691,19 +694,20 @@ function aggregateRates(ratesPerSqft: number[]): SearchAggregate | null {
 
 // ─── Gemini prompt ────────────────────────────────────────────────────────────
 // No hardcoded per-locality price tables here anymore -- Gemini is instructed to extract
-// strictly from the live search data injected below (realSection), which is the only pricing
-// input it's given. getPrompt() is only ever called once real search data has already been
-// confirmed to exist (see the POST handler's `if (dataType === "none")` early-return), so
-// there is never a scenario where this needs a numeric fallback to lean on.
+// strictly from live data: either its own Google Search results (grounded mode) or the live
+// Bayut/Tavily data injected below (realSection). The ungrounded prompt is only ever built once
+// real search data has already been confirmed to exist, so there is never a scenario where this
+// needs a numeric fallback to lean on.
 function getPrompt(
   location:      string,
   propertyType:  string,
   unit:          string,
   currency:      CurrencyInfo,
   countryCode:   string,
-  realDataBlock: string,
-  dataType:      "bayut" | "tavily",
-  bayutPricePsf?: number
+  realDataBlock: string | null,
+  dataType:      "bayut" | "tavily" | "none",
+  bayutPricePsf?: number,
+  grounded = false
 ): string {
   const now = new Date();
   const y   = now.getFullYear();
@@ -713,7 +717,17 @@ function getPrompt(
   const [y1, y2, y3, y4, y5] = [y-4, y-3, y-2, y-1, y];
   const [f1, f2, f3, f4, f5] = [y+1, y+2, y+3, y+4, y+5];
 
-  const realSection = `
+  const realSection = grounded ? `
+═══════════════════════════════════════
+LIVE GOOGLE SEARCH (ONLY SOURCE — DO NOT USE ANY OTHER PRICE)
+═══════════════════════════════════════
+Use Google Search NOW to find current ${y} ${propertyType} prices per ${unitLabel} for THIS EXACT locality: "${location}" — on listing/price-trend portals (e.g. 99acres, MagicBricks, Housing.com, SquareYards, NoBroker, Bayut, PropertyFinder, Rightmove, Zillow — whichever cover this country).
+Extract the PREVAILING/TYPICAL price-per-${unitLabel} from those search results and ONLY from them.
+⚠️ DO NOT use promotional "starting from ₹X" or "from ₹X onwards" teaser prices — use the typical rate implied across sources, not the lowest number you see.
+⚠️ Do not supplement or override the search results with your own training data — it is not current and not locality-specific enough.
+⚠️ If the search genuinely finds no price for this locality, return 0 for "currentPricePerSqft" — never guess.
+${realDataBlock ? `\nAdditional live web snippets (supporting context only):\n${realDataBlock}\n` : ""}═══════════════════════════════════════
+` : `
 ═══════════════════════════════════════
 ${dataType === "bayut" ? "LIVE BAYUT.COM LISTING DATA (ONLY SOURCE — DO NOT USE ANY OTHER PRICE)" : "LIVE WEB SEARCH RESULTS (ONLY SOURCE — DO NOT USE ANY OTHER PRICE)"}
 ═══════════════════════════════════════
@@ -728,7 +742,7 @@ Your "currentPricePerSqft" MUST be ${bayutPricePsf} (the exact Bayut median). Do
 ═══════════════════════════════════════
 `;
 
-  return `You are a real estate data analyst. Extract market intelligence for the SPECIFIC locality: "${location}" (${propertyType} properties) STRICTLY from the live search data provided below. You are not being asked for your own knowledge of this market — you are being asked to read and summarise the data given to you.
+  return `You are a real estate data analyst. Extract market intelligence for the SPECIFIC locality: "${location}" (${propertyType} properties) STRICTLY from ${grounded ? "live Google Search results" : "the live search data provided below"}. You are not being asked for your own knowledge of this market — you are being asked to read and summarise live data.
 
 COUNTRY: ${countryCode.toUpperCase()} | CURRENCY: ${currency.code} (${currency.symbol}) | UNIT: per ${unitLabel}
 
@@ -817,14 +831,30 @@ function unavailableResponse(reason: string) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Grounded responses can't use JSON mode, so the text may come wrapped in markdown fences,
+// prose, or citation markers. Strips fences, then walks every "{" and returns the first
+// balanced (string-aware) object that parses and actually carries the fields we need.
+class GeminiParseError extends Error {}
+
 function parseGemini(text: string): Record<string, unknown> {
-  const t = text.trim();
-  if (t.startsWith("{")) { try { return JSON.parse(t); } catch { /**/ } }
-  const fenced = t.match(/```(?:json)?\s*([\s\S]+?)```/);
-  if (fenced) { try { return JSON.parse(fenced[1].trim()); } catch { /**/ } }
-  const obj = t.match(/(\{[\s\S]+\})/);
-  if (obj) { try { return JSON.parse(obj[1]); } catch { /**/ } }
-  throw new Error("No valid JSON in Gemini response");
+  const t = text.replace(/```(?:json)?/gi, "").trim();
+  for (let start = t.indexOf("{"); start !== -1; start = t.indexOf("{", start + 1)) {
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < t.length; i++) {
+      const ch = t[i];
+      if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true;
+      else if (ch === "{") depth++;
+      else if (ch === "}" && --depth === 0) {
+        try {
+          const obj = JSON.parse(t.slice(start, i + 1));
+          if (obj && typeof obj === "object" && "currentPricePerSqft" in obj) return obj;
+        } catch { /* try the next "{" */ }
+        break;
+      }
+    }
+  }
+  throw new GeminiParseError("No valid JSON object with currentPricePerSqft in Gemini response");
 }
 
 type DataSource = "bayut_data" | "real_data" | "ai_only";
@@ -974,32 +1004,53 @@ function normalise(
   };
 }
 
-class GeminiQuotaError extends Error {}
+// Quota exhausted (429), overloaded (503) or model not found (404): this model can't answer
+// right now, so the caller moves to the next model instead of retrying it.
+class GeminiModelUnavailableError extends Error {}
 
-async function callGemini(apiKey: string, prompt: string, model: string, signal?: AbortSignal): Promise<string> {
+interface GeminiReply { text: string; sourceUrls: string[]; }
+
+async function callGemini(
+  apiKey: string, prompt: string, model: string, grounded: boolean, signal?: AbortSignal
+): Promise<GeminiReply> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  // gemini-2.5 models spend part of maxOutputTokens on internal "thinking" before the visible
+  // answer — with thinking left on, the JSON reply was getting truncated mid-object
+  // (finishReason: MAX_TOKENS). Disabling thinking fixes this. Gemini 3.x doesn't accept a
+  // thinkingBudget; its "minimal" thinking level measured ~5s vs ~21s at "low" for this prompt.
+  const generationConfig = model.startsWith("gemini-2.5")
+    ? { temperature: 0.25, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } }
+    : { temperature: 0.25, maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: "minimal" } };
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      // gemini-2.5-flash spends part of maxOutputTokens on internal "thinking" before the
-      // visible answer — with thinking left on, the JSON reply was getting truncated
-      // mid-object (finishReason: MAX_TOKENS) and every request silently fell back to the
-      // generic, non-area-specific estimate. Disabling thinking fixes this.
-      generationConfig: { temperature: 0.25, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
+      ...(grounded ? { tools: [{ google_search: {} }] } : {}),
+      generationConfig,
     }),
-    signal: timeoutSignal(9000, signal),
+    // Grounded calls run a live Google Search first -- measured at 19-27s in practice.
+    signal: timeoutSignal(grounded ? 40_000 : 20_000, signal),
   });
   const data = await res.json();
   if (!res.ok) {
     const msg = data.error?.message ?? `Gemini ${res.status}`;
-    if (res.status === 429 || data.error?.status === "RESOURCE_EXHAUSTED") {
-      throw new GeminiQuotaError(msg);
+    if ([404, 429, 503].includes(res.status) || data.error?.status === "RESOURCE_EXHAUSTED") {
+      throw new GeminiModelUnavailableError(`${model} ${res.status}: ${msg}`);
     }
-    throw new Error(msg);
+    throw new Error(`${model} ${res.status}: ${msg}`);
   }
-  return (data.candidates?.[0]?.content?.parts?.[0]?.text as string) ?? "";
+  const cand = data.candidates?.[0];
+  const text = ((cand?.content?.parts ?? []) as { text?: string }[]).map((p) => p.text ?? "").join("");
+  // Grounding chunk URIs are opaque Google redirect links; the chunk title is the source's
+  // domain (e.g. "99acres.com"), which is what the UI shows as a source.
+  const sourceUrls = Array.from(new Set(
+    ((cand?.groundingMetadata?.groundingChunks ?? []) as { web?: { title?: string } }[])
+      .map((c) => c.web?.title?.trim().toLowerCase())
+      .filter((d): d is string => !!d && /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d))
+      .map((d) => `https://${d}`)
+  ));
+  return { text, sourceUrls };
 }
 
 // ─── Simple in-memory cache (5 minute TTL) ────────────────────────────────────
@@ -1113,70 +1164,50 @@ export async function computeMarketIntel(
     }
   }
 
-  // Live, search-grounded data is the only source ever shown to users — if neither Bayut nor
-  // Tavily found real listing data, there's nothing for Gemini to ground an answer in, so
-  // there's no point spending an API call (and quota) on a result we'd discard anyway. Not
-  // cached: a moment later this same query might succeed once live data is available.
-  if (dataType === "none" || !realDataBlock) {
-    return unavailableResponse(`no live listing data found for "${loc}" (${propType})`);
+  // ── Step 2: Gemini fallback chain ─────────────────────────────────────────
+  // 1. GEMINI_MODEL with Google Search grounding (then the grounding backup model, if the
+  //    primary can't ground right now). Skipped for Bayut: its listing median is already
+  //    authoritative and is pinned as the answer.
+  // 2. GEMINI_MODEL WITHOUT grounding, reading the Bayut/Tavily data fetched above (then the
+  //    flash-lite fallback if that model is unavailable). Only when that live data exists --
+  //    an ungrounded call with nothing to read would just be training-data guesswork.
+  // 3. The last good cached result is served by lib/engine if every step here fails.
+  // Each step gets one retry on a parse/validation/transient failure; a model-unavailable
+  // error (429/503/404) moves straight to the next step.
+  const attempts: { model: string; grounded: boolean }[] = [];
+  if (dataType !== "bayut") {
+    attempts.push({ model: GEMINI_MODEL, grounded: true });
+    if (GEMINI_GROUNDING_BACKUP !== GEMINI_MODEL) attempts.push({ model: GEMINI_GROUNDING_BACKUP, grounded: true });
+  }
+  if (dataType !== "none" && realDataBlock) {
+    attempts.push({ model: GEMINI_MODEL, grounded: false });
+    if (GEMINI_MODEL_FALLBACK !== GEMINI_MODEL) attempts.push({ model: GEMINI_MODEL_FALLBACK, grounded: false });
   }
 
-  // ── Step 2: Build Gemini prompt ──────────────────────────────────────────
-  const prompt = getPrompt(loc, propType, resolvedUnit, currency, countryCode, realDataBlock, dataType, bayutPricePsf);
-
-  // ── Step 3: Call Gemini — primary model, retry, then fallback model on quota exhaustion ──
-  // A quota error means retrying the SAME model is pointless, but the fallback model has its
-  // own separate daily quota bucket and can genuinely still succeed where the primary can't.
-  // Plan: primary attempt -> (if quota-exhausted) fallback attempt, done.
-  //       primary attempt -> (if a transient non-quota error) retry primary once -> (if that
-  //       also hits quota) fallback attempt, done.
-  async function attemptGemini(model: string): Promise<Record<string, unknown>> {
-    if (signal?.aborted) throw new Error("deadline reached");
-    return parseGemini(await callGemini(geminiKey!, prompt, model, signal));
-  }
-
-  let raw: Record<string, unknown> | undefined;
   let lastError: unknown;
-  try {
-    raw = await attemptGemini(GEMINI_MODEL_PRIMARY);
-  } catch (e1) {
-    console.error(`Gemini ${GEMINI_MODEL_PRIMARY} attempt 1 failed:`, e1);
-    lastError = e1;
-    if (!(e1 instanceof GeminiQuotaError)) {
-      // Transient (network/parse/etc.) failure — worth one same-model retry.
+  for (const { model, grounded } of attempts) {
+    const prompt = getPrompt(loc, propType, resolvedUnit, currency, countryCode, realDataBlock, dataType, bayutPricePsf, grounded);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      if (signal?.aborted) return unavailableResponse(`deadline reached for "${loc}": ${String(lastError ?? "")}`);
       try {
-        raw = await attemptGemini(GEMINI_MODEL_PRIMARY);
-        lastError = undefined;
-      } catch (e2) {
-        console.error(`Gemini ${GEMINI_MODEL_PRIMARY} attempt 2 failed:`, e2);
-        lastError = e2;
-      }
-    }
-    if (!raw && lastError instanceof GeminiQuotaError) {
-      try {
-        raw = await attemptGemini(GEMINI_MODEL_FALLBACK);
-        lastError = undefined;
-      } catch (e3) {
-        console.error(`Gemini fallback ${GEMINI_MODEL_FALLBACK} also failed:`, e3);
-        lastError = e3;
+        const reply = await callGemini(geminiKey, prompt, model, grounded, signal);
+        const raw = parseGemini(reply.text);
+        // Grounded answers come from Gemini's own live web search -- same honest label as
+        // the Tavily path; their source domains are listed ahead of any Tavily ones.
+        const result = grounded
+          ? normalise(raw, loc, propType, resolvedUnit, "real_data", "AI estimate based on live web search", currency, undefined, undefined, searchAgg, Array.from(new Set([...reply.sourceUrls, ...sourceUrls])))
+          : normalise(raw, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange, searchAgg, sourceUrls);
+        console.log(`[market-intel] RESULT: "${loc}" (${propType}) → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (model: ${model}${grounded ? " + google search" : ""}, grounded by: ${result.groundedBy})`);
+        return result;
+      } catch (e) {
+        lastError = e;
+        console.error(`[market-intel] ${model}${grounded ? " (grounded)" : ""} attempt ${attempt} failed for "${loc}": ${e instanceof Error ? e.message : String(e)}`);
+        // A timed-out step won't get faster on retry -- spend the remaining budget on the next one.
+        if (e instanceof GeminiModelUnavailableError || (e instanceof Error && e.name === "TimeoutError")) break;
       }
     }
   }
 
-  if (!raw) {
-    const reason = lastError instanceof Error ? lastError.message : String(lastError);
-    const isQuota = lastError instanceof GeminiQuotaError;
-    return unavailableResponse(
-      isQuota ? `Gemini quota exhausted on all models for "${loc}": ${reason}` : `Gemini call failed for "${loc}": ${reason}`
-    );
-  }
-
-  try {
-    const result = normalise(raw!, loc, propType, resolvedUnit, dataSource, dataSourceLabel, currency, bayutPricePsf, bayutRange, searchAgg, sourceUrls);
-    console.log(`[market-intel] RESULT: "${loc}" (${propType}) → ${currency.code} ${result.currentPricePerSqft}/${resolvedUnit} (source: ${dataSource}, grounded by: ${result.groundedBy})`);
-    return result;
-  } catch (e) {
-    const reason = e instanceof Error ? e.message : String(e);
-    return unavailableResponse(`failed to process AI response for "${loc}": ${reason}`);
-  }
+  const reason = lastError instanceof Error ? lastError.message : String(lastError ?? "no live listing data found");
+  return unavailableResponse(`all Gemini steps failed for "${loc}" (${propType}): ${reason}`);
 }

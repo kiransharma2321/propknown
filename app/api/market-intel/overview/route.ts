@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGateStatus, consumeSearch } from "@/lib/aiIntelGate";
 import { getClientIp } from "@/lib/clientIp";
-import { getMarketPrice, type EngineResult } from "@/lib/engine";
+import { getMarketPrice, INTERACTIVE_TIMEOUT_MS, type EngineResult } from "@/lib/engine";
 import { PROPERTY_TYPES } from "@/lib/hotMarkets";
+
+// A Google-Search-grounded Gemini call takes ~20-30s; Vercel's default would cut it off.
+export const maxDuration = 60;
 
 // Multi-type "location overview": one user action returns every PROPERTY_TYPES entry for a
 // single location, all through the shared engine (lib/engine) so each figure matches what
@@ -39,9 +42,9 @@ export async function POST(req: NextRequest) {
 
   let anyLive = false;
   await Promise.all(missing.map(async (pt) => {
-    const r = await getMarketPrice({ location: loc, propertyType: pt.value, tool: "ai_intel_overview" });
+    const r = await getMarketPrice({ location: loc, propertyType: pt.value, tool: "ai_intel_overview", timeoutMs: INTERACTIVE_TIMEOUT_MS });
     results[pt.value] = r;
-    if (r.available) anyLive = true;
+    if (r.available && !r.stale) anyLive = true;
   }));
 
   const finalUsage = anyLive ? await consumeSearch(clientIp) : usage;

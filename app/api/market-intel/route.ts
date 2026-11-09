@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGateStatus, consumeSearch } from "@/lib/aiIntelGate";
 import { getClientIp } from "@/lib/clientIp";
-import { getMarketPrice } from "@/lib/engine";
+import { getMarketPrice, INTERACTIVE_TIMEOUT_MS } from "@/lib/engine";
+
+// A Google-Search-grounded Gemini call takes ~20-30s; Vercel's default would cut it off.
+export const maxDuration = 60;
 
 // ─── POST handler ──────────────────────────────────────────────────────────────
 // Thin wrapper around the shared engine (lib/engine): gate check -> getMarketPrice() (cache
@@ -38,10 +41,12 @@ export async function POST(req: NextRequest) {
     propertyType: propertyType ?? "apartment",
     unit: unit ?? undefined,
     tool: countUsage ? "ai_intel" : "property_insight",
+    timeoutMs: INTERACTIVE_TIMEOUT_MS,
   });
 
   if (!result.available) return respond(result);
 
-  if (countUsage) usage = await consumeSearch(clientIp);
+  // A stale "last updated" fallback isn't a fresh answer -- don't charge a free check for it.
+  if (countUsage && !result.stale) usage = await consumeSearch(clientIp);
   return respond(result);
 }

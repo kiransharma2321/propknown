@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import HeroExampleCarousel from "@/components/sections/HeroExampleCarousel";
+import type { HeroExample } from "@/lib/heroExamples";
 
 const HERO_POSTER = "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1920&q=80";
 
-export default function HeroSection() {
+export default function HeroSection({ examples }: { examples: HeroExample[] }) {
   const router = useRouter();
 
   const [area, setArea] = useState("");
@@ -108,25 +110,8 @@ export default function HeroSection() {
               </button>
             </div>
 
-            {/* Static example result -- hardcoded, zero API cost, proves the tool works */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col">
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--gold-text)" }}>
-                Example Result
-              </p>
-              <p className="text-gray-900 font-bold text-sm">Kokapet, Hyderabad · Apartment</p>
-              <p className="font-playfair text-2xl font-bold mt-1" style={{ color: "var(--gold-text)" }}>
-                ₹11,250<span className="text-sm font-normal text-gray-400">/sqft</span>
-              </p>
-              <p className="text-gray-500 text-xs mt-1">Realistic range: ₹10,340 – ₹17,000/sqft</p>
-              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-2">
-                <CheckCircle2 size={12} className="text-green-600 shrink-0" />
-                Sources: 99acres, MagicBricks, Housing.com
-              </div>
-              <p className="text-gray-400 text-[11px] leading-relaxed mt-2 italic">
-                &quot;AI estimate based on live web search — verify the specific property before deciding.&quot;
-              </p>
-              <p className="text-gray-300 text-[10px] mt-auto pt-2">Example only · not live data · captured July 2026</p>
-            </div>
+            {/* Rotating real examples from the location cache -- read server-side, zero API cost */}
+            <HeroExampleCarousel examples={examples} />
           </div>
         </div>
 

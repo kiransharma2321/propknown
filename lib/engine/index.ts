@@ -10,8 +10,10 @@
 // Guarantees:
 // - Same place + type => same cached number everywhere (one canonical key per locality, one
 //   canonical unit per property type, converted on the way out).
-// - Hard deadline (default 10s). On timeout or any failure the caller gets
-//   { available: false, message: UNAVAILABLE_MESSAGE } -- never a fallback or invented number.
+// - Hard deadline (default 10s; the interactive price tools pass INTERACTIVE_TIMEOUT_MS because a
+//   Google-Search-grounded Gemini call takes ~20-30s). On timeout or failure the caller gets the
+//   last good cached result for that place (stale: true, with its real fetchedAt date), or
+//   { available: false, message: UNAVAILABLE_MESSAGE } if there is none -- never an invented number.
 // - Every call is logged to ai_queries (tool, location, type, result, timestamp).
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -22,11 +24,15 @@ import { matchLocality, type Locality } from "@/lib/localities";
 import { PROPERTY_TYPES } from "@/lib/hotMarkets";
 
 export const ENGINE_TIMEOUT_MS = 10_000;
+// AI Intelligence + Price Reality Check: grounded search needs more than 10s, and those routes
+// run with maxDuration = 60, so this leaves headroom for the cache write and response.
+export const INTERACTIVE_TIMEOUT_MS = 50_000;
 export const UNAVAILABLE_MESSAGE = "Live data unavailable right now — please try again in a moment.";
 
-// How long a cached price counts as current. The /prices rotation refreshes every configured
-// locality within ~8 days, so 10 days keeps those pages fresh without extra API spend.
-const CACHE_TTL_MS = 10 * 24 * 60 * 60 * 1000;
+// How long a cached price counts as current -- a result fresher than 7 days is served instead
+// of calling Gemini again. Older rows are still served as a labelled "last updated" fallback
+// when a live refresh fails, and /prices SEO pages read them cache-only.
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type AiTool =
   | "price_check" | "ai_intel" | "ai_intel_overview" | "legal_shield" | "rera" | "chat"
@@ -46,6 +52,7 @@ export type EngineResult = Record<string, unknown> & {
   cached?: boolean;
   fetchedAt?: string;
   reason?: string;
+  stale?: boolean;     // live refresh failed; this is the last good cached result
 };
 
 // ─── Location resolution ─────────────────────────────────────────────────────
@@ -199,13 +206,19 @@ export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> 
       deadline,
     ]);
   } catch (e) {
-    clearTimeout(timer);
-    return finish(unavailable(`engine error: ${e instanceof Error ? e.message : String(e)}`, resolved), false);
+    live = { available: false, message: `engine error: ${e instanceof Error ? e.message : String(e)}` };
   }
   clearTimeout(timer);
 
-  if (live === "timeout") return finish(unavailable("timeout", resolved), false);
-  if (live.available === false) return finish(unavailable(String(live.message ?? "no live data"), resolved), false);
+  // Live failed -> last good cached result, labelled with its real capture date.
+  const staleOr = (reason: string): Promise<EngineResult> => {
+    console.error(`[market-intel] live refresh failed for "${resolved.display}" (${propertyType}): ${reason}${row ? ` -- serving cached result from ${row.fetchedAt.toISOString()}` : ""}`);
+    return row
+      ? finish({ ...fromRow(row, true), stale: true }, true)
+      : finish(unavailable(reason, resolved), false);
+  };
+  if (live === "timeout") return staleOr("timeout");
+  if (live.available === false) return staleOr(String(live.message ?? "no live data"));
 
   const price = Number(live.currentPricePerSqft);
   const now = new Date();

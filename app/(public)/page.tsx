@@ -12,6 +12,7 @@ import PriceCheckTeaser from "@/components/sections/PriceCheckTeaser";
 import GlobalPresence from "@/components/sections/GlobalPresence";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import CTASection from "@/components/sections/CTASection";
+import { getHeroExamples } from "@/lib/heroExamples";
 
 // Only alternates.canonical is set here -- title/description/OG/Twitter all correctly inherit
 // the root layout's defaults, which already describe the homepage accurately.
@@ -19,10 +20,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.propknown.com" },
 };
 
-export default function HomePage() {
+// The hero's example carousel reads the location cache at most once every 6 hours (ISR).
+export const revalidate = 21600;
+
+export default async function HomePage() {
+  const examples = await getHeroExamples();
   return (
     <>
-      <HeroSection />
+      <HeroSection examples={examples} />
       <StatsSection />
       <ProtectionSection />
       <NRITeaser />

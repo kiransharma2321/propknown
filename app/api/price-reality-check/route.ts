@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUsageStatus, checkAndConsume } from "@/lib/usageLimit";
-import { getMarketPrice, UNAVAILABLE_MESSAGE } from "@/lib/engine";
+import { getMarketPrice, INTERACTIVE_TIMEOUT_MS, UNAVAILABLE_MESSAGE } from "@/lib/engine";
 import { priceVerdict } from "@/lib/engine/verdict";
+
+// A Google-Search-grounded Gemini call takes ~20-30s; Vercel's default would cut it off.
+export const maxDuration = 60;
 
 // Same shared engine as every other AI feature -- this route only adds the verdict on top.
 // If the engine can't produce a live-grounded price within its 10s deadline, the answer is an
@@ -33,7 +36,7 @@ export async function POST(req: NextRequest) {
   const resolvedType = propertyType ?? "apartment";
   const pricePerUnit = price / areaSize;
 
-  const market = await getMarketPrice({ location: location.trim(), propertyType: resolvedType, unit: resolvedUnit, tool: "price_check" });
+  const market = await getMarketPrice({ location: location.trim(), propertyType: resolvedType, unit: resolvedUnit, tool: "price_check", timeoutMs: INTERACTIVE_TIMEOUT_MS });
 
   if (!market.available) {
     return respond({

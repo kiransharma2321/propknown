@@ -114,6 +114,9 @@ interface MarketIntelResult {
   dataSourceLabel?:   string;
   groundedBy?:        "bayut" | "search_data" | "gemini";
   sourceUrls?:        string[];
+  cached?:            boolean;
+  stale?:             boolean;
+  fetchedAt?:         string;
   growthRate:         number | null;
   trend:              "Bullish" | "Stable" | "Cautious";
   rentalYield:        number | null;
@@ -830,6 +833,12 @@ function AIIntelligenceInner() {
                             </span>
                           );
                         })}
+                      </p>
+                    )}
+                    {r.cached && r.fetchedAt && (
+                      <p className={`text-[11px] mt-2 ${r.stale ? "text-amber-700" : "text-gray-400"}`}>
+                        Last updated {new Date(r.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {r.stale && " · live refresh unavailable right now, showing the last good result"}
                       </p>
                     )}
                   </div>
