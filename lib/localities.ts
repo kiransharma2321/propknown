@@ -213,3 +213,22 @@ export function matchLocality(text: string): Locality | null {
   }
   return best?.loc ?? null;
 }
+
+// Every configured locality named in the text, in the order they appear ("Kokapet vs Tellapur"
+// -> [Kokapet, Tellapur]). Longer names win over names they contain.
+export function findLocalities(text: string, max = 3): Locality[] {
+  const t = ` ${norm(text)} `;
+  const cityHint = Object.entries(CITY_ALIASES).find(([alias]) => t.includes(` ${alias} `))?.[1];
+  const hits: { loc: Locality; at: number; len: number }[] = [];
+  for (const loc of ALL_LOCALITIES) {
+    if (cityHint && loc.citySlug !== cityHint) continue;
+    for (const candidate of [loc.name, ...loc.aliases]) {
+      const c = norm(candidate);
+      const at = c ? t.indexOf(` ${c} `) : -1;
+      if (at >= 0) { hits.push({ loc, at, len: c.length }); break; }
+    }
+  }
+  const kept = hits.filter((h) => !hits.some((o) => o !== h && o.len > h.len && o.at <= h.at && o.at + o.len >= h.at + h.len));
+  const seen = new Set<string>();
+  return kept.sort((a, b) => a.at - b.at).filter((h) => !seen.has(h.loc.slug + h.loc.citySlug) && seen.add(h.loc.slug + h.loc.citySlug)).slice(0, max).map((h) => h.loc);
+}

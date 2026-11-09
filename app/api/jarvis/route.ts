@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMarketPrice, logAiQuery, remaining, unitLabel, ENGINE_TIMEOUT_MS, UNAVAILABLE_MESSAGE, type EngineResult } from "@/lib/engine";
 import { matchLocality } from "@/lib/localities";
+import { wantsAnalysis, analyseQuestion, analysisFacts, type KnownAIAnalysis } from "@/lib/knownai/analysis";
 import { recordApiCall } from "@/lib/engine/usage";
 
 // flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies.
@@ -249,6 +250,24 @@ function plainPriceReply(d: EngineResult): string {
   return `PropKnown's live engine puts ${d.locationName} at about **${n(d.currentPricePerSqft)}/${u}** (typical range ${n(d.priceRangeMin)}–${n(d.priceRangeMax)}/${u}). This is an AI estimate from live web data, not a valuation — for a specific property, run a free Price Check on propknown.com/price-check or WhatsApp us on 70130 16003.`;
 }
 
+// Deterministic answer from the analysis alone (used when the model can't answer in time).
+function plainAnalysisReply(a: KnownAIAnalysis): string {
+  const parts = a.areas.map((x) => x.available
+    ? `**${x.name}**: about ${x.symbol}${x.price!.toLocaleString("en-IN")}/${x.unit} (${x.confidence?.level ?? "unknown"} confidence)${x.buyableSqft ? `, so your budget buys roughly ${x.buyableSqft.toLocaleString("en-IN")} sq.ft` : ""}`
+    : `**${x.name}**: not enough data yet, so I won't guess a price`);
+  return [
+    "Here's what PropKnown's engine shows:", "", ...parts, "",
+    "AI estimate — indicative only, verify with RERA/a lawyer before deciding.",
+  ].join("\n");
+}
+
+const ANALYSIS_INSTRUCTIONS = `Answer the user's comparison/affordability question in under 140 words, using ONLY the PROPKNOWN ENGINE FACTS above.
+- Quote figures exactly as given; never add a price, size, rate or growth figure that is not in the facts.
+- For any area marked NOT ENOUGH DATA, say there isn't enough data yet; do not estimate it.
+- If EMI rows are "example rate", say they are examples and the user should use their bank's actual rate.
+- Mention each area's confidence level. Don't tell the user which to buy; explain the trade-off the numbers show.
+- End by offering a free call with a PropKnown expert. The comparison table and sources are shown below your text, so don't list sources.`;
+
 const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp our team on 70130 16003 — we respond within minutes!";
 
 export async function POST(req: NextRequest) {
@@ -278,7 +297,18 @@ export async function POST(req: NextRequest) {
   let extraSystem = "";
   let grounded: boolean | undefined;
   let priceData: EngineResult | null = null;
-  if (PRICE_INTENT.test(text)) {
+  let analysis: KnownAIAnalysis | null = null;
+  if (wantsAnalysis(text)) {
+    // KnownAI 2.0: comparison / affordability from engine data only.
+    analysis = await analyseQuestion(text, 5500);
+    if (!analysis.areas.some((x) => x.available)) {
+      return NextResponse.json({ grounded: false, analysis, reply: `${UNAVAILABLE_MESSAGE} I don't have enough data for ${analysis.areas.map((x) => x.name).join(" or ")} yet, and PropKnown never guesses a price. A PropKnown expert can help directly — tap "Talk to an expert" below or WhatsApp **70130 16003**.` });
+    }
+    grounded = true;
+    extraSystem = `${analysisFacts(analysis)}
+
+${ANALYSIS_INSTRUCTIONS}`;
+  } else if (PRICE_INTENT.test(text)) {
     const location = extractLocation(text);
     if (location) {
       const d = await getMarketPrice({ location, propertyType: detectPropertyType(text), tool: "chat", timeoutMs: 5500 });
@@ -317,7 +347,9 @@ export async function POST(req: NextRequest) {
   ];
 
   // Engine-backed reply without Gemini, used if Gemini can't answer in time -- real numbers only.
-  const groundedFallback = () => NextResponse.json({ grounded: true, reply: plainPriceReply(priceData!) });
+  const groundedFallback = () => analysis
+    ? NextResponse.json({ grounded: true, analysis, reply: plainAnalysisReply(analysis) })
+    : NextResponse.json({ grounded: true, reply: plainPriceReply(priceData!) });
 
   for (let i = 0; i < attempts.length; i++) {
     const attempt = attempts[i];
@@ -327,7 +359,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const r = await callGemini(attempt.endpoint, attempt.contents, attempt.temperature, remaining(deadlineAt), extraSystem);
-      if (r.reply) return NextResponse.json({ reply: r.reply, grounded });
+      if (r.reply) return NextResponse.json({ reply: r.reply, grounded, ...(analysis ? { analysis } : {}) });
 
       if (r.blocked) {
         // Safety block: return a curated helpful answer instead of a generic error
@@ -335,7 +367,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (r.quotaExceeded) {
-        if (priceData) return groundedFallback();
+        if (priceData || analysis) return groundedFallback();
         // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
         console.warn(`[KnownAI] Attempt ${i + 1}: quota exceeded — skipping remaining retries:`, r.reason);
         return NextResponse.json({ reply: QUOTA_FALLBACK });
@@ -347,7 +379,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (priceData) return groundedFallback();
+  if (priceData || analysis) return groundedFallback();
 
   // Final fallback — only reached after every attempt that fit in the time budget failed
   return NextResponse.json({

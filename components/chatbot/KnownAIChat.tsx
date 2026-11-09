@@ -4,10 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import { X, Send, ExternalLink } from "lucide-react";
 import AIOrb from "./AIOrb";
 import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
+import AnalysisCard from "./AnalysisCard";
+import type { KnownAIAnalysis } from "@/lib/knownai/analysis";
 
-type Message = { role: "bot" | "user"; text: string };
+type Message = { role: "bot" | "user"; text: string; analysis?: KnownAIAnalysis; question?: string };
 
 const QUICK_REPLIES = [
+  "Kokapet vs Tellapur for ₹1 Cr 3BHK?",
   "Good areas to invest in Hyderabad?",
   "HMDA vs DTCP plots",
   "EMI for ₹50L loan at 9% for 20 years",
@@ -55,12 +58,12 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text.trim(),
-          history: messages, // full conversation history for context
+          history: messages.map(({ role, text }) => ({ role, text })), // conversation so far, text only
         }),
       });
       const data = await res.json();
       const reply = data.reply || "Sorry, I had trouble there. Please try again, or WhatsApp us on 70130 16003!";
-      setMessages(prev => [...prev, { role: "bot", text: reply }]);
+      setMessages(prev => [...prev, { role: "bot", text: reply, analysis: data.analysis, question: text.trim() }]);
     } catch {
       setMessages(prev => [...prev, {
         role: "bot",
@@ -130,13 +133,16 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "bot" && <AIOrb size={24} className="mr-2 mt-1" />}
-                <div
-                  className={`max-w-[82%] px-3 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-line break-words ${
-                    msg.role === "user" ? "rounded-br-none text-black" : "text-gray-200 rounded-bl-none"
-                  }`}
-                  style={msg.role === "user" ? { background: goldBg } : { background: "#2a2a2a" }}
-                >
-                  {msg.text}
+                <div className="max-w-[82%] min-w-0">
+                  <div
+                    className={`px-3 py-2.5 rounded-xl text-sm leading-relaxed whitespace-pre-line break-words ${
+                      msg.role === "user" ? "rounded-br-none text-black" : "text-gray-200 rounded-bl-none"
+                    }`}
+                    style={msg.role === "user" ? { background: goldBg } : { background: "#2a2a2a" }}
+                  >
+                    {msg.text}
+                  </div>
+                  {msg.analysis && <AnalysisCard a={msg.analysis} question={msg.question ?? ""} />}
                 </div>
               </div>
             ))}
