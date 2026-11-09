@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ALL_LISTINGS } from "@/lib/listings";
+import { PUBLIC_LISTINGS } from "@/lib/listings";
 import type { PropertyCardProps } from "@/components/ui/PropertyCard";
 
 // Same 6 IDs / same mapping FeaturedProperties.tsx used to do inline -- moved here so the full
@@ -14,7 +14,7 @@ export const dynamic = "force-static";
 export const revalidate = false;
 
 export async function GET() {
-  const properties: PropertyCardProps[] = ALL_LISTINGS
+  const properties: PropertyCardProps[] = PUBLIC_LISTINGS
     .filter(l => FEATURED_IDS.includes(l.id))
     .map(l => ({
       id: l.id,

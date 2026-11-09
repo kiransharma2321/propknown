@@ -114,6 +114,11 @@ function withCoords(l: Omit<Listing, "lat" | "lng">): Listing {
   return { ...l, lat: c?.[0], lng: c?.[1] };
 }
 
+// Sample listings: hand-written demo data with illustrative RERA numbers and AI scores. They are
+// NOT real verified properties, so they stay hidden from every public surface (/buy, homepage,
+// detail pages, sitemap) unless NEXT_PUBLIC_SHOW_SAMPLE_LISTINGS=true. Off by default.
+export const SHOW_SAMPLE_LISTINGS = process.env.NEXT_PUBLIC_SHOW_SAMPLE_LISTINGS === "true";
+
 export const ALL_LISTINGS: Listing[] = [
   // ──── Featured Properties (prop-1 … prop-6) ────────────────────────────────
   withCoords({
@@ -373,8 +378,11 @@ export const ALL_LISTINGS: Listing[] = [
   }),
 ];
 
+/** What public pages may show: the sample listings only when the flag is on. */
+export const PUBLIC_LISTINGS: Listing[] = SHOW_SAMPLE_LISTINGS ? ALL_LISTINGS : [];
+
 export function findListingById(id: string): Listing | null {
-  return ALL_LISTINGS.find(l => l.id === id) ?? null;
+  return PUBLIC_LISTINGS.find(l => l.id === id) ?? null;
 }
 
 const NEARBY_RADIUS_KM = 5; // "nearby" means genuinely nearby — 1-5km, not just same city
@@ -392,9 +400,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 // (previous behaviour) only when the listing has no coordinates to measure distance from.
 export function findNearbyListings(listing: Listing, max = 4): Listing[] {
   if (listing.lat == null || listing.lng == null) {
-    return ALL_LISTINGS.filter(l => l.id !== listing.id && l.city === listing.city).slice(0, max);
+    return PUBLIC_LISTINGS.filter(l => l.id !== listing.id && l.city === listing.city).slice(0, max);
   }
-  return ALL_LISTINGS
+  return PUBLIC_LISTINGS
     .filter(l => l.id !== listing.id && l.lat != null && l.lng != null)
     .map(l => ({ listing: l, dist: haversineKm(listing.lat!, listing.lng!, l.lat!, l.lng!) }))
     .filter(({ dist }) => dist <= NEARBY_RADIUS_KM)

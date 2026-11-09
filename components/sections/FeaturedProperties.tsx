@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import FeaturedPropertiesGrid from "./FeaturedPropertiesGrid";
+import { PUBLIC_LISTINGS } from "@/lib/listings";
 
 // No "use client" here -- the header/CTA are static and render on the server as before. The
 // actual 6 property cards moved to FeaturedPropertiesGrid, a client component that fetches them
@@ -9,6 +10,8 @@ import FeaturedPropertiesGrid from "./FeaturedPropertiesGrid";
 // full markup into the static homepage HTML (the server-component version that replaced it --
 // that added ~30KB to the initial document and measurably hurt FCP/LCP). This keeps both wins.
 export default function FeaturedProperties() {
+  // The cards are the sample listings; with them hidden there is nothing honest to feature.
+  if (PUBLIC_LISTINGS.length === 0) return null;
   return (
     <section className="py-20 bg-brand-black">
       <div className="max-w-7xl mx-auto px-6">

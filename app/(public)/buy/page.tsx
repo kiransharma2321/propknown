@@ -6,20 +6,21 @@ import BuyPageClient, { type Submission } from "@/components/property/BuyPageCli
 // stale snapshot to everyone until the next deploy, rather than freshly-approved listings.
 export const dynamic = "force-dynamic";
 
-// Server Component -- fetches approved submissions at request time so they're present in the
-// initial HTML (previously fetched client-side via useEffect in what's now BuyPageClient.tsx,
-// meaning owner-submitted listings were invisible in the server-rendered page and only
-// appeared after hydration). The static curated LISTINGS array inside BuyPageClient.tsx was
-// already fully server-rendered despite that file being "use client" -- Next.js SSRs client
-// components' initial output by default; "use client" only opts into hydration/interactivity,
-// it doesn't skip SSR -- confirmed directly against the built HTML before touching any of this,
-// so submissions were the one genuine gap, not the whole page.
+function inrDisplay(n: number): string {
+  if (n >= 10_000_000) return `₹${+(n / 10_000_000).toFixed(2)} Cr`;
+  if (n >= 100_000) return `₹${+(n / 100_000).toFixed(2)} L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
+// Server Component -- fetches approved listings at request time so they're present in the
+// initial HTML. Two real sources: owner submissions (/sell) and listings the team adds in
+// admin (Quick Add / Properties tab). The hardcoded sample listings are off by default
+// (see SHOW_SAMPLE_LISTINGS in lib/listings.ts).
 export default async function BuyPage() {
-  const subs = await prisma.propertySubmission.findMany({
-    where:   { status: "approved" },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  const [subs, props] = await Promise.all([
+    prisma.propertySubmission.findMany({ where: { status: "approved" }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.property.findMany({ where: { status: "approved" }, orderBy: { createdAt: "desc" }, take: 50 }),
+  ]);
 
   const initialSubmissions: Submission[] = subs.map(s => ({
     id:          s.id,
@@ -40,5 +41,24 @@ export default async function BuyPage() {
     createdAt:   s.createdAt.toISOString(),
   }));
 
-  return <BuyPageClient initialSubmissions={initialSubmissions} />;
+  // Admin-added listings use the same card. Only fields we actually hold are shown -- no AI
+  // score or verification badges, since none of these rows has been marked verified.
+  const adminListings: Submission[] = props.map(p => ({
+    id:          p.id,
+    title:       p.title.trim(),
+    propType:    p.propertyType.charAt(0).toUpperCase() + p.propertyType.slice(1),
+    bhk:         p.beds ? `${p.beds} BHK` : undefined,
+    size:        p.sqft ? String(p.sqft) : undefined,
+    sizeUnit:    p.sqft ? "sqft" : undefined,
+    priceDisplay: p.currency === "INR" ? inrDisplay(p.price) : `${p.currency} ${p.price.toLocaleString()}`,
+    city:        p.city,
+    area:        p.location.trim().replace(/^\w/, c => c.toUpperCase()),
+    reraNumber:  p.reraNumber?.trim() || undefined,
+    photoIds:    [], videoIds: [], videoUrls: [],
+    verificationFlags: p.verified ? (p.verificationFlags as Submission["verificationFlags"]) : {},
+    createdAt:   p.createdAt.toISOString(),
+    detailHref:  null,
+  }));
+
+  return <BuyPageClient initialSubmissions={[...initialSubmissions, ...adminListings]} />;
 }

@@ -4,19 +4,19 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, MapPin, ChevronDown, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare } from "lucide-react";
+import { Search, MapPin, ChevronDown, MessageCircle, Star, CheckCircle, Building2, X, Clock, GitCompare, Home } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import { useComparison, type CompareItem } from "@/components/comparison/ComparisonContext";
 import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import VerificationBadge from "@/components/ui/VerificationBadge";
-import { ALL_LISTINGS } from "@/lib/listings";
+import { PUBLIC_LISTINGS } from "@/lib/listings";
 
 // Was previously its own hardcoded copy of these 8 listings (with its own drifted image URLs
 // and, at one point, a RERA number silently duplicated from prop-2) -- consolidated to read
 // from the single ALL_LISTINGS source so a fix made there doesn't also have to be made here.
 const BUY_PAGE_IDS = ["aparna", "bhooja", "prestige", "hmda-plot", "vasavi", "farmland", "kompally", "rajapushpa"];
-const LISTINGS = ALL_LISTINGS.filter(l => BUY_PAGE_IDS.includes(l.id));
+const LISTINGS = PUBLIC_LISTINGS.filter(l => BUY_PAGE_IDS.includes(l.id));
 
 const CITIES  = ["All Cities","Hyderabad","Bangalore","Mumbai","Pune","Chennai","Delhi NCR","Dubai","Singapore","London","Toronto"];
 const TYPES   = ["All Types","Apartment","Villa","House","Commercial","Plot","Agriculture Land","Farm Land"];
@@ -32,7 +32,12 @@ export interface Submission {
   verificationFlags?: import("@/components/ui/VerificationBadge").VerificationFlags;
   constructionPct?: number;
   createdAt: string;
+  /** Details page; defaults to /buy/submission/[id]. null = no details page (admin-added listing). */
+  detailHref?: string | null;
 }
+
+// Below this many listings the page looks empty, so we show the "coming soon" block instead.
+const SPARSE_LISTINGS = 6;
 
 function SubmissionCard({ s }: { s: Submission }) {
   const firstPhoto = s.photoIds[0] ? `/api/files/${s.photoIds[0]}` : null;
@@ -115,10 +120,12 @@ function SubmissionCard({ s }: { s: Submission }) {
             className="btn-primary flex-1 justify-center text-xs py-2">
             <MessageCircle size={12} /> Enquire
           </a>
-          <Link href={`/buy/submission/${s.id}`}
-            className="btn-secondary flex-1 justify-center text-xs py-2">
-            <Building2 size={12} /> Details
-          </Link>
+          {s.detailHref !== null && (
+            <Link href={s.detailHref ?? `/buy/submission/${s.id}`}
+              className="btn-secondary flex-1 justify-center text-xs py-2">
+              <Building2 size={12} /> Details
+            </Link>
+          )}
         </div>
       </div>
     </div>
@@ -179,6 +186,7 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
   const clearAll = () => { setCity("All Cities"); setArea(""); setType("All Types"); setBudget("Any Budget"); };
 
   const totalCount = filtered.length + filteredSubs.length;
+  const sparse = !isSearchActive && LISTINGS.length + submissions.length < SPARSE_LISTINGS;
 
   const sel = "input-dark text-sm py-2.5 px-3 pr-8 appearance-none";
   const inp = "input-dark text-sm py-2.5 px-3";
@@ -192,8 +200,8 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
             Verified Properties, <span className="gold-text">Zero Guesswork</span>
           </h1>
           <p className="text-gray-500 mt-3">
-            {isSearchActive ? `${totalCount} matching properties` : `${LISTINGS.length + submissions.length} verified properties`}
-            {" "}· RERA / HMDA registered · AI-scored
+            {isSearchActive ? `${totalCount} matching properties` : `${LISTINGS.length + submissions.length} properties listed`}
+            {" "}· every listing reviewed by the PropKnown team before it goes live
           </p>
         </div>
 
@@ -242,13 +250,13 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
           </div>
         </div>
 
-        {/* Smart Buyer Form */}
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 mb-10 shadow-sm">
+        {/* Smart Buyer Form (the "coming soon" block below carries its own form when the page is sparse) */}
+        {!sparse && <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 mb-10 shadow-sm">
           <div className="max-w-3xl">
             <SmartLeadForm formType="buy" source="buy-page" title="Find Your Perfect Property"
               subtitle="Tell us what you're looking for — we'll match you with verified listings and call back within 2 hours." />
           </div>
-        </div>
+        </div>}
 
         {/* Approved Submissions (owner-listed) */}
         {filteredSubs.length > 0 && (
@@ -356,6 +364,27 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Few listings yet: honest "coming soon" block instead of padding the page with samples */}
+        {sparse && (
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 mt-4 shadow-sm">
+            <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+              <div>
+                <p className="text-sm tracking-widest uppercase mb-2 font-semibold" style={{ color:"var(--gold-text)" }}>Coming soon</p>
+                <h2 className="heading-h3 mb-3">New verified listings coming soon</h2>
+                <p className="text-gray-500 text-sm mb-6 max-w-md">
+                  We only list properties our team has reviewed, so this page is growing slowly on purpose.
+                  Own a property? List it free. Looking to buy? Tell us what you need and we will match you as listings go live.
+                </p>
+                <Link href="/sell" className="btn-primary inline-flex text-sm">
+                  <Home size={14} /> List your property free
+                </Link>
+              </div>
+              <SmartLeadForm formType="buy" source="buy-page-coming-soon" title="Get matched when listings go live"
+                subtitle="Share your budget and preferred area. We will call back within 2 hours." />
             </div>
           </div>
         )}
