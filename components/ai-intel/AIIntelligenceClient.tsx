@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 import ReportLeadForm from "@/components/leads/ReportLeadForm";
+import FairPriceReportButton from "@/components/leads/FairPriceReportButton";
 import { waLink, searchContextText } from "@/lib/whatsapp";
 import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
@@ -951,6 +952,8 @@ function AIIntelligenceInner() {
                     ))}
                   </div>
                 </div>
+
+                {searched && <FairPriceReportButton location={searched.loc} propertyType={searched.propType} unit={searched.unit} />}
 
                 {searched && <ReportLeadForm tool="ai_intel" location={searched.loc} propertyType={searched.propType} unit={searched.unit} />}
 

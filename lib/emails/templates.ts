@@ -82,6 +82,21 @@ export function reportEmail(opts: {
   };
 }
 
+export function fairPriceEmail(opts: {
+  name: string; location: string; propertyLabel: string; downloadUrl: string; link: string; whatsappLink: string; unsubscribeUrl: string;
+}): { subject: string; html: string } {
+  const body = `
+    <p>Hi ${esc(opts.name)},</p>
+    <p>Your free <strong>Fair-Price Report</strong> for <strong>${esc(opts.propertyLabel)} in ${esc(opts.location)}</strong> is attached as a PDF: today's AI price estimate with its range, confidence level and sources, the government guidance value where we have it, a 5-year trend and a true-cost estimate.</p>
+    <p style="color:#888;font-size:12px">AI estimate — indicative only, verify with RERA/a lawyer before deciding.</p>
+    <p style="margin-top:20px">${button(opts.downloadUrl, "Download the PDF")}${button(opts.link, "See live prices")}${button(opts.whatsappLink, "WhatsApp an advisor", "#25D366", "#fff")}</p>`;
+  return {
+    subject: `Your Fair-Price Report: ${opts.location} ${opts.propertyLabel}`.slice(0, 120),
+    html: layout({ preheader: `Fair price, range and sources for ${opts.location}`, body, unsubscribeUrl: opts.unsubscribeUrl,
+      footerNote: "You're receiving this because you requested a Fair-Price Report on propknown.com." }),
+  };
+}
+
 export function day2Email(opts: {
   name: string; location: string; propertyLabel: string;
   nearby: { name: string; snapshot: MarketSnapshot | null; link: string }[];

@@ -36,6 +36,16 @@ export function verifyUnsubscribe(email: string, token: string): boolean {
   return token.length === expected.length && crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
 }
 
+// Signs an arbitrary value (e.g. a lead id in a report download link) with the same secret.
+export function signValue(value: string): string {
+  return crypto.createHmac("sha256", secret()).update(`v1:${value}`).digest("base64url").slice(0, 32);
+}
+
+export function verifySigned(value: string, token: string): boolean {
+  const expected = signValue(value);
+  return token.length === expected.length && crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+}
+
 export function unsubscribeUrl(email: string): string {
   const e = Buffer.from(normaliseEmail(email)).toString("base64url");
   return `${SITE_URL}/api/unsubscribe?e=${e}&t=${unsubscribeToken(email)}`;
@@ -56,6 +66,7 @@ export interface TrackedSend {
   html: string;
   kind: EmailKind;
   leadId?: string | null;
+  attachments?: { filename: string; content: Buffer }[];
 }
 
 export async function sendTracked(opts: TrackedSend): Promise<{ ok: boolean; status: "sent" | "failed" | "skipped"; id?: string; error?: string }> {
@@ -82,6 +93,7 @@ export async function sendTracked(opts: TrackedSend): Promise<{ ok: boolean; sta
       to,
       subject: opts.subject,
       html: opts.html,
+      ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
       headers: {
         "List-Unsubscribe": `<${unsub}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
