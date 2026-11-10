@@ -71,7 +71,7 @@ function toTypePrice(type: string, d: Record<string, unknown> | null, capturedAt
 // homepage, AI Intel, reports, PDF and KnownAI use. Each price carries its own captured date.
 // React cache() exists only inside Next.js server rendering; outside it (scripts, tests) a
 // plain call is used instead.
-const cache: typeof reactCache = typeof reactCache === "function" ? reactCache : ((fn) => fn) as typeof reactCache;
+const cache: typeof reactCache = typeof reactCache === "function" ? reactCache : ((fn: unknown) => fn) as typeof reactCache;
 
 export const getAreaPrices = cache(async (page: AreaPage): Promise<TypePrice[]> => {
   const location = `${page.area}, ${page.city}`;
