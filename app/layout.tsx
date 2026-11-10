@@ -209,13 +209,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
-            {/* next/script with afterInteractive -- was a plain <script> tag, which Next.js
-                doesn't apply any loading strategy to, so it competed with the initial render
-                instead of loading after the page became interactive. */}
-            <Script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} strategy="afterInteractive" />
+            {/* next/script with lazyOnload: GA loads once the page is idle after load, so its
+                script (the biggest blocking task on phones in PageSpeed) never competes with the
+                first render or hydration. Trade-off: a visit that ends within ~1-2 s may not be
+                counted. (Was afterInteractive; before that a plain <script> tag.) */}
+            <Script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} strategy="lazyOnload" />
             <Script
               id="ga-init"
-              strategy="afterInteractive"
+              strategy="lazyOnload"
               dangerouslySetInnerHTML={{
                 __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
               }}

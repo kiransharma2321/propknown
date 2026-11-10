@@ -9,7 +9,7 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
   // ── FOOTER (dark background) ────────────────────────────────────────────────
   if (dark) {
     return (
-      <Link href="/" aria-label="PropKnown Home" className="shrink-0 inline-flex items-center gap-3">
+      <Link href="/" className="shrink-0 inline-flex items-center gap-3">
         <span style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           width: "44px", height: "44px", borderRadius: "10px",
@@ -38,7 +38,7 @@ export default function PKLogo({ dark = false }: PKLogoProps) {
 
   // ── NAVBAR (white background) ───────────────────────────────────────────────
   return (
-    <Link href="/" aria-label="PropKnown Home" className="shrink-0 inline-flex items-center gap-3">
+    <Link href="/" className="shrink-0 inline-flex items-center gap-3">
       {/* mix-blend-mode:multiply dissolves any white box in the PNG against the white navbar */}
       <Image
         src="/logo.png"

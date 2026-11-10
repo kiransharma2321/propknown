@@ -62,11 +62,11 @@ export default function PropertySearchSection() {
 
             {/* Step 1 – City */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 <span className="text-[#7A5C1A]">①</span> City
               </label>
               <div className="relative">
-                <select value={city} onChange={e => setCity(e.target.value)} className={sel}>
+                <select aria-label="City" value={city} onChange={e => setCity(e.target.value)} className={sel}>
                   <option value="">Select City</option>
                   {CITIES.map(c => <option key={c}>{c}</option>)}
                 </select>
@@ -76,7 +76,7 @@ export default function PropertySearchSection() {
 
             {/* Step 2 – Area / Locality */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 <span className="text-[#7A5C1A]">②</span> Area / Locality
               </label>
               <input
@@ -88,7 +88,7 @@ export default function PropertySearchSection() {
 
             {/* Step 3 – Area Size */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 <span className="text-[#7A5C1A]">③</span> Area Size (sq.ft)
               </label>
               <input
@@ -104,11 +104,11 @@ export default function PropertySearchSection() {
 
             {/* Step 4 – Property Type */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 <span className="text-[#7A5C1A]">④</span> Property Type
               </label>
               <div className="relative">
-                <select value={propType} onChange={e => setPropType(e.target.value)} className={sel}>
+                <select aria-label="Property type" value={propType} onChange={e => setPropType(e.target.value)} className={sel}>
                   <option value="">All Types</option>
                   {PROP_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
@@ -118,11 +118,11 @@ export default function PropertySearchSection() {
 
             {/* Step 5 – Budget (optional) */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 <span className="text-[#7A5C1A]">⑤</span> Budget <span className="normal-case text-gray-300 font-normal">(optional)</span>
               </label>
               <div className="relative">
-                <select value={budget} onChange={e => setBudget(e.target.value)} className={sel}>
+                <select aria-label="Budget" value={budget} onChange={e => setBudget(e.target.value)} className={sel}>
                   <option value="">Any Budget</option>
                   {BUDGETS.map(b => <option key={b}>{b}</option>)}
                 </select>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 // Motion primitives, without an animation library (keeps homepage JavaScript small -- PageSpeed).
 // Content is never hidden from the first paint, crawlers or no-JS visitors: <RevealObserver/>
-// only "arms" elements that are below the fold when it starts (fade/slide from 0.4 opacity, see
+// only "arms" elements that are below the fold when it starts (they slide up into place, see
 // globals.css), and with prefers-reduced-motion nothing moves.
 
 // Mount once per page that uses Reveal (components/pk/Reveal.tsx) / PriceBoard.

@@ -63,7 +63,7 @@ export default async function HomePage() {
                   <div className="flex items-center justify-between"><c.icon size={20} style={{ color: PK.gold }} /><span className="text-[10px] uppercase tracking-wider rounded-full border border-white/15 px-2 py-0.5 text-white/60">{c.kind}</span></div>
                   <p className="text-sm text-white/60 mt-5">{c.label}</p>
                   <p className={`font-playfair mt-1 ${c.muted ? "text-xl text-white/50" : "text-4xl"}`}>{c.value}</p>
-                  <p className="text-xs text-white/45 mt-2">{c.note}</p>
+                  <p className="text-xs text-white/60 mt-2">{c.note}</p>
                 </div>
               </Reveal>
             ))}
@@ -143,13 +143,11 @@ export default async function HomePage() {
             ["We read the live market", "Current listing and price pages for that exact area or project — never a city-wide average."],
             ["You get the fair range, with proof", "Range, confidence level, sources and dates — plus the true cost and what to verify next."],
           ].map(([t, s], i) => (
-            <Reveal key={t} delay={i * 0.08}>
-              <li className="card-dark p-6 h-full">
+            <li key={t} data-reveal style={{ transitionDelay: `${i * 0.08}s` }} className="card-dark p-6 h-full">
                 <span className="font-playfair text-5xl" style={{ color: `${PK.gold}99` }}>0{i + 1}</span>
                 <p className="font-semibold mt-3 text-gray-900">{t}</p>
                 <p className="text-sm text-gray-500 mt-1">{s}</p>
-              </li>
-            </Reveal>
+            </li>
           ))}
         </ol>
       </section>

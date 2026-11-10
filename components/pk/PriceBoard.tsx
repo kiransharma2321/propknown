@@ -22,19 +22,19 @@ export default function PriceBoard({ rows, unit = "₹/sq.ft · apartments" }: {
         <span className="tracking-[0.3em] uppercase" style={{ color: PK.gold }}>Hyderabad price board</span>
         <span className="text-white/50">{unit}</span>
       </div>
-      <div className="flex items-end gap-2 sm:gap-4 h-56 sm:h-64" role="list">
+      <ul className="flex items-end gap-2 sm:gap-4 h-56 sm:h-64">
         {rows.map((r, i) => {
           const h = r.price ? Math.max(8, Math.round((r.price / max) * 100)) : 4;
           return (
-            <Link key={r.area} href={r.href} role="listitem" className="group flex-1 min-w-0 h-full flex flex-col justify-end items-center" aria-label={`${r.area}: ${r.price ? `₹${r.price.toLocaleString("en-IN")} per sq.ft` : "not enough data"}`}>
+            <li key={r.area} className="flex-1 min-w-0 h-full"><Link href={r.href} className="group h-full flex flex-col justify-end items-center" aria-label={`${r.area}: ${r.price ? `₹${(r.price / 1000).toFixed(1)}k (₹${r.price.toLocaleString("en-IN")} per sq.ft)` : "— not enough data"}`}>
               <span className="text-[11px] sm:text-sm font-semibold text-white mb-1.5 tabular-nums">{r.price ? `₹${(r.price / 1000).toFixed(1)}k` : "—"}</span>
               <div className="pk-bar w-full rounded-t-xl group-hover:brightness-110"
                 style={{ height: `${h}%`, transitionDelay: `${i * 70}ms`,
                   background: r.price ? `linear-gradient(180deg, ${PK.gold}, ${PK.gold}55)` : "rgba(255,255,255,0.08)" }} />
-            </Link>
+            </Link></li>
           );
         })}
-      </div>
+      </ul>
       <div className="flex gap-2 sm:gap-4 mt-3">
         {rows.map((r) => (
           <div key={r.area} className="flex-1 min-w-0 text-center">

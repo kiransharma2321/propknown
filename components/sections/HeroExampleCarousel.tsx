@@ -53,7 +53,7 @@ export default function HeroExampleCarousel({ examples }: { examples: HeroExampl
               </p>
               <p className="font-playfair text-2xl font-bold mt-1" style={{ color: "var(--gold-text)" }}>
                 {ex.currencySymbol}{fmt(ex.price, ex.currency)}
-                <span className="text-sm font-normal text-gray-400">/{ex.unit}</span>
+                <span className="text-sm font-normal text-gray-500">/{ex.unit}</span>
               </p>
               {ex.rangeMin != null && ex.rangeMax != null && (
                 <p className="text-gray-500 text-xs mt-1">
@@ -66,10 +66,10 @@ export default function HeroExampleCarousel({ examples }: { examples: HeroExampl
                   <span>Sources: {ex.sources.join(", ")}</span>
                 </div>
               )}
-              <p className="text-gray-400 text-[11px] leading-relaxed mt-2 italic">
+              <p className="text-gray-500 text-[11px] leading-relaxed mt-2 italic">
                 &quot;{ex.label} — verify the specific property before deciding.&quot;
               </p>
-              <p className="text-gray-400 text-[10px] mt-auto pt-2">
+              <p className="text-gray-500 text-[10px] mt-auto pt-2">
                 Example · captured {new Date(ex.capturedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
               </p>
             </div>
@@ -86,7 +86,7 @@ export default function HeroExampleCarousel({ examples }: { examples: HeroExampl
               onClick={() => setIndex(i)}
               aria-label={`Show example ${i + 1}: ${ex.area}`}
               aria-current={i === index}
-              className="p-1.5 -m-0.5"
+              className="p-[9px]"
             >
               <span
                 className={`block h-1.5 rounded-full transition-all duration-300 ${
