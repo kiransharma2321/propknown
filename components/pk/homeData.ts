@@ -3,6 +3,7 @@ import { findAreaPage, getAreaPrices, areaPagesWithData, areaPath } from "@/lib/
 import { checkProject } from "@/lib/projects";
 import { GUIDES } from "@/lib/guides";
 import { ALL_LOCALITIES } from "@/lib/localities";
+import { sourceHosts } from "@/lib/engine/sources";
 import type { BoardRow } from "./PriceBoard";
 import type { HeroExampleData } from "./HeroCheck";
 
@@ -22,7 +23,10 @@ export async function loadHome() {
   const [project, pagesWithData, cachedPrices, verifiedProjects, news, episodes] = await Promise.all([
     checkProject({ name: "Prestige High Fields", area: "Financial District, Hyderabad", propertyType: "apartment" }).catch(() => null),
     areaPagesWithData().catch(() => []),
-    prisma.locationMarketCache.count({ where: { NOT: { locationKey: { startsWith: "project/" } } } }).catch(() => 0),
+    // Published area prices only: rows with at least one real source (same rule as the engine).
+    prisma.locationMarketCache.findMany({ where: { NOT: { locationKey: { startsWith: "project/" } } }, select: { data: true } })
+      .then((rows) => rows.filter((r) => sourceHosts((r.data as { sourceUrls?: unknown } | null)?.sourceUrls).length > 0).length)
+      .catch(() => 0),
     prisma.property.findMany({ where: { status: "approved", verified: true }, orderBy: { createdAt: "desc" }, take: 3 }).catch(() => []),
     prisma.blogPost.findMany({ where: { status: "published" }, orderBy: { publishedAt: "desc" }, take: 3 }).catch(() => []),
     prisma.podcastEpisode.findMany({ where: { status: "published" }, orderBy: { publishedAt: "desc" }, take: 1 }).catch(() => []),

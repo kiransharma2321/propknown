@@ -77,17 +77,17 @@ export default async function HomePreview() {
         </section>
 
         {/* PRICE BOARD */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] items-center">
-          <Reveal>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-center">
+          <Reveal className="min-w-0">
             <h2 className="font-playfair text-3xl sm:text-5xl">Hyderabad, area by area.</h2>
             <p className="text-white/60 mt-4">Typical apartment rates from live web sources. Tap any bar for its sources, range and captured date.</p>
             <div className="mt-8 grid grid-cols-3 gap-4">
               <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.hyderabadLocalities} /></p><p className="text-xs text-white/55">Hyderabad localities with price pages</p></div>
               <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.areasWithData} /></p><p className="text-xs text-white/55">areas with live price data</p></div>
-              <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.cachedPrices} /></p><p className="text-xs text-white/55">area prices on record</p></div>
+              <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.cachedPrices} /></p><p className="text-xs text-white/55">published area prices</p></div>
             </div>
           </Reveal>
-          <Reveal delay={0.1}><PriceBoard rows={d.boardRows} /></Reveal>
+          <Reveal delay={0.1} className="min-w-0"><PriceBoard rows={d.boardRows} /></Reveal>
         </section>
 
         {/* TOOLS */}
