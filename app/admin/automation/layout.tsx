@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/admin/approval-queue", label: "Approval Queue" },
   { href: "/admin/automation/project-finder", label: "Project Finder" },
   { href: "/admin/automation/document-reviews", label: "Document Reviews" },
+  { href: "/admin/automation/dd-reviews", label: "Due Diligence Reviews" },
 ];
 
 export default async function AutomationLayout({ children }: { children: React.ReactNode }) {

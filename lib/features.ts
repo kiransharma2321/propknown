@@ -14,6 +14,8 @@ export const FEATURES = {
   investmentScore: process.env.NEXT_PUBLIC_FEATURE_INVESTMENT_SCORE === "true",
   /** M5: AI Document Checker + private document vault (30-day auto-delete, human review). */
   docChecker: process.env.NEXT_PUBLIC_FEATURE_DOC_CHECKER === "true",
+  /** M6: preliminary Due Diligence Report with human review (/due-diligence). */
+  dueDiligence: process.env.NEXT_PUBLIC_FEATURE_DUE_DILIGENCE === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

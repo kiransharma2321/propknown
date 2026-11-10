@@ -27,6 +27,7 @@ const NAV: Item[] = [
     { label: "NRI Desk", href: "/nri" },
     { label: "Property Management", href: "/services#property-management-pms" },
     ...(FEATURES.docChecker ? [{ label: "AI Document Checker", href: "/document-checker" }] : []),
+    ...(FEATURES.dueDiligence ? [{ label: "Due Diligence Report", href: "/due-diligence" }] : []),
   ] },
   { label: "AI Intel", href: "/ai-intelligence", children: [
     { label: "AI Intel", href: "/ai-intelligence" },
