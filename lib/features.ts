@@ -18,6 +18,10 @@ export const FEATURES = {
   dueDiligence: process.env.NEXT_PUBLIC_FEATURE_DUE_DILIGENCE === "true",
   /** M7: area map + nearby places (OpenStreetMap) + admin-verified infrastructure only. */
   maps: process.env.NEXT_PUBLIC_FEATURE_MAPS === "true",
+  /** M8: builder profiles built only from sourced project checks (/builder-profiles). */
+  builderProfiles: process.env.NEXT_PUBLIC_FEATURE_BUILDER_PROFILES === "true",
+  /** M8: PUBLIC Builder Trust Score. Keep OFF until the legal / defamation review is done. */
+  builderTrustScore: process.env.NEXT_PUBLIC_FEATURE_BUILDER_TRUST_SCORE === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

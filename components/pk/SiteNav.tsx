@@ -50,6 +50,7 @@ const NAV: Item[] = [
     { label: "Podcast", href: "/podcast" },
     { label: "Area Price Guides", href: "/area-prices" },
     ...(FEATURES.investmentScore ? [{ label: "Investment Score", href: "/investment-score" }] : []),
+    ...(FEATURES.builderProfiles ? [{ label: "Builder Profiles", href: "/builder-profiles" }] : []),
   ] },
 ];
 
