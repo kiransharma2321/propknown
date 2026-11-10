@@ -77,7 +77,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
                 {tab === "area" ? <>Check Any Location&apos;s Real Price</> : tab === "project" ? "Check a project's asking price" : "Is my quoted price fair?"}
               </p>
               <div className="space-y-2 mb-3">
