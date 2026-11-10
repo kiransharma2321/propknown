@@ -3,7 +3,7 @@ import { OG_IMAGE } from "@/app/layout";
 
 const TITLE = "Buy RERA-Verified Properties in Hyderabad";
 const DESC =
-  "Browse RERA-verified apartments, villas, HMDA plots & farmland in Hyderabad. AI-scored listings, WhatsApp enquiry. Kokapet, Gachibowli & more.";
+  "Browse apartments, villas, HMDA plots & farmland in Hyderabad. AI-scored listings, WhatsApp enquiry. Kokapet, Gachibowli & more.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Buy RERA-Verified Properties in Hyderabad | PropKnown",
     description:
-      "AI-scored, RERA-verified properties — apartments, villas, HMDA plots, farmland. WhatsApp enquiry, transparent pricing, zero surprises.",
+      "Properties — apartments, villas, HMDA plots, farmland. WhatsApp enquiry, transparent pricing, zero surprises.",
     images: [OG_IMAGE],
   },
   twitter: { card: "summary_large_image", title: TITLE, description: DESC, images: [OG_IMAGE.url] },

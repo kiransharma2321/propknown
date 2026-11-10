@@ -23,7 +23,7 @@ export default function NRITeaser() {
               Investing From Abroad? <span className="gold-accent">We&apos;ve Got You.</span>
             </h2>
             <p className="text-zinc-400 max-w-xl">
-              Buy property in India without setting foot in it — remote-friendly, RERA-verified, and built for the UAE, US, UK &amp; Singapore diaspora.
+              Buy property in India without setting foot in it — remote-friendly and built for the UAE, US, UK &amp; Singapore diaspora.
             </p>
           </div>
 

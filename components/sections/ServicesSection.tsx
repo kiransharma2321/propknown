@@ -5,7 +5,7 @@ const SERVICES = [
   {
     icon: Home,
     title: "Buy Properties",
-    desc: "Expert guidance from search to registration. RERA-verified listings with transparent pricing.",
+    desc: "Expert guidance from search to registration. Listings with transparent pricing.",
     href: "/buy",
     iconBg: "bg-blue-50",
     iconColor: "#3b82f6",

@@ -11,9 +11,9 @@ export const metadata: Metadata = {
     "real estate ROI Hyderabad", "Financial District apartments",
   ],
   openGraph: {
-    title: "Property Investment Opportunities — RERA Verified | PropKnown",
+    title: "Property Investment Opportunities | PropKnown",
     description:
-      "AI-scored, RERA-verified investment properties. Kokapet, Gachibowli, Financial District & beyond. Average 20-30% appreciation in 3 years.",
+      "Investment properties. Kokapet, Gachibowli, Financial District & beyond.",
     images: [OG_IMAGE],
   },
 };

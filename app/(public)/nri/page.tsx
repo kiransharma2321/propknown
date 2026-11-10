@@ -137,7 +137,7 @@ export default function NRIPage() {
             Invest From Anywhere, <span style={{ color: GOLD }}>With Confidence</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed mb-8">
-            PropKnown is built for NRIs — RERA-verified properties, honest legal guidance, virtual site tours,
+            PropKnown is built for NRIs — honest legal guidance, virtual site tours,
             and expert hand-holding from first enquiry to registration. Based in Hyderabad, serving
             the UAE, US, UK, and Singapore diaspora.
           </p>

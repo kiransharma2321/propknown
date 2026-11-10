@@ -23,7 +23,7 @@ export default function FeaturedProperties() {
               Verified Properties, <span className="gold-text">Zero Guesswork</span>
             </h2>
             <p className="text-zinc-400 mt-3 max-w-md">
-              Hand-picked, RERA-verified properties with AI-scored investment potential.
+              Hand-picked properties.
             </p>
           </div>
           <Link href="/buy" className="btn-secondary whitespace-nowrap self-start md:self-auto">

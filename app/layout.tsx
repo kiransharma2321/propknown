@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     template: "%s | PropKnown",
   },
   description:
-    "India's AI-powered, RERA-verified real estate platform. Buy, sell & invest across Hyderabad, Bangalore, Dubai & beyond. AI valuations, HMDA plots, NRI support.",
+    "AI-powered real estate platform. Buy, sell & invest across Hyderabad, Bangalore, Dubai & beyond. AI valuations, HMDA plots, NRI support.",
   keywords: [
     "real estate Hyderabad", "RERA verified properties", "property investment Hyderabad",
     "AI property valuation", "buy flat Hyderabad", "HMDA plots", "Kokapet", "Gachibowli",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     url: BASE_URL,
     title: "PropKnown | AI-Verified Real Estate in Hyderabad & Beyond",
     description:
-      "Buy, sell & invest in RERA-verified properties. AI market intelligence, Hyderabad's top listings, NRI support. Know. Invest. Grow.",
+      "Buy, sell & invest in property. AI market intelligence, Hyderabad's top listings, NRI support. Know. Invest. Grow.",
     images: [OG_IMAGE],
     locale: "en_IN",
   },
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     creator: "@propknown",
     title: "PropKnown | AI-Verified Real Estate",
     description:
-      "RERA-verified properties, AI valuations & market intelligence across Hyderabad, Bangalore, Dubai. Know. Invest. Grow.",
+      "AI valuations & market intelligence across Hyderabad, Bangalore, Dubai. Know. Invest. Grow.",
     images: [`${BASE_URL}/og-image.png`],
   },
 
@@ -114,7 +114,7 @@ const jsonLd = {
   name: "PropKnown Infra Pvt Ltd",
   alternateName: "PropKnown",
   description:
-    "India's AI-powered, fully verified real estate platform. RERA-registered properties, AI market intelligence, HMDA plots, NRI investment support.",
+    "AI-powered real estate platform. AI market intelligence, HMDA plots, NRI investment support.",
   url: BASE_URL,
   logo: `${BASE_URL}/logo.png`,
   image: `${BASE_URL}/og-image.png`,

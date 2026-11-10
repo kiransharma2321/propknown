@@ -5,7 +5,7 @@ import LeadForm from "@/components/ui/LeadForm";
 
 export const metadata: Metadata = {
   title: "Invest — Real Estate Investment Advisory",
-  description: "Curated, AI-scored, RERA-verified real estate investment opportunities in Hyderabad, Bangalore, Dubai & Singapore. NRI-friendly, expert-guided, transparent ROI.",
+  description: "Real estate investment opportunities in Hyderabad, Bangalore and Dubai. NRI-friendly, expert-guided, transparent ROI.",
 };
 
 const INVEST_MARKETS = [

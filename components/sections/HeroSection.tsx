@@ -58,7 +58,7 @@ export default function HeroSection({ examples }: { examples: HeroExample[] }) {
           style={{ background: "rgba(214,166,62,0.12)" }}
         >
           <span className="w-2 h-2 rounded-full bg-[#D6A63E] animate-pulse" />
-          AI-Powered Intelligence · RERA-Verified Listings · Zero Broker Spam
+          AI-Powered Intelligence · Zero Broker Spam
         </div>
 
         {/* Headline */}
@@ -74,10 +74,10 @@ export default function HeroSection({ examples }: { examples: HeroExample[] }) {
           }}>— Before You Buy</span>
         </h1>
         <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-6">
-          AI-verified prices. RERA-checked listings. The honest truth about any property.
+          The honest truth about any property.
         </p>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block leading-relaxed">
-          AI-verified prices. RERA-checked listings. The honest truth about any property —
+          The honest truth about any property —
           even when it&apos;s not what the seller wants you to hear.
         </p>
 
