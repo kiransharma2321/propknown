@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Scale, Loader2, AlertCircle, Share2, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
 import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
 import ReportLeadForm from "@/components/leads/ReportLeadForm";
@@ -57,6 +57,17 @@ export default function PriceCheckPage() {
   const [unit,     setUnit]     = useState("sqft");
   const [areaSize, setAreaSize] = useState("");
   const [price,    setPrice]    = useState("");
+  const [initialProject, setInitialProject] = useState("");
+
+  // Pre-fill from links like /price-check?location=Kokapet&project=…&quote=… (homepage check card).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const loc = q.get("location"), proj = q.get("project"), quote = q.get("quote");
+    if (loc) setLocation(loc.slice(0, 120));
+    if (proj) { setInitialProject(proj.slice(0, 100)); setProjectName(proj.slice(0, 100)); }
+    const quoteNum = quote ? quote.replace(/[^\d.]/g, "") : "";
+    if (Number(quoteNum) > 0) setPrice(quoteNum);
+  }, []);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
   const [result,   setResult]   = useState<CheckResult | null>(null);
@@ -180,8 +191,12 @@ export default function PriceCheckPage() {
             </div>
           </div>
 
-          <div className="mb-4">
+          {/* Anchors for homepage links: #report (check first; the report form appears with the result) and #project */}
+          <div id="report" className="scroll-mt-28" />
+          <div id="project" className="mb-4 scroll-mt-28">
             <ProjectCheck
+              key={initialProject || "project"}
+              initialName={initialProject}
               area={location.trim()}
               propertyType={propType}
               quotedPricePerSqft={unit === "sqft" && Number(price) > 0 && Number(areaSize) > 0 ? Math.round(Number(price) / Number(areaSize)) : undefined}
