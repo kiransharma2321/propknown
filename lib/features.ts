@@ -22,6 +22,8 @@ export const FEATURES = {
   builderProfiles: process.env.NEXT_PUBLIC_FEATURE_BUILDER_PROFILES === "true",
   /** M8: PUBLIC Builder Trust Score. Keep OFF until the legal / defamation review is done. */
   builderTrustScore: process.env.NEXT_PUBLIC_FEATURE_BUILDER_TRUST_SCORE === "true",
+  /** M9: KnownAI 2.0 -- answers about checked projects, source links under answers, voice input. */
+  knownaiV2: process.env.NEXT_PUBLIC_FEATURE_KNOWNAI_V2 === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

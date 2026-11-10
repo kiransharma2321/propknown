@@ -3,6 +3,10 @@ import { getMarketPrice, logAiQuery, remaining, unitLabel, ENGINE_TIMEOUT_MS, UN
 import { matchLocality } from "@/lib/localities";
 import { wantsAnalysis, analyseQuestion, analysisFacts, type KnownAIAnalysis } from "@/lib/knownai/analysis";
 import { recordApiCall } from "@/lib/engine/usage";
+import { prisma } from "@/lib/db";
+import { FEATURES } from "@/lib/features";
+import { findCachedProject } from "@/lib/projects";
+import { sourceHosts } from "@/lib/engine/sources";
 
 // flash-lite: much higher free-tier daily quota than flash — good fit for short chat replies.
 // flash is used as a cross-model fallback on the final retry — an "UNAVAILABLE / high demand"
@@ -270,6 +274,27 @@ const ANALYSIS_INSTRUCTIONS = `Answer the user's comparison/affordability questi
 
 const QUOTA_FALLBACK = "I'm busy right now, please WhatsApp our team on 70130 16003 — we respond within minutes!";
 
+// ---- KnownAI 2.0 (feature flag knownaiV2): project answers from our checks + sources ----
+type ReplyMeta = { kind: "area" | "project"; title: string; sources: { host: string; url: string }[]; capturedAt: string | null; confidence: string | null };
+// "Kousalya" / "Kowsalya": compare names with ou->ow and spaces/punctuation removed.
+const normName = (s: string) => s.toLowerCase().replace(/ou/g, "ow").replace(/[^a-z0-9]/g, "");
+
+async function projectInText(text: string): Promise<{ name: string; area: string; type: string } | null> {
+  const rows = await prisma.locationMarketCache.findMany({ where: { locationKey: { startsWith: "project/" } }, select: { id: true, data: true } }).catch(() => []);
+  const t = normName(text);
+  // Several checks can match one project (spelling variants): use the best-sourced one.
+  const hits = rows.map((r) => ({ r, d: r.data as { found?: boolean; name?: string; query?: { area?: string }; price?: { sources?: { host: string }[] } } | null }))
+    .filter(({ d }) => d?.found && d.name && d.name.length >= 4 && t.includes(normName(d.name)))
+    .sort((a, b) => new Set((b.d!.price?.sources ?? []).map((s) => s.host)).size - new Set((a.d!.price?.sources ?? []).map((s) => s.host)).size);
+  const best = hits[0];
+  return best ? { name: best.d!.name!, area: best.d!.query?.area ?? "", type: best.r.id.split("|")[1] ?? "apartment" } : null;
+}
+
+function metaFromEngine(d: EngineResult, title: string): ReplyMeta {
+  const urls = Array.isArray(d.sourceUrls) ? (d.sourceUrls as string[]) : [];
+  return { kind: "area", title, sources: sourceHosts(urls).map((host) => ({ host, url: urls.find((u) => u.includes(host)) ?? `https://${host}` })), capturedAt: d.fetchedAt ? String(d.fetchedAt) : null, confidence: (d.confidence as { level?: string } | undefined)?.level ?? null };
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
     message?: string;
@@ -298,7 +323,19 @@ export async function POST(req: NextRequest) {
   let grounded: boolean | undefined;
   let priceData: EngineResult | null = null;
   let analysis: KnownAIAnalysis | null = null;
-  if (wantsAnalysis(text)) {
+  let meta: ReplyMeta | null = null;
+  let projectReply: string | null = null;
+  const proj = FEATURES.knownaiV2 && !wantsAnalysis(text) ? await projectInText(text) : null;
+  const projResult = proj ? await findCachedProject(proj.name, proj.area, proj.type) : null;
+  if (projResult?.price && projResult.price.sources.length) {
+    // KnownAI 2.0: a project we've checked -- answer from that sourced check only.
+    const p = projResult, pr = projResult.price;
+    const facts = Object.entries(p.facts).filter(([, f]) => f).map(([k, f]) => `${k}: ${f!.value}`).join("; ");
+    grounded = true;
+    meta = { kind: "project", title: `${p.name}, ${p.query.area}`, sources: Array.from(new Map(pr.sources.map((s) => [s.host, s])).values()), capturedAt: pr.capturedAt, confidence: p.confidence?.level ?? null };
+    projectReply = `${p.name} (${p.query.area}): asking prices ₹${pr.min.toLocaleString("en-IN")}–${pr.max.toLocaleString("en-IN")}/sq.ft (median ₹${pr.median.toLocaleString("en-IN")}), from ${new Set(pr.sources.map((s) => s.host)).size} websites, captured ${new Date(pr.capturedAt).toLocaleDateString("en-IN")}.${p.facts.reraNumber ? ` RERA number stated by a source: ${p.facts.reraNumber.value} (verify on the RERA portal).` : ""} These are asking prices, not registered sale prices.`;
+    extraSystem = `PROJECT DATA (PropKnown project check, sourced): ${projectReply} Facts: ${facts}.\n\nAnswer using ONLY this project data for any figure. Say these are asking prices from listings, and suggest verifying RERA on the portal. Don't add other price figures.`;
+  } else if (wantsAnalysis(text)) {
     // KnownAI 2.0: comparison / affordability from engine data only.
     analysis = await analyseQuestion(text, 5500);
     if (!analysis.areas.some((x) => x.available)) {
@@ -320,6 +357,7 @@ ${ANALYSIS_INSTRUCTIONS}`;
       }
       priceData = d;
       grounded = true;
+      if (FEATURES.knownaiV2) meta = metaFromEngine(d, location);
       extraSystem = `${liveDataBlock(d)}\n\nAnswer the user's price question using ONLY the LIVE PRICE DATA above. Quote its figures exactly; don't add any other price figures.`;
     } else {
       await logAiQuery({ tool: "chat", result: "no_location", durationMs: Date.now() - started });
@@ -347,9 +385,12 @@ ${ANALYSIS_INSTRUCTIONS}`;
   ];
 
   // Engine-backed reply without Gemini, used if Gemini can't answer in time -- real numbers only.
-  const groundedFallback = () => analysis
+  const metaField = meta ? { meta } : {};
+  const groundedFallback = () => projectReply
+    ? NextResponse.json({ grounded: true, reply: projectReply, ...metaField })
+    : analysis
     ? NextResponse.json({ grounded: true, analysis, reply: plainAnalysisReply(analysis) })
-    : NextResponse.json({ grounded: true, reply: plainPriceReply(priceData!) });
+    : NextResponse.json({ grounded: true, reply: plainPriceReply(priceData!), ...metaField });
 
   for (let i = 0; i < attempts.length; i++) {
     const attempt = attempts[i];
@@ -359,7 +400,7 @@ ${ANALYSIS_INSTRUCTIONS}`;
 
     try {
       const r = await callGemini(attempt.endpoint, attempt.contents, attempt.temperature, remaining(deadlineAt), extraSystem);
-      if (r.reply) return NextResponse.json({ reply: r.reply, grounded, ...(analysis ? { analysis } : {}) });
+      if (r.reply) return NextResponse.json({ reply: r.reply, grounded, ...(analysis ? { analysis } : {}), ...metaField });
 
       if (r.blocked) {
         // Safety block: return a curated helpful answer instead of a generic error
@@ -367,7 +408,7 @@ ${ANALYSIS_INSTRUCTIONS}`;
       }
 
       if (r.quotaExceeded) {
-        if (priceData || analysis) return groundedFallback();
+        if (priceData || analysis || projectReply) return groundedFallback();
         // Retrying won't help — quota is exhausted for the window. Fail fast with a friendly message.
         console.warn(`[KnownAI] Attempt ${i + 1}: quota exceeded — skipping remaining retries:`, r.reason);
         return NextResponse.json({ reply: QUOTA_FALLBACK });
@@ -379,7 +420,7 @@ ${ANALYSIS_INSTRUCTIONS}`;
     }
   }
 
-  if (priceData || analysis) return groundedFallback();
+  if (priceData || analysis || projectReply) return groundedFallback();
 
   // Final fallback — only reached after every attempt that fit in the time budget failed
   return NextResponse.json({

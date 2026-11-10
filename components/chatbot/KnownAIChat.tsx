@@ -6,8 +6,12 @@ import AIOrb from "./AIOrb";
 import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
 import AnalysisCard from "./AnalysisCard";
 import type { KnownAIAnalysis } from "@/lib/knownai/analysis";
+import { FEATURES } from "@/lib/features";
+import VoiceInput from "./VoiceInput";
 
-type Message = { role: "bot" | "user"; text: string; analysis?: KnownAIAnalysis; question?: string };
+// meta (KnownAI 2.0, feature flag): where a grounded answer's figures came from.
+type Meta = { kind: string; title: string; sources: { host: string; url: string }[]; capturedAt: string | null; confidence: string | null };
+type Message = { role: "bot" | "user"; text: string; analysis?: KnownAIAnalysis; question?: string; meta?: Meta };
 
 const QUICK_REPLIES = [
   "Kokapet vs Tellapur for ₹1 Cr 3BHK?",
@@ -63,7 +67,7 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
       });
       const data = await res.json();
       const reply = data.reply || "Sorry, I had trouble there. Please try again, or WhatsApp us on 70130 16003!";
-      setMessages(prev => [...prev, { role: "bot", text: reply, analysis: data.analysis, question: text.trim() }]);
+      setMessages(prev => [...prev, { role: "bot", text: reply, analysis: data.analysis, question: text.trim(), meta: data.meta }]);
     } catch {
       setMessages(prev => [...prev, {
         role: "bot",
@@ -143,6 +147,13 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
                     {msg.text}
                   </div>
                   {msg.analysis && <AnalysisCard a={msg.analysis} question={msg.question ?? ""} />}
+                  {FEATURES.knownaiV2 && msg.meta && msg.meta.sources.length > 0 && (
+                    <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                      Sources: {msg.meta.sources.slice(0, 5).map((s, j) => <span key={s.url}>{j > 0 && " · "}<a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="underline hover:text-gray-200">{s.host}</a></span>)}
+                      {msg.meta.capturedAt && <> · captured {new Date(msg.meta.capturedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</>}
+                      {msg.meta.confidence && <> · {msg.meta.confidence} confidence</>}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -213,6 +224,7 @@ export default function KnownAIChat({ initialOpen = false }: KnownAIChatProps) {
               className="flex-1 text-white placeholder-gray-500 text-sm rounded-lg px-3 py-2 focus:outline-none disabled:opacity-60"
               style={{ background: "#2a2a2a", border: "1px solid #444" }}
             />
+            {FEATURES.knownaiV2 && <VoiceInput disabled={typing} onText={(t) => { setInput(t); inputRef.current?.focus(); }} />}
             <button
               type="submit"
               disabled={typing || !input.trim()}
