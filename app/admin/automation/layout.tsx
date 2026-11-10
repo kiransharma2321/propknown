@@ -19,6 +19,7 @@ const LINKS = [
   { href: "/admin/automation/dd-reviews", label: "Due Diligence Reviews" },
   { href: "/admin/automation/infrastructure", label: "Infrastructure" },
   { href: "/admin/automation/insights", label: "Business Insights" },
+  { href: "/admin/automation/social-hub", label: "Social Media Hub" },
 ];
 
 export default async function AutomationLayout({ children }: { children: React.ReactNode }) {

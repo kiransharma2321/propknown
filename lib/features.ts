@@ -28,6 +28,8 @@ export const FEATURES = {
   bi: process.env.NEXT_PUBLIC_FEATURE_BI === "true",
   /** M13: Telugu + Hindi (navigation, homepage hero, price board). Needs native-speaker review first. */
   i18n: process.env.NEXT_PUBLIC_FEATURE_I18N === "true",
+  /** Task J: Social Media Hub -- every published post/episode's captions, UTM links, share links (admin). */
+  socialHub: process.env.NEXT_PUBLIC_FEATURE_SOCIAL_HUB === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;
