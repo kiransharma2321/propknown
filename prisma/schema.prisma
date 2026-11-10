@@ -770,3 +770,46 @@ model BlogPost {
   @@index([status, publishedAt])
   @@map("blog_posts")
 }
+
+// Podcast (Task I). One row of show-level settings for the RSS feed, and the episodes. An
+// episode starts as an AI-suggested "idea" (planner), becomes a "draft" once the owner uploads
+// the recorded MP3 (AI drafts transcript, notes, chapters for editing), and is public only when
+// "published" by the owner.
+model PodcastShow {
+  id          String   @id @default("show")
+  title       String   @default("The PropKnown Podcast")
+  description String   @default("")
+  coverUrl    String?  // square artwork, 1400-3000 px, hosted in Vercel Blob
+  ownerName   String   @default("Pinnelli Raghukiran")
+  ownerEmail  String   @default("")
+  category    String   @default("Business")
+  language    String   @default("en-in")
+  updatedAt   DateTime @updatedAt
+
+  @@map("podcast_show")
+}
+
+model PodcastEpisode {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  status       String    @default("idea") // idea | draft | published | archived
+  title        String
+  description  String    @default("")      // SEO description / RSS summary
+  outline      String?   @db.Text          // planner talking points (ideas)
+  showNotes    String?   @db.Text
+  chapters     Json      @default("[]")    // [{ start: "00:00", title }]
+  transcript   String?   @db.Text
+  guest        String?
+  topic        String?
+  audioUrl     String?
+  audioBytes   Int?
+  durationSec  Int?
+  relatedLinks Json      @default("[]")    // [{ label, href }]
+  socialDrafts Json?                       // { instagram, linkedin, reelScript, whatsapp } drafts
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("podcast_episodes")
+}

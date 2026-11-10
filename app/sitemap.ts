@@ -65,5 +65,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE}/news/${p.slug}`, lastModified: p.updatedAt, changeFrequency: "monthly", priority: 0.65,
   }));
 
-  return [...staticPages, ...areaPages, ...guidePages, ...newsPages, ...propertyPages, ...submissionPages];
+  const episodes = await prisma.podcastEpisode.findMany({ where: { status: "published" }, select: { slug: true, updatedAt: true } }).catch(() => []);
+  const episodePages: MetadataRoute.Sitemap = episodes.map((e) => ({
+    url: `${BASE}/podcast/${e.slug}`, lastModified: e.updatedAt, changeFrequency: "monthly", priority: 0.6,
+  }));
+
+  return [...staticPages, ...areaPages, ...guidePages, ...newsPages, ...episodePages, ...propertyPages, ...submissionPages];
 }
