@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { BarChart3, Mail, PenSquare, ClipboardCheck, PhoneCall, Quote } from "lucide-react";
+import { BarChart3, Mail, PenSquare, ClipboardCheck, Activity, Landmark, Mic2, Search } from "lucide-react";
 
 const SECTIONS = [
   { href: "/admin/automation/ai-demand", icon: BarChart3, title: "AI Demand", desc: "Every AI query logged — top searched localities, tools and results." },
   { href: "/admin/automation/sequences", icon: Mail, title: "Sequences", desc: "Which lead received which email (report, Day 2, Day 5, alerts) and when." },
-  { href: "/admin/automation/content-studio", icon: PenSquare, title: "Content Studio", desc: "Daily social drafts from real price moves, and the weekly Market Pulse newsletter (sends only on your approval)." },
-  { href: "/admin/approval-queue", icon: ClipboardCheck, title: "Approval Queue", desc: "Self-serve listings with AI price verdict and the 10-point checklist. Only approved listings go live." },
-  { href: "/admin/automation/calls", icon: PhoneCall, title: "Calls", desc: "KnownAI Voice call log — inbound, outbound callbacks and browser calls, with summaries." },
-  { href: "/admin/automation/testimonials", icon: Quote, title: "Testimonials", desc: "Add real client testimonials (client permission required) for the public site." },
+  { href: "/admin/automation/engine-health", icon: Activity, title: "Engine Health", desc: "Daily Gemini / Tavily / RapidAPI usage against quotas, with an 80% warning." },
+  { href: "/admin/automation/guidance-rates", icon: Landmark, title: "Guidance Rates", desc: "Enter official government guidance values by hand, with source and effective date." },
+  { href: "/admin/automation/blog-studio", icon: PenSquare, title: "Blog Studio", desc: "AI-drafted news and weekly Market Pulse posts. Publishes only on your approval." },
+  { href: "/admin/automation/podcast-studio", icon: Mic2, title: "Podcast Studio", desc: "Upload episodes, AI transcript and notes, weekly episode ideas, RSS feed." },
+  { href: "/admin/approval-queue", icon: ClipboardCheck, title: "Approval Queue", desc: "AI-drafted listings with the 10-point checklist and AI price check. Only approved listings go live." },
+  { href: "/admin/automation/project-finder", icon: Search, title: "Project Finder", desc: "RERA sources and their terms status, plus every drafted project." },
 ];
 
 export default function AutomationHome() {

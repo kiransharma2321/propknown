@@ -13,11 +13,8 @@ const LINKS = [
   { href: "/admin/automation/guidance-rates", label: "Guidance Rates" },
   { href: "/admin/automation/blog-studio", label: "Blog Studio" },
   { href: "/admin/automation/podcast-studio", label: "Podcast Studio" },
-  { href: "/admin/automation/content-studio", label: "Content Studio" },
   { href: "/admin/approval-queue", label: "Approval Queue" },
   { href: "/admin/automation/project-finder", label: "Project Finder" },
-  { href: "/admin/automation/calls", label: "Calls" },
-  { href: "/admin/automation/testimonials", label: "Testimonials" },
 ];
 
 export default async function AutomationLayout({ children }: { children: React.ReactNode }) {

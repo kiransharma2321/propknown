@@ -209,7 +209,9 @@ export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> 
       currentPricePerSqft: r.currentPricePerSqft, fetchedAt: r.fetchedAt, stale: r.stale,
     });
     const guidanceValue = await getGuidanceValue(resolved.key, propertyType, String(r.pricePerSqftUnit ?? outUnit));
-    return { ...r, sourceUrls, confidence, guidanceValue };
+    // Rows cached before rounding was added can hold a fractional price; show whole units.
+    const price = typeof r.currentPricePerSqft === "number" ? Math.round(r.currentPricePerSqft) : r.currentPricePerSqft;
+    return { ...r, currentPricePerSqft: price, sourceUrls, confidence, guidanceValue };
   };
 
   // 1. Cache

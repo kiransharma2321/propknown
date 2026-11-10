@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getMarketPrice, unitLabel } from "@/lib/engine";
 import { sourceDomains } from "@/lib/engine/confidence";
 import { toE164 } from "@/lib/phone";
+import { notifyNewLead } from "@/lib/notifications";
 import type { leadAttribution } from "@/lib/attribution";
 import { SITE_URL } from "@/lib/site";
 import { waLink, searchContextText } from "@/lib/whatsapp";
@@ -105,6 +106,8 @@ export async function createFairPriceReport(input: FairPriceInput) {
       ...(input.attribution ?? {}),
     },
   });
+
+  notifyNewLead({ id: lead.id, name, source: lead.source, phone }).catch(() => null);
 
   const pdf = Buffer.from(await buildFairPricePdf(snapshot));
   const ctx = { tool: "ai_intel", location: where, propertyType };
