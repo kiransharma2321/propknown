@@ -26,3 +26,11 @@ test("same RERA number = same project (spelling variants)", () => {
   const [b] = groupBuilders([row("Kousalya Manidweepam", "Sanvi Infra Projects Pvt. Ltd.", "P02200002912"), row("Kowsalya Manidweepam", "Sanvi Infra Projects Pvt. Ltd.", "P02200002912")]);
   assert.equal(b.projects.length, 1);
 });
+
+test("the best-sourced spelling wins the merge", () => {
+  const weak = row("Kousalya Manidweepam", "Sanvi Infra Projects Pvt. Ltd.", "P02200002912");
+  const strong = row("Kowsalya Manidweepam", "Sanvi Infra Projects Pvt. Ltd.", "P02200002912");
+  (strong.data as { price: unknown }).price = { min: 1, max: 2, sources: [{ host: "a.com" }, { host: "b.com" }] };
+  const [b] = groupBuilders([weak, strong]);
+  assert.equal(b.projects[0].name, "Kowsalya Manidweepam");
+});

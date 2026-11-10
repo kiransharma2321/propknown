@@ -19,7 +19,9 @@ export const builderSlug = (name: string) => name.toLowerCase()
 // Pure: group project checks by builder (exported for tests).
 export function groupBuilders(rows: { data: unknown; fetchedAt: Date }[]): BuilderProfile[] {
   const map = new Map<string, BuilderProfile>();
-  for (const r of rows) {
+  // Best-sourced check first, so a spelling variant with fewer sources never wins the merge.
+  const sites = (r: { data: unknown }) => new Set(((r.data as ProjectResult | null)?.price?.sources ?? []).map((x) => x.host)).size;
+  for (const r of [...rows].sort((a, b) => sites(b) - sites(a))) {
     const p = r.data as ProjectResult | null;
     const b = p?.facts?.builder;
     if (!p?.found || !b?.value) continue;
