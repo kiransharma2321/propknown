@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
 import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
+import { useCallbackText } from "@/components/useCallbackText";
 
 type FormType = "buy" | "sell" | "services" | "investor";
 
@@ -23,6 +24,7 @@ const SELLER_TYPES = ["Ready to sell now", "Evaluating options", "Planning in 6 
 const LOCATIONS = ["Hyderabad – West (Gachibowli / Kokapet)", "Hyderabad – North (Kompally / Bachupally)", "Hyderabad – East (Uppal / LB Nagar)", "Hyderabad – South (Rajendra Nagar)", "Mumbai", "Bangalore", "Delhi NCR", "Dubai / UAE", "Other"];
 
 export default function SmartLeadForm({ formType, source, propertyId, title, subtitle }: SmartLeadFormProps) {
+  const callbackText = useCallbackText();
   const waHref = useContextualWhatsApp(`Hi PropKnown, I just sent an enquiry${title ? ` about "${title}"` : ""} on your website.`);
   const [step, setStep]       = useState(1);
   const [loading, setLoading] = useState(false);
@@ -85,7 +87,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
       <div className="flex flex-col items-center justify-center py-10 text-center">
         <CheckCircle size={48} style={{ color: "var(--gold-text)" }} className="mb-4" />
         <h3 className="heading-h3 mb-2">Enquiry Received!</h3>
-        <p className="text-gray-500 text-sm max-w-xs">Our team will reach out within 2 hours. You can also WhatsApp us directly.</p>
+        <p className="text-gray-500 text-sm max-w-xs">{callbackText} You can also WhatsApp us directly.</p>
         <a
           href={waHref}
           className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors duration-200"

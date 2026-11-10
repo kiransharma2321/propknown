@@ -16,7 +16,12 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   if (!(await requireSettingsAccess())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const body = await req.json() as { companyName?: string; founderName?: string; whatsapp?: string; email?: string; address?: string };
+  const raw = await req.json() as { companyName?: string; founderName?: string; whatsapp?: string; email?: string; address?: string; callbackText?: string };
+  // Only the known fields are saved.
+  const body = {
+    companyName: raw.companyName, founderName: raw.founderName, whatsapp: raw.whatsapp, email: raw.email, address: raw.address,
+    callbackText: typeof raw.callbackText === "string" ? raw.callbackText.trim().slice(0, 140) || null : undefined,
+  };
   const settings = await prisma.companySettings.upsert({
     where: { id: "singleton" },
     create: { id: "singleton", ...body },

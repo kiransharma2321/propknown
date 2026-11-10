@@ -3,8 +3,10 @@ import { Phone, Mail, ArrowRight } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 import { COMPANY } from "@/lib/utils";
 import { waLink } from "@/lib/whatsapp";
+import { getCallbackText } from "@/lib/siteSettings";
 
-export default function CTASection() {
+export default async function CTASection() {
+  const callbackText = await getCallbackText();
   return (
     <section className="py-20 bg-black border-t border-zinc-800">
       <div className="max-w-7xl mx-auto px-6">
@@ -64,7 +66,7 @@ export default function CTASection() {
             <LeadForm
               source="homepage-cta"
               title="Quick Enquiry"
-              subtitle="We reply within 2 hours during business hours."
+              subtitle={callbackText}
               dark
             />
           </div>

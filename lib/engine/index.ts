@@ -30,6 +30,7 @@ export const ENGINE_TIMEOUT_MS = 10_000;
 // AI Intelligence + Price Reality Check: grounded search needs more than 10s, and those routes
 // run with maxDuration = 60, so this leaves headroom for the cache write and response.
 export const INTERACTIVE_TIMEOUT_MS = 50_000;
+export const NOT_ENOUGH_DATA = "Not enough data yet — we only publish prices with real, dated sources.";
 export const UNAVAILABLE_MESSAGE = "Live data unavailable right now — please try again in a moment.";
 
 // How long a cached price counts as current -- a result fresher than 7 days is served instead
@@ -203,6 +204,11 @@ export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> 
     const sourceUrls = Array.isArray(r.sourceUrls)
       ? Array.from(new Set((r.sourceUrls as unknown[]).map(String).filter(isPriceSource)))
       : [];
+    // A price without a single real source is never published: it becomes "not enough data"
+    // everywhere (AI Intel, area pages + FAQ schema, sitemap, reports, KnownAI, homepage).
+    if (sourceUrls.length === 0) {
+      return { available: false, message: NOT_ENOUGH_DATA, reason: "no_sources", locationKey: resolved.key };
+    }
     const evidence = (r.evidence ?? null) as ConfidenceInput["evidence"];
     const confidence = computeConfidence({
       sourceUrls, evidence: evidence ? scaleEvidence(evidence, baseUnit, outUnit) : null,

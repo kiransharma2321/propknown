@@ -26,14 +26,8 @@ const MAX_EXAMPLES = 10;
 
 // Only used when the cache has nothing usable yet (fresh DB). This is the real Kokapet result
 // the static card has always shown, with its real capture month.
-const FALLBACK: HeroExample[] = [{
-  id: "fallback-kokapet",
-  area: "Kokapet", city: "Hyderabad", propertyType: "Apartment",
-  currencySymbol: "₹", currency: "INR", price: 11250, rangeMin: 10340, rangeMax: 17000, unit: "sqft",
-  sources: ["99acres.com", "magicbricks.com", "housing.com"],
-  label: "AI estimate based on live web search",
-  capturedAt: "2026-07-01T00:00:00.000Z",
-}];
+// No hardcoded fallback card: with no real, sourced example the carousel simply isn't shown.
+const FALLBACK: HeroExample[] = [];
 
 function unitDisplay(unit: string): string {
   return unit === "sqyard" ? "sq.yd" : unit === "acres" || unit === "acre" ? "acre" : unit === "sqm" ? "sq.m" : "sqft";
@@ -56,6 +50,8 @@ export async function getHeroExamples(): Promise<HeroExample[]> {
     const d = row.data as Record<string, unknown>;
     const price = Number(row.pricePerUnit);
     if (!(price > 0) || d.available === false) continue;
+    // No real source -> not published (same rule as the engine).
+    if (!Array.isArray(d.sourceUrls) || !(d.sourceUrls as string[]).some((u) => hostOf(u))) continue;
     // locationName is "Area, City" for every resolved locality; free-text fallbacks may be just one part.
     const [first, ...rest] = row.locationName.split(",").map((s) => s.trim()).filter(Boolean);
     const area = first;

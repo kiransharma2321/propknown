@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CheckCircle, TrendingUp, Users, Clock, Upload, Phone, ChevronDown } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
 import SubmissionForm from "@/components/property/SubmissionForm";
+import { getCallbackText } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Sell Your Property — Free AI Valuation",
@@ -15,7 +16,8 @@ const STEPS = [
   { step: "04", title: "Negotiation & Close",   desc: "Our experts handle negotiation, documentation, and registration end-to-end." },
 ];
 
-export default function SellPage() {
+export default async function SellPage() {
+  const callbackText = await getCallbackText();
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
@@ -115,7 +117,7 @@ export default function SellPage() {
             </h2>
             <p className="text-gray-500 mb-6">
               Our team handles photography, marketing, negotiation, and legal paperwork — so you get the best price
-              without the hassle. Contact within 2 hours.
+              without the hassle. {callbackText}
             </p>
             <ul className="space-y-3">
               {[
@@ -136,7 +138,7 @@ export default function SellPage() {
               formType="sell"
               source="sell-page"
               title="Get a Free Valuation"
-              subtitle="Our team contacts you within 2 hours with a free valuation and marketing plan."
+              subtitle={`Free valuation and marketing plan. ${callbackText}`}
             />
           </div>
         </div>

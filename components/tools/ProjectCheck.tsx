@@ -15,10 +15,10 @@ type Result = ProjectResult & { quote: { pricePerSqft: number; pctVsProject: num
 const day = (d: string) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 const FACT_LABEL: Record<string, string> = { reraNumber: "RERA no.", builder: "Builder", location: "Location", projectType: "Type", status: "Status", possession: "Possession" };
 
-export default function ProjectCheck({ area, propertyType, quotedPricePerSqft, onProjectChange }: {
-  area: string; propertyType: string; quotedPricePerSqft?: number; onProjectChange?: (name: string) => void;
+export default function ProjectCheck({ area, propertyType, quotedPricePerSqft, onProjectChange, initialName = "" }: {
+  area: string; propertyType: string; quotedPricePerSqft?: number; onProjectChange?: (name: string) => void; initialName?: string;
 }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [picked, setPicked] = useState<Suggestion | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
