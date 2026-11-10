@@ -177,10 +177,13 @@ export function nearbyLocalities(loc: Locality, max = 6): Locality[] {
   return ALL_LOCALITIES.filter((l) => l.citySlug === loc.citySlug && l.zone === loc.zone && l.slug !== loc.slug).slice(0, max);
 }
 
-// Where a locality's price lives on the site: the static /ai-intelligence/[city]/[area] page for
-// the hot markets that have one, otherwise the AI Intelligence tool pre-filled with the area.
+// Cities whose every locality has an area price page (lib/areaPages). Hyderabad first.
+export const PAGE_CITIES = ["hyderabad"];
+
+// Where a locality's price lives on the site: its /ai-intelligence/[city]/[area] page (every
+// locality in PAGE_CITIES, plus the hot markets), otherwise the AI Intelligence tool pre-filled.
 export function localityPath(loc: Pick<Locality, "citySlug" | "slug" | "name" | "city">): string {
-  if (findHotMarketBySlug(loc.citySlug, loc.slug)) return `/ai-intelligence/${loc.citySlug}/${loc.slug}`;
+  if (PAGE_CITIES.includes(loc.citySlug) || findHotMarketBySlug(loc.citySlug, loc.slug)) return `/ai-intelligence/${loc.citySlug}/${loc.slug}`;
   return `/ai-intelligence?area=${encodeURIComponent(loc.name)}&city=${encodeURIComponent(loc.city)}`;
 }
 
