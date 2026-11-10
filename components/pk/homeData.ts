@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { findAreaPage, getAreaPrices, areaPagesWithData, areaPath } from "@/lib/areaPages";
 import { checkProject } from "@/lib/projects";
+import { sourceSiteCount } from "@/lib/projects/sites";
 import { GUIDES } from "@/lib/guides";
 import { ALL_LOCALITIES } from "@/lib/localities";
 import { sourceHosts } from "@/lib/engine/sources";
@@ -38,7 +39,7 @@ export async function loadHome() {
     area: firstPriced?.price ? { name: firstPriced.area, price: firstPriced.price, capturedAt: firstPriced.capturedAt, confidence: firstPriced.confidence } : null,
     project: project?.found && project.price ? {
       name: project.name, area: project.query.area, min: project.price.min, max: project.price.max, median: project.price.median,
-      sources: project.price.sources.length, capturedAt: project.price.capturedAt,
+      sources: sourceSiteCount(project.price), capturedAt: project.price.capturedAt,
       verdict: project.verdict?.label ?? null, pct: project.verdict?.pctVsLocality ?? null, confidence: project.confidence?.level ?? null,
     } : null,
   };

@@ -44,3 +44,21 @@ test("c: no 'within 2 hours' promise anywhere in pages/components", () => {
   walk("app"); walk("components");
   assert.deepEqual(hits, []);
 });
+
+// M1: two pages on the same portal are one source, not two.
+test("m1: project source count = distinct websites", async () => {
+  const { sourceSiteCount } = await import("@/lib/projects/sites");
+  const n = sourceSiteCount({ sources: [
+    { host: "nobroker.in", url: "https://www.nobroker.in/a" },
+    { host: "magicbricks.com", url: "https://www.magicbricks.com/a" },
+    { host: "magicbricks.com", url: "https://www.magicbricks.com/b" },
+  ] });
+  assert.equal(n, 2);
+});
+
+// M1: the project median is taken per website first, so one portal can't outvote the rest.
+test("m1: per-site median", async () => {
+  const { medianOf } = await import("@/lib/projects/sites");
+  const perSite = [medianOf([8000, 8200, 8235]), medianOf([6800])];
+  assert.equal(medianOf(perSite), 7500);
+});

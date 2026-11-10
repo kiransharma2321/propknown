@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Building2, Loader2, ExternalLink } from "lucide-react";
 import { ConfidenceBadge, AI_DISCLAIMER } from "@/components/ai-intel/PriceTrust";
-import type { ProjectResult } from "@/lib/projects";
+import { sourceSiteCount, type ProjectResult } from "@/lib/projects/sites";
 
 // Optional "Project / apartment / venture name" check (Task K): autocomplete from our own records,
 // then the project's facts and current asking price from real dated sources, compared with the
@@ -101,7 +101,7 @@ export default function ProjectCheck({ area, propertyType, quotedPricePerSqft, o
           {result.price ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1">
               <p className="font-semibold text-gray-900">Current asking price: {result.price.currency === "INR" ? "₹" : `${result.price.currency} `}{result.price.min.toLocaleString("en-IN")}–{result.price.max.toLocaleString("en-IN")}/sq.ft</p>
-              <p className="text-xs text-gray-500">{result.price.sources.length} source{result.price.sources.length === 1 ? "" : "s"}, captured {day(result.price.capturedAt)}: {result.price.sources.map((s, i) => <span key={s.url}>{i > 0 && ", "}<a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{s.host}<ExternalLink size={9} className="inline" /></a></span>)}</p>
+              <p className="text-xs text-gray-500">{sourceSiteCount(result.price)} source{sourceSiteCount(result.price) === 1 ? "" : "s"}, captured {day(result.price.capturedAt)}: {result.price.sources.map((s, i) => <span key={s.url}>{i > 0 && ", "}<a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{s.host}<ExternalLink size={9} className="inline" /></a></span>)}</p>
               {result.verdict && result.locality && (
                 <p><b>{result.verdict.label}</b>: {result.verdict.pctVsLocality > 0 ? "+" : ""}{result.verdict.pctVsLocality}% vs {area}&apos;s typical ₹{result.locality.price.toLocaleString("en-IN")}/sq.ft{result.locality.capturedAt ? ` (captured ${day(result.locality.capturedAt)})` : ""}.</p>
               )}

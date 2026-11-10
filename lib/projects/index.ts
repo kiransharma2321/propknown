@@ -34,14 +34,17 @@ export function projectSlug(name: string, area: string): string {
   return `${name} ${area}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
+import { medianOf } from "./sites";
+export { sourceSiteCount, medianOf } from "./sites";
+
 interface Hit { title: string; url: string; content: string }
 
-async function search(query: string, domains?: string[]): Promise<Hit[]> {
+async function search(query: string, domains?: string[], maxResults = 6): Promise<Hit[]> {
   const key = process.env.TAVILY_API_KEY;
   if (!key) return [];
   const res = await fetch("https://api.tavily.com/search", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ api_key: key, query, max_results: 6, search_depth: "basic", ...(domains ? { include_domains: domains } : {}) }),
+    body: JSON.stringify({ api_key: key, query, max_results: maxResults, search_depth: "basic", ...(domains ? { include_domains: domains } : {}) }),
     signal: AbortSignal.timeout(12_000),
   }).catch((e) => { recordApiCall("tavily", "error"); throw e; });
   recordApiCall("tavily", res.ok ? "ok" : [429, 432].includes(res.status) ? "rate_limited" : "error");
@@ -63,7 +66,8 @@ interface Extracted {
 
 // cacheOnly: never call the search/AI APIs (homepage render); a cached row is used whatever its
 // age -- it carries its own captured date -- and no row means "not found".
-export async function checkProject(input: { name: string; area: string; propertyType?: string; cacheOnly?: boolean }): Promise<ProjectResult> {
+// refresh: skip the cache and re-check live (admin/maintenance use).
+export async function checkProject(input: { name: string; area: string; propertyType?: string; cacheOnly?: boolean; refresh?: boolean }): Promise<ProjectResult> {
   const name = input.name.trim().slice(0, 100);
   const area = input.area.trim().slice(0, 100);
   const propertyType = input.propertyType || "apartment";
@@ -72,7 +76,7 @@ export async function checkProject(input: { name: string; area: string; property
 
   const row = await prisma.locationMarketCache.findUnique({ where: { id } }).catch(() => null);
   let result: ProjectResult;
-  if (row && (input.cacheOnly || Date.now() - row.fetchedAt.getTime() < CACHE_TTL_MS)) {
+  if (row && !input.refresh && (input.cacheOnly || Date.now() - row.fetchedAt.getTime() < CACHE_TTL_MS)) {
     result = { ...(row.data as unknown as ProjectResult), cached: true };
   } else if (input.cacheOnly) {
     result = { found: false, name, query: { name, area, propertyType }, facts: {}, price: null, confidence: null, locality: null, verdict: null, cached: false, capturedAt: new Date().toISOString() };
@@ -93,15 +97,19 @@ export async function checkProject(input: { name: string; area: string; property
 async function liveProject(name: string, area: string, propertyType: string): Promise<ProjectResult> {
   const now = new Date().toISOString();
   const base: ProjectResult = { found: false, name, query: { name, area, propertyType }, facts: {}, price: null, confidence: null, locality: null, verdict: null, cached: false, capturedAt: now };
-  const [portal, open] = await Promise.all([
+  // Portal search twice: exact phrase, and unquoted -- Telugu/Hindi names are spelt many ways in
+  // English (Kousalya / Kowsalya), and an exact-phrase search alone misses most listings for a
+  // variant spelling. The AI step below decides which results are this project.
+  const [portal, loose, open] = await Promise.all([
     search(`"${name}" ${area} price per sq ft`, PORTALS).catch(() => []),
+    search(`${name} ${area} price per sq ft`, PORTALS, 8).catch(() => []),
     search(`"${name}" ${area} builder RERA possession price`).catch(() => []),
   ]);
-  const hits = Array.from(new Map([...portal, ...open].map((h) => [h.url, h])).values()).slice(0, 10);
+  const hits = Array.from(new Map([...portal, ...loose, ...open].map((h) => [h.url, h])).values()).slice(0, 14);
   if (!hits.length) return base;
 
   const numbered = hits.map((h, i) => `[${i}] ${h.title}\n${h.content.slice(0, 900)}`).join("\n\n");
-  const x = await geminiJson<Extracted>(`Do these search results describe the real-estate project "${name}" in or near "${area}"? Extract facts ONLY as written in the results.
+  const x = await geminiJson<Extracted>(`Do these search results describe the real-estate project "${name}" in or near "${area}"? Different English spellings of the same Indian name (e.g. Kousalya / Kowsalya, Sri / Shri) and a builder-name prefix count as the same project; a different project in the same area does not. Extract facts ONLY as written in the results, and prices ONLY from results about this project.
 Return JSON: {"matchesProject": boolean (false if the results are about a different project or no specific project),
 "builder","location","projectType","status","possession","reraNumber": each {"value","source": result index} or null,
 "pricesPerSqft": [{"value": number (asking price per sq.ft in local currency, as stated or as stated price / stated area for THIS project), "source": result index}] }.
@@ -125,12 +133,20 @@ ${numbered}`, { timeoutMs: 40_000, temperature: 0.1 }).catch(() => null);
   }
   for (const k of Object.keys(facts) as (keyof typeof facts)[]) if (!facts[k]) delete facts[k];
 
-  const prices = (x.pricesPerSqft ?? []).filter((p) => p.value > 100 && hits[p.source]);
+  const raw = (x.pricesPerSqft ?? []).filter((p) => p.value > 100 && hits[p.source]);
+  // Drop outliers (a registered/guidance rate, a plot rate or a typo quoted as the asking price):
+  // anything below 0.6x or above 1.67x the median of all figures.
+  const rawMid = raw.length ? medianOf(raw.map((p) => p.value)) : 0;
+  const prices = raw.filter((p) => p.value >= rawMid * 0.6 && p.value <= rawMid / 0.6);
   const isDubai = /dubai|uae/i.test(area);
   let price: ProjectResult["price"] = null;
   if (prices.length) {
     const vals = prices.map((p) => p.value).sort((a, b) => a - b);
-    const median = vals.length % 2 ? vals[(vals.length - 1) / 2] : (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2;
+    // Median per website first, then across websites: one portal with many listings must not
+    // outvote the others.
+    const bySite = new Map<string, number[]>();
+    for (const p of prices) { const h = sourceHost(hits[p.source].url) ?? hits[p.source].url; bySite.set(h, [...(bySite.get(h) ?? []), p.value]); }
+    const median = medianOf(Array.from(bySite.values()).map(medianOf));
     const urls = Array.from(new Set(prices.map((p) => hits[p.source].url)));
     price = {
       min: Math.round(vals[0]), max: Math.round(vals[vals.length - 1]), median: Math.round(median),

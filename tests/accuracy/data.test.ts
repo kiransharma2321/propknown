@@ -27,3 +27,21 @@ test("a: Kokapet apartment price is sourced and within a sane band", async () =>
   assert.ok(apt.sources.length > 0);
   assert.ok(apt.price >= 6000 && apt.price <= 25000, `Kokapet apartment ₹${apt.price}/sq.ft is outside the sanity band`);
 });
+
+// M1: every cached project price is internally consistent -- a real source for each figure,
+// min <= median <= max, and "N sources" counts distinct websites, not pages on one portal.
+test("m1: cached project prices are sourced and internally consistent", async () => {
+  const { prisma } = await import("@/lib/db");
+  const { isPriceSource } = await import("@/lib/engine/sources");
+  const { sourceSiteCount } = await import("@/lib/projects/sites");
+  const rows = await prisma.locationMarketCache.findMany({ where: { locationKey: { startsWith: "project/" } }, select: { id: true, data: true } });
+  const bad: string[] = [];
+  for (const r of rows) {
+    const p = (r.data as { price?: { min: number; max: number; median: number; sources: { host: string; url: string }[] } | null }).price;
+    if (!p) continue;
+    if (!p.sources.length || !p.sources.every((s) => isPriceSource(s.url))) bad.push(`${r.id}: unsourced`);
+    if (!(p.min <= p.median && p.median <= p.max)) bad.push(`${r.id}: min/median/max out of order`);
+    if (sourceSiteCount(p) > p.sources.length) bad.push(`${r.id}: site count`);
+  }
+  assert.deepEqual(bad, []);
+});
