@@ -28,7 +28,7 @@ const TOOLS = [
   { icon: Scale, title: "Price Check", desc: "Is a quoted price fair for its area?", href: "/price-check", soon: false },
   { icon: Building2, title: "Project Check", desc: "Live asking prices for a named project.", href: "/price-check#project", soon: false },
   { icon: ShieldCheck, title: "Legal Shield / RERA", desc: "RERA format, red flags, what to verify.", href: "/legal-shield", soon: false },
-  { icon: FileSearch, title: "Document Checker", desc: "Sale deed, EC and approvals — preliminary review.", href: "", soon: true },
+  { icon: FileSearch, title: "Document Checker", desc: "Sale deed, EC and approvals — preliminary review.", href: FEATURES.docChecker ? "/document-checker" : "", soon: !FEATURES.docChecker },
   { icon: Calculator, title: "True Cost", desc: "Stamp duty, registration, GST and EMI.", href: "/true-cost", soon: false },
   { icon: TrendingUp, title: "Investment Score", desc: "A published, explainable 0–100 score.", href: FEATURES.investmentScore ? "/investment-score" : "", soon: !FEATURES.investmentScore },
   { icon: BarChart3, title: "AI Intel", desc: "Area dashboards across property types.", href: "/ai-intelligence", soon: false },

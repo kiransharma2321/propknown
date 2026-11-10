@@ -12,6 +12,8 @@ export const FEATURES = {
   compare: process.env.NEXT_PUBLIC_FEATURE_COMPARE === "true",
   /** M4: Investment Score (published method) + ROI/CAGR/yield calculator (/investment-score). */
   investmentScore: process.env.NEXT_PUBLIC_FEATURE_INVESTMENT_SCORE === "true",
+  /** M5: AI Document Checker + private document vault (30-day auto-delete, human review). */
+  docChecker: process.env.NEXT_PUBLIC_FEATURE_DOC_CHECKER === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

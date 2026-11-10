@@ -199,6 +199,7 @@ model BuyerUser {
   emailVerifiedAt DateTime?
   savedSearches   SavedSearch[]
   priceWatches    PriceWatch[]
+  documentChecks  DocumentCheck[]
 }
 
 // M2: one-time login/sign-up codes for customer accounts. Only a keyed hash of the code is
@@ -871,4 +872,33 @@ model PodcastEpisode {
 
   @@index([status, publishedAt])
   @@map("podcast_episodes")
+}
+
+// M5: AI Document Checker + vault. The file itself is an UploadedFile (isPrivate = true, never
+// served publicly); this row holds the preliminary AI review and the human review status.
+// Everything is deleted after 30 days (expiresAt) by the daily cleanup job, or sooner on request.
+model DocumentCheck {
+  id            String    @id @default(cuid())
+  buyerId       String
+  buyer         BuyerUser @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  fileId        String
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  docType       String // what the customer says it is, e.g. sale_deed, ec, approval
+  status        String    @default("analysing") // analysing | done | failed
+  result        Json?
+  error         String?
+  injectionFlag Boolean   @default(false) // the document contained text aimed at an AI system
+  reviewStatus  String    @default("pending") // pending | reviewed
+  reviewNotes   String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  @@index([buyerId])
+  @@index([expiresAt])
+  @@index([reviewStatus])
+  @@map("document_checks")
 }

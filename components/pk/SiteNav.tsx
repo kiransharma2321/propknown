@@ -26,6 +26,7 @@ const NAV: Item[] = [
     { label: "Legal Shield / Document Checker", href: "/legal-shield" },
     { label: "NRI Desk", href: "/nri" },
     { label: "Property Management", href: "/services#property-management-pms" },
+    ...(FEATURES.docChecker ? [{ label: "AI Document Checker", href: "/document-checker" }] : []),
   ] },
   { label: "AI Intel", href: "/ai-intelligence", children: [
     { label: "AI Intel", href: "/ai-intelligence" },

@@ -11,13 +11,19 @@ export class GeminiError extends Error {}
 
 const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
-async function callOnce<T>(model: string, apiKey: string, prompt: string, opts: { timeoutMs?: number; temperature?: number }): Promise<{ ok: true; value: T } | { ok: false; retryNext: boolean; error: string }> {
+export interface GeminiFile { mimeType: string; data: string /* base64 */ }
+type CallOpts = { timeoutMs?: number; temperature?: number; files?: GeminiFile[]; system?: string };
+
+async function callOnce<T>(model: string, apiKey: string, prompt: string, opts: CallOpts): Promise<{ ok: true; value: T } | { ok: false; retryNext: boolean; error: string }> {
   const thinking = model.startsWith("gemini-2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "minimal" };
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      // Optional files (inline, e.g. a scanned document) and a separate system instruction, so
+      // untrusted file content is never mixed into the instruction text.
+      contents: [{ parts: [{ text: prompt }, ...(opts.files ?? []).map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } }))] }],
+      ...(opts.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
       generationConfig: { temperature: opts.temperature ?? 0.2, responseMimeType: "application/json", thinkingConfig: thinking },
     }),
     signal: AbortSignal.timeout(opts.timeoutMs ?? 30_000),
@@ -36,7 +42,7 @@ async function callOnce<T>(model: string, apiKey: string, prompt: string, opts: 
 
 export async function geminiJson<T = Record<string, unknown>>(
   prompt: string,
-  opts: { timeoutMs?: number; model?: string; temperature?: number } = {},
+  opts: CallOpts & { model?: string } = {},
 ): Promise<T> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new GeminiError("GEMINI_API_KEY not configured");
