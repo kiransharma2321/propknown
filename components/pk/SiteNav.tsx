@@ -9,6 +9,7 @@ import { CurrencyToggle } from "@/components/ui/CurrencyToggle";
 import AccountLink from "@/components/buyer/AccountLink";
 import { COMPANY } from "@/lib/utils";
 import { PK } from "./tokens";
+import { FEATURES } from "@/lib/features";
 
 // The existing site navigation (components/layout/Header.tsx), restyled only: same items, same
 // order, same links. New features live INSIDE existing items as dropdown entries -- a top-level
@@ -29,6 +30,7 @@ const NAV: Item[] = [
   { label: "AI Intel", href: "/ai-intelligence", children: [
     { label: "AI Intel", href: "/ai-intelligence" },
     { label: "Project check", href: "/price-check#project" },
+    ...(FEATURES.compare ? [{ label: "Compare", href: "/compare" }] : []),
   ] },
   { label: "For Builders", href: "/builders" },
   { label: "About", href: "/about" },

@@ -8,6 +8,8 @@
 export const FEATURES = {
   /** M2: My PropKnown -- email-code login, saved searches, price watchlist, saved reports. */
   accountV2: process.env.NEXT_PUBLIC_FEATURE_ACCOUNT_V2 === "true",
+  /** M3: compare 2-4 areas / projects / owner listings side by side (/compare). */
+  compare: process.env.NEXT_PUBLIC_FEATURE_COMPARE === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

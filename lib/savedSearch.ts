@@ -1,5 +1,5 @@
 // M2 saved searches: only re-openable paths on our own search pages may be saved.
-export const SEARCH_PAGES = ["/buy", "/ai-intelligence", "/price-check", "/area-prices"];
+export const SEARCH_PAGES = ["/buy", "/ai-intelligence", "/price-check", "/area-prices", "/compare"];
 export const SEARCH_KINDS = ["listings", "area", "project"];
 
 export function validSearchPath(path: unknown): path is string {
