@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
 import { getMarketPrice, unitLabel } from "@/lib/engine";
 import { sourceHosts } from "@/lib/engine/sources";
-import { checkProject } from "@/lib/projects";
+import { findCachedProject } from "@/lib/projects";
 import { sourceSiteCount } from "@/lib/projects/sites";
 import { reraBadge } from "@/lib/listings/rera";
 import { computeTrueCost, stateFromLocation, type GstKey } from "@/lib/trueCost";
+import { FEATURES } from "@/lib/features";
+import { scoreFor } from "@/lib/investmentScoreData";
 
 // M3: compare 2-4 areas, projects or owner listings side by side. Every figure comes from the
 // cache (the same sourced, dated numbers the site already shows) -- comparing never triggers a
@@ -36,6 +38,7 @@ export interface CompareResult {
   trueCost: { sqft: number; total: number; stampAndRegistration: number; gst: number; gstNote: string } | null;
   trueCostNote: string;
   missing: string | null;             // why there's no data, if any
+  score: { score: number | null; band: string | null; basedOn: string } | null; // M4 (flag)
 }
 
 const clean = (s: string, n = 120) => s.replace(/[|\s]+/g, " ").trim().slice(0, n);
@@ -67,7 +70,7 @@ function trueCostFor(pricePerSqft: number, location: string, gst: GstKey | null)
 
 const base = (key: string, kind: CompareItem["kind"], title: string, subtitle: string, link: string): CompareResult => ({
   key, kind, title, subtitle, link, price: null, priceText: null, confidence: null, sources: 0, capturedAt: null,
-  rera: null, reraNote: "", possession: null, status: null, trueCost: null, trueCostNote: "", missing: null,
+  rera: null, reraNote: "", possession: null, status: null, trueCost: null, trueCostNote: "", missing: null, score: null,
 });
 
 export async function compareItem(i: CompareItem): Promise<CompareResult> {
@@ -93,7 +96,7 @@ export async function compareItem(i: CompareItem): Promise<CompareResult> {
   if (i.kind === "project") {
     const r = base(key, "project", i.name, `${i.location} · ${i.propertyType} · project`,
       `/price-check?location=${encodeURIComponent(i.location)}&project=${encodeURIComponent(i.name)}#project`);
-    const p = await checkProject({ name: i.name, area: i.location, propertyType: i.propertyType, cacheOnly: true }).catch(() => null);
+    const p = await findCachedProject(i.name, i.location, i.propertyType);
     if (!p?.found) { r.missing = "Not checked yet. Run a live Project Check first."; return r; }
     r.title = p.name;
     if (p.facts.reraNumber) r.rera = { number: p.facts.reraNumber.value, note: "Stated by a source; not verified by PropKnown. Check it on the RERA portal.", sourceUrl: p.facts.reraNumber.sourceUrl };
@@ -126,5 +129,12 @@ export async function compareItem(i: CompareItem): Promise<CompareResult> {
 
 export async function compareItems(items: CompareItem[]): Promise<CompareResult[]> {
   const unique = Array.from(new Map(items.map((i) => [itemKey(i).toLowerCase(), i])).values()).slice(0, MAX_COMPARE);
-  return Promise.all(unique.map(compareItem));
+  return Promise.all(unique.map(async (i) => {
+    const r = await compareItem(i);
+    if (FEATURES.investmentScore && i.kind !== "listing") {
+      const s = await scoreFor(i.location, i.propertyType, i.kind === "project" ? i.name : null).catch(() => null);
+      if (s) r.score = { score: s.score, band: s.band, basedOn: s.basedOn };
+    }
+    return r;
+  }));
 }

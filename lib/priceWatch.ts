@@ -1,5 +1,5 @@
 import { getMarketPrice } from "@/lib/engine";
-import { checkProject } from "@/lib/projects";
+import { findCachedProject } from "@/lib/projects";
 import { sourceHosts } from "@/lib/engine/sources";
 import { signValue, verifySigned } from "@/lib/emails/send";
 
@@ -34,7 +34,7 @@ export interface WatchPrice { price: number; capturedAt: Date | null; sources: n
 // Current published price for a watch, or null if we don't have a sourced one.
 export async function currentWatchPrice(w: { kind: string; location: string; projectName: string | null; propertyType: string }): Promise<WatchPrice | null> {
   if (w.kind === "project" && w.projectName) {
-    const r = await checkProject({ name: w.projectName, area: w.location, propertyType: w.propertyType, cacheOnly: true }).catch(() => null);
+    const r = await findCachedProject(w.projectName, w.location, w.propertyType);
     if (!r?.found || !r.price || !r.price.sources.length) return null;
     return { price: r.price.median, capturedAt: r.price.capturedAt ? new Date(r.price.capturedAt) : null, sources: new Set(r.price.sources.map((s) => s.host)).size, confidence: r.confidence?.level ?? null };
   }

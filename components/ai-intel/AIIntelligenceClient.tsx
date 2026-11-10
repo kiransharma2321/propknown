@@ -21,6 +21,8 @@ import { HOT_MARKETS, PROPERTY_TYPES, slugify, defaultUnitFor } from "@/lib/hotM
 import PropertyTypeSummaryCard, { type PropertyTypeSummaryData } from "@/components/ai-intel/PropertyTypeSummaryCard";
 import TrueCostCalculator from "@/components/tools/TrueCostCalculator";
 import { stateFromLocation } from "@/lib/trueCost";
+import { FEATURES } from "@/lib/features";
+import { investmentScore } from "@/lib/investmentScore";
 import { ConfidenceBadge, ThreeWayPrice, HowWeGotThis, AI_DISCLAIMER, type Confidence, type GuidanceValue } from "@/components/ai-intel/PriceTrust";
 
 const LOADING_STEPS = [
@@ -867,7 +869,14 @@ function AIIntelligenceInner() {
                     {[
                       { label: "Annual Growth",     val: r.growthRate != null ? `${r.growthRate}%` : "—",          color: "text-green-600"  },
                       { label: "Rental Yield",      val: r.rentalYield != null ? `${r.rentalYield}% p.a.` : "—",    color: "text-[#7A5C1A]" },
-                      { label: "Investment Rating", val: r.investmentRating != null ? `${r.investmentRating}/10` : "—",  color: ratingColor       },
+                      // M4 (flag): the published, rules-based Investment Score replaces the AI's
+                      // unexplained 0-10 rating (the old field stays in the data).
+                      FEATURES.investmentScore
+                        ? (() => {
+                            const s = investmentScore({ areaPrice: r.currentPricePerSqft, areaRangeMin: r.priceRangeMin ?? null, history5yr: r.priceHistory5yr, rentalYieldPct: r.rentalYield, confidence: r.confidence?.level ?? null });
+                            return { label: "Investment Score", val: s.score != null ? `${s.score}/100 · ${s.band}` : "Not enough data", color: "text-[#0B1B33]" };
+                          })()
+                        : { label: "Investment Rating", val: r.investmentRating != null ? `${r.investmentRating}/10` : "—",  color: ratingColor       },
                       { label: "Best For",          val: r.bestFor,                   color: "text-gray-700"   },
                     ].map((m) => (
                       <div key={m.label} className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">

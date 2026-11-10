@@ -6,6 +6,7 @@ import { Reveal } from "@/components/pk/Reveal";
 import { RevealObserver } from "@/components/pk/Motion";
 import { PK, TRUST_FACTS, REGISTRATIONS } from "@/components/pk/tokens";
 import { loadHome } from "@/components/pk/homeData";
+import { FEATURES } from "@/lib/features";
 import { getHeroExamples } from "@/lib/heroExamples";
 import StatsSection from "@/components/sections/StatsSection";
 import ProtectionSection from "@/components/sections/ProtectionSection";
@@ -29,7 +30,7 @@ const TOOLS = [
   { icon: ShieldCheck, title: "Legal Shield / RERA", desc: "RERA format, red flags, what to verify.", href: "/legal-shield", soon: false },
   { icon: FileSearch, title: "Document Checker", desc: "Sale deed, EC and approvals — preliminary review.", href: "", soon: true },
   { icon: Calculator, title: "True Cost", desc: "Stamp duty, registration, GST and EMI.", href: "/true-cost", soon: false },
-  { icon: TrendingUp, title: "Investment Score", desc: "A published, explainable 0–100 score.", href: "", soon: true },
+  { icon: TrendingUp, title: "Investment Score", desc: "A published, explainable 0–100 score.", href: FEATURES.investmentScore ? "/investment-score" : "", soon: !FEATURES.investmentScore },
   { icon: BarChart3, title: "AI Intel", desc: "Area dashboards across property types.", href: "/ai-intelligence", soon: false },
   { icon: MessageSquareText, title: "KnownAI", desc: "Ask and compare areas in plain English.", href: "/price-check", soon: false },
 ];

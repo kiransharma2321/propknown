@@ -195,3 +195,15 @@ export async function suggestProjects(q: string) {
   const seen = new Set<string>();
   return out.filter((o) => { const k = `${o.name}|${o.area}`.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
 }
+
+// Cache-only project lookup that tolerates "Area" vs "Area, City": a check saved under
+// "Bachupally" is found when asked for "Bachupally, Hyderabad" and vice versa. Never a paid call.
+export async function findCachedProject(name: string, location: string, propertyType = "apartment"): Promise<ProjectResult | null> {
+  const loc = location.trim();
+  const tries = Array.from(new Set([loc, loc.split(",")[0].trim()].filter(Boolean)));
+  for (const area of tries) {
+    const r = await checkProject({ name, area, propertyType, cacheOnly: true }).catch(() => null);
+    if (r?.found) return r;
+  }
+  return null;
+}

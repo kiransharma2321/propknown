@@ -10,6 +10,8 @@ export const FEATURES = {
   accountV2: process.env.NEXT_PUBLIC_FEATURE_ACCOUNT_V2 === "true",
   /** M3: compare 2-4 areas / projects / owner listings side by side (/compare). */
   compare: process.env.NEXT_PUBLIC_FEATURE_COMPARE === "true",
+  /** M4: Investment Score (published method) + ROI/CAGR/yield calculator (/investment-score). */
+  investmentScore: process.env.NEXT_PUBLIC_FEATURE_INVESTMENT_SCORE === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

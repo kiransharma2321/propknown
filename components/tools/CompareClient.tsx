@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Plus, X, ExternalLink } from "lucide-react";
 import type { CompareResult } from "@/lib/compare";
+import { FEATURES } from "@/lib/features";
 
 // M3 compare tool. The list lives in the URL (?i=area|Kokapet, Hyderabad|apartment&i=...), so a
 // comparison can be shared or saved.
@@ -57,6 +58,7 @@ export default function CompareClient() {
     { label: "RERA", cell: (r) => r.rera ? <>{r.rera.number}{r.rera.sourceUrl && <a href={r.rera.sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="ml-1 inline-flex text-gray-500"><ExternalLink size={11} /></a>}<span className="block text-[11px] text-gray-500">{r.rera.note}</span></> : <span className="text-[12px] text-gray-500">{r.reraNote || "—"}</span> },
     { label: "Possession", cell: (r) => r.possession ?? "—" },
     { label: "Status", cell: (r) => r.status ?? "—" },
+    ...(FEATURES.investmentScore ? [{ label: "Investment Score", cell: (r: CompareResult) => r.score ? <>{r.score.score != null ? <b>{r.score.score}/100 · {r.score.band}</b> : "Not enough data"}<span className="block text-[11px] text-gray-500">{r.score.basedOn}. <Link href="/investment-score#method" className="underline">Method</Link></span></> : "—" }] : []),
     { label: `True cost (1,200 sq.ft)`, cell: (r) => r.trueCost ? <><b>{inr(r.trueCost.total)}</b><span className="block text-[11px] text-gray-500">incl. stamp duty + registration {inr(r.trueCost.stampAndRegistration)}{r.trueCost.gst ? ` + GST ${inr(r.trueCost.gst)}` : ""}. {r.trueCost.gstNote}</span></> : <span className="text-[12px] text-gray-500">{r.trueCostNote || "—"}</span> },
   ];
 

@@ -47,6 +47,7 @@ const NAV: Item[] = [
     { label: "Blog (Market News)", href: "/news" },
     { label: "Podcast", href: "/podcast" },
     { label: "Area Price Guides", href: "/area-prices" },
+    ...(FEATURES.investmentScore ? [{ label: "Investment Score", href: "/investment-score" }] : []),
   ] },
 ];
 
