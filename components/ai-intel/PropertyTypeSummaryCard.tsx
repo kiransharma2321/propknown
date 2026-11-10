@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { sourceHosts } from "@/lib/engine/sources";
 
 // Plain presentational component -- no hooks, no "use client" -- so it renders correctly from
 // both a Server Component (app/(public)/ai-intelligence/[city]/[area]/page.tsx, the crawlable
@@ -34,9 +35,6 @@ const UNIT_LABEL: Record<string, string> = {
   sqft: "sq.ft", sqyard: "sq.yard", acres: "acre", sqm: "sq.m",
 };
 
-function hostnameOf(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
-}
 
 export default function PropertyTypeSummaryCard({
   propertyTypeLabel,
@@ -59,6 +57,8 @@ export default function PropertyTypeSummaryCard({
   const ts = TREND_STYLE[data.trend ?? "Stable"] ?? TREND_STYLE.Stable;
   const unitLabel = UNIT_LABEL[data.pricePerSqftUnit ?? "sqft"] ?? data.pricePerSqftUnit ?? "sq.ft";
   const sym = data.currencySymbol ?? "";
+  // Only real price sources are shown; with none left the result is marked Low confidence.
+  const hosts = sourceHosts(data.sourceUrls);
 
   return (
     <div className="card-dark p-5">
@@ -88,11 +88,13 @@ export default function PropertyTypeSummaryCard({
         </p>
       )}
 
-      {data.sourceUrls && data.sourceUrls.length > 0 && (
+      {hosts.length > 0 ? (
         <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-gray-500 mt-2">
           <CheckCircle2 size={12} className="text-green-600 shrink-0" />
-          Sources: {data.sourceUrls.slice(0, 4).map(hostnameOf).join(", ")}
+          Sources: {hosts.slice(0, 4).join(", ")}
         </div>
+      ) : (
+        <p className="text-[11px] mt-2 text-red-700">Sources unavailable · Low confidence</p>
       )}
 
       <p className="text-gray-400 text-[11px] leading-relaxed mt-2 italic">

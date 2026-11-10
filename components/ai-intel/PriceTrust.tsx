@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ShieldCheck, Landmark, Sparkles, Tag, ExternalLink } from "lucide-react";
+import { sourceHost } from "@/lib/engine/sources";
 
 // Trust pieces shown with every AI price: the confidence badge, the three-way price view
 // (govt guidance value · AI market estimate · asking price) and the "How we got this number"
@@ -79,9 +80,8 @@ export function HowWeGotThis({ sourceUrls, fetchedAt, dataSourceLabel, guidance,
 }) {
   const [open, setOpen] = useState(false);
   const date = fetchedAt ? fmtDate(fetchedAt) : "today";
-  const hosts = (sourceUrls ?? []).map((u) => {
-    try { return { url: u, host: new URL(u).hostname.replace(/^www\./, "") }; } catch { return null; }
-  }).filter((x): x is { url: string; host: string } => !!x);
+  const hosts = (sourceUrls ?? []).map((u) => ({ url: u, host: sourceHost(u) }))
+    .filter((x): x is { url: string; host: string } => !!x.host);
 
   return (
     <div className="mt-4 border border-gray-200 rounded-xl">
@@ -109,7 +109,7 @@ export function HowWeGotThis({ sourceUrls, fetchedAt, dataSourceLabel, guidance,
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400">No source links were returned for this result.</p>
+            <p className="text-red-700">Sources unavailable for this result, so treat it as Low confidence.</p>
           )}
           {guidance && (
             <p>

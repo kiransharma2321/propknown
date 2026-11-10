@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/db";
 import { PROPERTY_TYPES } from "@/lib/hotMarkets";
-import { isPriceSource } from "@/lib/engine/sources";
+import { sourceHost } from "@/lib/engine/sources";
 
 export interface HeroExample {
   id: string;
@@ -41,10 +41,7 @@ function unitDisplay(unit: string): string {
 
 // Search-tooling/company-profile pages occasionally come back as "sources"; they aren't
 // property data, so they're never shown as one on the homepage.
-function hostOf(u: string): string | null {
-  if (!isPriceSource(u)) return null;
-  return new URL(u).hostname.replace(/^www\./, "");
-}
+const hostOf = sourceHost;
 
 export async function getHeroExamples(): Promise<HeroExample[]> {
   let rows: Awaited<ReturnType<typeof prisma.locationMarketCache.findMany>> = [];

@@ -3,6 +3,8 @@
 // they agree, and how old the data is. Computed on the way out of the engine (so a cached row
 // gets less confident as it ages), never stored.
 
+import { sourceHosts } from "@/lib/engine/sources";
+
 export type ConfidenceLevel = "High" | "Medium" | "Low";
 export interface Confidence { level: ConfidenceLevel; reason: string }
 
@@ -17,17 +19,12 @@ export interface ConfidenceInput {
 
 const DAY = 86_400_000;
 
-export function sourceDomains(urls: unknown): string[] {
-  if (!Array.isArray(urls)) return [];
-  const out = new Set<string>();
-  for (const u of urls) {
-    try { out.add(new URL(String(u)).hostname.replace(/^www\./, "")); } catch { /* skip junk */ }
-  }
-  return Array.from(out);
-}
+// Real price-source hosts only (search tools, company databases and social sites dropped).
+export const sourceDomains = sourceHosts;
 
 export function computeConfidence(r: ConfidenceInput, now = Date.now()): Confidence {
   const sources = sourceDomains(r.sourceUrls).length;
+  if (sources === 0) return { level: "Low", reason: "Sources unavailable for this result." };
   const ev = r.evidence ?? null;
   const ageDays = r.fetchedAt ? Math.max(0, (now - new Date(r.fetchedAt).getTime()) / DAY) : 0;
 
