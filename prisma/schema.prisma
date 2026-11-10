@@ -902,3 +902,26 @@ model DocumentCheck {
   @@index([reviewStatus])
   @@map("document_checks")
 }
+
+// M7: infrastructure shown on area pages. ONLY entries an admin adds by hand from a verified
+// source (government order, authority website, official press release) -- never scraped or
+// AI-generated. Each row carries its source and the date it was checked.
+model InfraProject {
+  id           String   @id @default(cuid())
+  name         String
+  kind         String // metro | rail | road | airport | it_park | hospital | school | other
+  status       String // announced | approved | under_construction | completed
+  citySlug     String
+  areaSlugs    String // comma-separated area slugs it serves, e.g. "kokapet,narsingi"
+  expected     String? // as stated by the source, e.g. "Dec 2027"
+  sourceName   String
+  sourceUrl    String
+  verifiedBy   String
+  verifiedAt   DateTime
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([citySlug])
+  @@map("infra_projects")
+}

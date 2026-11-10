@@ -16,6 +16,8 @@ export const FEATURES = {
   docChecker: process.env.NEXT_PUBLIC_FEATURE_DOC_CHECKER === "true",
   /** M6: preliminary Due Diligence Report with human review (/due-diligence). */
   dueDiligence: process.env.NEXT_PUBLIC_FEATURE_DUE_DILIGENCE === "true",
+  /** M7: area map + nearby places (OpenStreetMap) + admin-verified infrastructure only. */
+  maps: process.env.NEXT_PUBLIC_FEATURE_MAPS === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

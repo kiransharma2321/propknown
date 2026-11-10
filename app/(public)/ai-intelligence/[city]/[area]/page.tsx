@@ -6,6 +6,9 @@ import { OG_IMAGE } from "@/app/layout";
 import { allAreaPages, findAreaPage, getAreaPrices, nearbyPages, areaPath, type TypePrice } from "@/lib/areaPages";
 import { ConfidenceBadge, AI_DISCLAIMER } from "@/components/ai-intel/PriceTrust";
 import WatchButton from "@/components/buyer/WatchButton";
+import AreaGeo from "@/components/area/AreaGeo";
+import VerifiedInfra from "@/components/area/VerifiedInfra";
+import { FEATURES } from "@/lib/features";
 import FairPriceReportButton from "@/components/leads/FairPriceReportButton";
 
 // Canonical area price page. Server-rendered from the cache tables only (lib/areaPages) -- no
@@ -172,6 +175,14 @@ export default async function AreaPricePage({ params }: Props) {
                 </Link>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* M7 (flag): verified infrastructure (admin-entered, sourced) + OpenStreetMap map/nearby */}
+        {FEATURES.maps && (
+          <div className="mb-12">
+            <VerifiedInfra citySlug={page.citySlug} areaSlug={page.areaSlug} />
+            <AreaGeo area={page.area} city={page.city} />
           </div>
         )}
 
