@@ -214,10 +214,7 @@ body {
 /* ── Direction 1 design system: inner-page skin (.pk-inner) ─────────────────────────────
    Restyles the shared classes every page already uses, so the new look reaches each page
    without touching its logic. The page's old title block gives way to the new PageHero. */
-.pk-inner > div:first-child { padding-top: 2.5rem !important; background: #FBF8F2; }
-.pk-inner h1.heading-h1,
-.pk-inner nav[aria-label="Breadcrumb"],
-.pk-inner .text-center.mb-10 > div:first-child:has(svg) { display: none; }
+.pk-inner > div:first-child { background: #FBF8F2; }
 .pk-inner .btn-primary { background: #D6A63E; color: #0B1B33; border-radius: 9999px; font-weight: 600; transition: transform .2s, box-shadow .2s; }
 .pk-inner .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -10px rgba(214,166,62,.7); }
 .pk-inner .btn-secondary { border-radius: 9999px; border-color: #0B1B33; color: #0B1B33; }
@@ -226,3 +223,20 @@ body {
 .pk-inner .card-dark, .pk-inner .rounded-2xl.border { border-radius: 1.5rem; transition: transform .25s, box-shadow .25s; }
 .pk-inner .card-dark:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -24px rgba(11,27,51,.45); }
 @media (prefers-reduced-motion: reduce) { .pk-inner .btn-primary, .pk-inner .card-dark { transition: none; } .pk-inner .btn-primary:hover, .pk-inner .card-dark:hover { transform: none; } }
+
+/* ── Direction 1 restyle skin (.pk-skin): colours, radius, buttons, footer only ─────────────
+   Applied around existing sections and pages without changing their content or structure. */
+.pk-skin .bg-zinc-950, .pk-skin .bg-black, .pk-skin .bg-brand-black { background-color: #0B1B33; }
+.pk-skin .border-zinc-800 { border-color: rgba(255,255,255,.10); }
+.pk-skin .btn-primary { background: #D6A63E; color: #0B1B33; border-radius: 9999px; font-weight: 600; transition: transform .2s, box-shadow .2s; }
+.pk-skin .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -10px rgba(214,166,62,.7); }
+.pk-skin .btn-secondary { border-radius: 9999px; }
+.pk-skin .card-dark { border-radius: 1.5rem; transition: transform .25s, box-shadow .25s; }
+.pk-skin .card-dark:hover { box-shadow: 0 18px 40px -24px rgba(11,27,51,.45); }
+.pk-footer footer { background-color: #07122A; border-top-color: rgba(214,166,62,.25); }
+/* Mobile: lift the floating WhatsApp / KnownAI buttons above the sticky action bar. */
+@media (max-width: 767px) {
+  .pk-skin .fixed.bottom-6.left-6, .pk-skin .fixed.bottom-6.right-6 { bottom: 5rem; }
+  .pk-skin .fixed.bottom-8.right-24 { bottom: 5.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .pk-skin .btn-primary, .pk-skin .card-dark { transition: none; } .pk-skin .btn-primary:hover { transform: none; } }

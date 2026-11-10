@@ -192,7 +192,7 @@ export default async function ServicesPage() {
         </div>
 
         {GROUPS.map(({ group, services }) => (
-          <div key={group} className="mb-16">
+          <div key={group} id={group.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")} className="mb-16 scroll-mt-28">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-px flex-1 bg-gray-200" />
               <h2 className="heading-h3 whitespace-nowrap">

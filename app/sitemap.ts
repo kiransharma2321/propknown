@@ -33,6 +33,7 @@ const STATIC: { path: string; changeFrequency: "daily" | "weekly" | "monthly" | 
   { path: "/podcast",         changeFrequency: "monthly", priority: 0.55 },
   { path: "/guides",          changeFrequency: "weekly",  priority: 0.70 },
   { path: "/news",            changeFrequency: "daily",   priority: 0.70 },
+  { path: "/area-prices",     changeFrequency: "weekly",  priority: 0.70 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
