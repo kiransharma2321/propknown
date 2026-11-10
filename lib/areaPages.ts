@@ -2,7 +2,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { getMarketPrice, unitLabel, type EngineResult } from "@/lib/engine";
 import { computeConfidence, sourceDomains, type Confidence } from "@/lib/engine/confidence";
-import { isPriceSource } from "@/lib/engine/sources";
+import { isPriceSource, sourceHosts } from "@/lib/engine/sources";
 import { ALL_LOCALITIES, PAGE_CITIES, findLocality, nearbyLocalities, type Locality } from "@/lib/localities";
 import { HOT_MARKETS, PROPERTY_TYPES, slugify as hotSlug } from "@/lib/hotMarkets";
 
@@ -88,7 +88,9 @@ export function nearbyPages(page: AreaPage, max = 6): AreaPage[] {
 // For the sitemap: area pages that have at least one cached price, with the newest row date.
 export async function areaPagesWithData(): Promise<{ path: string; lastModified: Date }[]> {
   const pages = allAreaPages();
-  const engineRows = await prisma.locationMarketCache.findMany({ where: { pricePerUnit: { gt: 0 } }, select: { locationKey: true, locationName: true, propertyType: true, fetchedAt: true } });
+  const engineRows = (await prisma.locationMarketCache.findMany({ where: { pricePerUnit: { gt: 0 } }, select: { locationKey: true, locationName: true, propertyType: true, fetchedAt: true, data: true } }))
+    // Same rule as the engine: a price with no real source isn't published, so it can't list a page.
+    .filter((r) => sourceHosts((r.data as { sourceUrls?: unknown } | null)?.sourceUrls).length > 0);
   const newest = new Map<string, Date>();
   const bump = (key: string, d: Date) => { const cur = newest.get(key); if (!cur || d > cur) newest.set(key, d); };
   for (const row of engineRows) {

@@ -24,6 +24,7 @@ export default function HeroExampleCarousel({ examples }: { examples: HeroExampl
     return () => clearInterval(t);
   }, [paused, count]);
 
+  if (count === 0) return null;
   return (
     <div
       className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col"
