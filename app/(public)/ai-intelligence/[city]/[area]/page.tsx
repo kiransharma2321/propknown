@@ -5,6 +5,7 @@ import { ArrowRight, MapPin, Scale, ShieldCheck } from "lucide-react";
 import { OG_IMAGE } from "@/app/layout";
 import { allAreaPages, findAreaPage, getAreaPrices, nearbyPages, areaPath, type TypePrice } from "@/lib/areaPages";
 import { ConfidenceBadge, AI_DISCLAIMER } from "@/components/ai-intel/PriceTrust";
+import WatchButton from "@/components/buyer/WatchButton";
 import FairPriceReportButton from "@/components/leads/FairPriceReportButton";
 
 // Canonical area price page. Server-rendered from the cache tables only (lib/areaPages) -- no
@@ -100,6 +101,7 @@ export default async function AreaPricePage({ params }: Props) {
               : <>We don&apos;t have verified price data for {page.area} yet, and we don&apos;t publish guesses. You can run a live check below.</>}
           </p>
           <p className="text-gray-500 text-xs mt-2">{AI_DISCLAIMER}</p>
+          <WatchButton kind="area" location={`${page.area}, ${page.city}`} className="mt-3" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">

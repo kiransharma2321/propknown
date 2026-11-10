@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Building2, Loader2, ExternalLink } from "lucide-react";
 import { ConfidenceBadge, AI_DISCLAIMER } from "@/components/ai-intel/PriceTrust";
 import { sourceSiteCount, type ProjectResult } from "@/lib/projects/sites";
+import WatchButton from "@/components/buyer/WatchButton";
 
 // Optional "Project / apartment / venture name" check (Task K): autocomplete from our own records,
 // then the project's facts and current asking price from real dated sources, compared with the
@@ -112,6 +113,7 @@ export default function ProjectCheck({ area, propertyType, quotedPricePerSqft, o
             <p className="text-gray-600">We found the project but no dated asking price for it yet.</p>
           )}
           <p className="text-[11px] text-gray-500">{AI_DISCLAIMER}</p>
+          {result.price && <WatchButton kind="project" location={result.query.area} projectName={result.name} propertyType={propertyType} />}
           <ExpertForm project={name} area={area} />
         </div>
       )}

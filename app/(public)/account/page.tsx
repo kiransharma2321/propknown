@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, Bell, LogOut, Trash2 } from "lucide-react";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
+import AccountV2Sections from "@/components/buyer/AccountV2Sections";
+import { FEATURES } from "@/lib/features";
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
 const GOLD = "#8a6a2e";
@@ -175,6 +177,9 @@ export default function AccountDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* M2 (feature flag): price watchlist, saved searches, Fair-Price Reports */}
+        {FEATURES.accountV2 && <AccountV2Sections />}
       </div>
     </div>
   );

@@ -13,9 +13,11 @@ export const ADMIN_ALERT_EMAIL = "raghupinnelli@gmail.com";
 
 export type EmailKind =
   | "report" | "day2" | "day5" | "hot_alert" | "newsletter" | "listing_verify"
-  | "listing_approved" | "listing_rejected" | "callback_alert" | "lead_alert" | "test";
+  | "listing_approved" | "listing_rejected" | "callback_alert" | "lead_alert" | "test"
+  | "buyer_otp" | "price_watch";
 
-const MARKETING: EmailKind[] = ["day2", "day5", "newsletter"];
+// price_watch: requested by the customer, but still honours a global unsubscribe.
+const MARKETING: EmailKind[] = ["day2", "day5", "newsletter", "price_watch"];
 
 function secret(): string {
   const s = process.env.UNSUBSCRIBE_SECRET || process.env.NEXTAUTH_SECRET;

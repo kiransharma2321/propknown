@@ -1,0 +1,13 @@
+// Feature flags for the MASTER UPGRADE items. Every flag is OFF unless its environment variable
+// is exactly "true" (set it in Vercel -> Settings -> Environment Variables, then redeploy).
+// While a flag is off, its pages/buttons are hidden and its API routes answer 404, so nothing
+// half-finished reaches visitors. NEXT_PUBLIC_ so client components can read them too.
+//
+// Security and accuracy fixes are never behind a flag.
+
+export const FEATURES = {
+  /** M2: My PropKnown -- email-code login, saved searches, price watchlist, saved reports. */
+  accountV2: process.env.NEXT_PUBLIC_FEATURE_ACCOUNT_V2 === "true",
+} as const;
+
+export type FeatureKey = keyof typeof FEATURES;

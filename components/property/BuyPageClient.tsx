@@ -13,6 +13,7 @@ import VerificationBadge from "@/components/ui/VerificationBadge";
 import { PUBLIC_LISTINGS } from "@/lib/listings";
 import { reraBadge } from "@/lib/listings/rera";
 import { useCallbackText } from "@/components/useCallbackText";
+import SaveSearchButton from "@/components/buyer/SaveSearchButton";
 
 // Was previously its own hardcoded copy of these 8 listings (with its own drifted image URLs
 // and, at one point, a RERA number silently duplicated from prop-2) -- consolidated to read
@@ -247,6 +248,11 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
                 <ChevronDown size={12} className="absolute right-2.5 top-3.5 text-gray-400 pointer-events-none" />
               </div>
             </div>
+            {isSearchActive && (
+              <SaveSearchButton kind="listings" className="self-center whitespace-nowrap"
+                name={[type !== "All Types" ? type : "", area.trim(), city !== "All Cities" ? city : "", budget !== "Any Budget" ? budget : ""].filter(Boolean).join(" · ") || "Properties"}
+                path={`/buy?${new URLSearchParams(Object.entries({ city: city !== "All Cities" ? city : "", area: area.trim(), type: type !== "All Types" ? type : "", budget: budget !== "Any Budget" ? budget : "" }).filter(([, v]) => v)).toString()}`} />
+            )}
             {isSearchActive && (
               <button onClick={clearAll} className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 border border-gray-300 rounded-lg px-3 py-2.5 transition-colors duration-200 whitespace-nowrap">
                 <X size={13} /> Clear

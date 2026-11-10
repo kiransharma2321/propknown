@@ -4,6 +4,8 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
+import OtpLogin from "@/components/buyer/OtpLogin";
+import { FEATURES } from "@/lib/features";
 
 // #8a6a2e (5.02:1 on white) instead of #C9A24B (2.40:1) -- WCAG AA needs 4.5:1 for text.
 const GOLD = "#8a6a2e";
@@ -15,6 +17,8 @@ function LoginForm() {
   const { refreshBuyer } = useBuyer();
 
   const [mode, setMode] = useState<"login" | "signup">("login");
+  // M2 (feature flag): email-code login is offered first; password login stays available.
+  const [usePassword, setUsePassword] = useState(!FEATURES.accountV2);
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,6 +58,18 @@ function LoginForm() {
           {mode === "login" ? "Access your saved favorites and property alerts." : "Save favorites and get alerted on matching properties."}
         </p>
 
+        {!usePassword && (
+          <>
+            <OtpLogin onDone={() => { refreshBuyer(); router.push(next); }} />
+            <p className="text-center text-sm text-gray-500 mt-6">
+              <button onClick={() => setUsePassword(true)} className="font-semibold" style={{ color: GOLD }}>Use a password instead</button>
+            </p>
+          </>
+        )}
+        {usePassword && <>
+        {FEATURES.accountV2 && (
+          <p className="text-center text-sm text-gray-500 mb-4"><button onClick={() => setUsePassword(false)} className="font-semibold" style={{ color: GOLD }}>Log in with an emailed code instead</button></p>
+        )}
         <form onSubmit={onSubmit} className="space-y-4">
           {mode === "signup" && (
             <div>
@@ -96,6 +112,7 @@ function LoginForm() {
             {mode === "login" ? "Create an account" : "Log in"}
           </button>
         </p>
+        </>}
 
         <p className="text-center text-xs text-gray-400 mt-8">
           <Link href="/buy" className="hover:underline">← Back to browsing properties</Link>
