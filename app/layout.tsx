@@ -143,18 +143,16 @@ const jsonLd = {
   ],
   founder: {
     "@type": "Person",
-    name: "Pinnelli Raghu Kiran",
+    name: "Pinnelli Raghukiran",
     jobTitle: "Founder & CEO",
-    alumniOf: ["ISB Hyderabad", "IIM", "BITS Pilani"],
+    description: "B.Com; ISB and IIM Bangalore credentials; 20+ years across real estate, financial services and media.",
+    alumniOf: [{ "@type": "CollegeOrUniversity", name: "Indian School of Business" }, { "@type": "CollegeOrUniversity", name: "Indian Institute of Management Bangalore" }],
   },
   areaServed: [
     { "@type": "City", name: "Hyderabad" },
     { "@type": "City", name: "Bangalore" },
     { "@type": "Country", name: "India" },
     { "@type": "Country", name: "United Arab Emirates" },
-    { "@type": "Country", name: "United Kingdom" },
-    { "@type": "Country", name: "Singapore" },
-    { "@type": "Country", name: "United States" },
   ],
   sameAs: [
     "https://instagram.com/propknown",

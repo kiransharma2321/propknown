@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { CheckCircle, Lightbulb, Leaf, Eye, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { COMPANY } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "About Us | Pinnelli Raghu Kiran — Founder",
-  description: "Founded 01 October 2023 by Pinnelli Raghu Kiran — ISB Alumni, IIM PG Diploma, BITS, 20+ years. India's first AI-powered verified real estate platform.",
+  title: "About Us | Pinnelli Raghukiran — Founder",
+  description: "Founded 01 October 2023 by Pinnelli Raghukiran — B.Com; ISB and IIM Bangalore credentials; 20+ years across real estate, financial services and media.",
 };
 
-const CREDENTIALS = ["ISB Alumni", "IIM PG Diploma", "BITS", "20+ Years Experience", "Product Management"];
+const CREDENTIALS = ["B.Com", "ISB", "IIM Bangalore", "20+ Years: Real Estate, Financial Services & Media"];
 
 const CORE_VALUES = [
   { icon: Lightbulb, title: "Innovation",     desc: "Pioneering AI tools that bring institutional-grade intelligence to every buyer and seller." },
@@ -42,7 +41,7 @@ export default function AboutPage() {
             Built on Expertise. <span className="gold-text">Driven by Trust.</span>
           </h1>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">
-            Founded 01 October 2023 · Hyderabad, India · {COMPANY.markets.join(" · ")}
+            Founded 01 October 2023 · Hyderabad, India
           </p>
         </div>
 
@@ -56,7 +55,7 @@ export default function AboutPage() {
               <span className="font-playfair text-5xl font-bold gold-text">P</span>
             </div>
             <h2 className="heading-h2 mb-1">
-              Pinnelli Raghu Kiran
+              Pinnelli Raghukiran
             </h2>
             <p className="font-semibold text-sm tracking-wider mb-5" style={{ color: "var(--gold-text)" }}>
               Founder &amp; Managing Director, PropKnown Infra Pvt Ltd
@@ -73,7 +72,7 @@ export default function AboutPage() {
                 Know. Invest. Grow.&rdquo;
               </p>
               <footer className="mt-3 text-sm font-semibold" style={{ color: "var(--gold-text)" }}>
-                — Pinnelli Raghu Kiran, Founder
+                — Pinnelli Raghukiran, Founder
               </footer>
             </blockquote>
             <a
@@ -87,9 +86,8 @@ export default function AboutPage() {
 
           <div className="space-y-4">
             {[
-              { title: "The Problem He Saw",     desc: "After 20+ years in Product Management, Raghu experienced first-hand the rampant fake listings, spam calls, and information asymmetry in Indian real estate." },
-              { title: "The Solution He Built",   desc: "PropKnown — India's first AI-powered, fully verified real estate platform. Every listing goes through a 10-point verification before reaching a buyer." },
-              { title: "The Education Behind It", desc: "ISB Alumni | IIM PG Diploma | BITS — bringing elite management thinking and data discipline to an industry that needed it most." },
+              { title: "The Problem He Saw",     desc: "After 20+ years across real estate, financial services and media, Raghukiran saw first-hand the fake listings, spam calls and information asymmetry in Indian real estate." },
+              { title: "The Education Behind It", desc: "B.Com | ISB and IIM Bangalore credentials — bringing management thinking and data discipline to an industry that needed it." },
               { title: "The Vision Ahead",        desc: "Expand to 20+ global markets, build the world's most comprehensive real estate AI, and make every property decision informed, transparent, and profitable." },
             ].map(({ title, desc }) => (
               <div key={title} className="card-dark bg-gray-50 p-5">

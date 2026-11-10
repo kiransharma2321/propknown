@@ -5,9 +5,9 @@ import { OG_IMAGE } from "@/app/layout";
 export const metadata: Metadata = {
   alternates: { canonical: "https://www.propknown.com/about" },
   openGraph: {
-    title: "About PropKnown — Founded by ISB Alumni Raghu Kiran",
+    title: "About PropKnown — Founded by Pinnelli Raghukiran",
     description:
-      "20+ years of real estate expertise. ISB, IIM, BITS Pilani pedigree. AI-powered, RERA-verified, fully transparent. Know. Invest. Grow.",
+      "Founded by Pinnelli Raghukiran — B.Com; ISB and IIM Bangalore credentials; 20+ years across real estate, financial services and media. Know. Invest. Grow.",
     images: [OG_IMAGE],
   },
 };

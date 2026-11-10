@@ -75,7 +75,7 @@ export default function Footer() {
           </p>
           <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-xs">
             Premium real estate advisory and transaction services across India and globally.
-            Founded by {COMPANY.founder} with 20+ years of expertise.
+            Founded by {COMPANY.founder}: 20+ years across real estate, financial services and media.
           </p>
           <div className="flex items-center gap-3">
             {[

@@ -118,9 +118,6 @@ export default function HeroSection({ examples }: { examples: HeroExample[] }) {
         {/* Stats strip */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-6 md:gap-10">
           {[
-            { val: "Zero", label: "Fake Listings" },
-            { val: "AI 9.2", label: "Highest Rated" },
-            { val: "Global", label: "Reach" },
             { val: "₹0", label: "Brokerage" },
           ].map(({ val, label }) => (
             <div key={label} className="text-center">

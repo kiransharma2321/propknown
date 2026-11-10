@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Contact PropKnown — WhatsApp 70130 16003",
     description:
-      "Reach Raghu Kiran directly on WhatsApp 70130 16003 or visit our Hyderabad office. We respond within 2 hours.",
+      "Reach Raghukiran directly on WhatsApp 70130 16003 or visit our Hyderabad office. We respond within 2 hours.",
     images: [OG_IMAGE],
   },
 };

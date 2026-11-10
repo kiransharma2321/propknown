@@ -1199,7 +1199,7 @@ function AdminDashboardInner() {
               <h2 className="font-playfair text-gray-900 font-semibold text-sm uppercase tracking-wider border-b border-gray-200 pb-3">Business Info</h2>
               {[
                 { label: "Company", value: "PropKnown Infra Pvt Ltd" },
-                { label: "Founder", value: "Pinnelli Raghu Kiran" },
+                { label: "Founder", value: "Pinnelli Raghukiran" },
                 { label: "WhatsApp", value: "+91 70130 16003" },
                 { label: "Email", value: "kiranpropservices@gmail.com" },
                 { label: "Address", value: "Shop No 3, Venkateswara Nilyam, Nizampet Road, Hyd 500090" },

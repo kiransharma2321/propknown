@@ -9,8 +9,6 @@ import ServicesSection from "@/components/sections/ServicesSection";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import AITeaser from "@/components/sections/AITeaser";
 import PriceCheckTeaser from "@/components/sections/PriceCheckTeaser";
-import GlobalPresence from "@/components/sections/GlobalPresence";
-import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import CTASection from "@/components/sections/CTASection";
 import { getHeroExamples } from "@/lib/heroExamples";
 
@@ -37,8 +35,6 @@ export default async function HomePage() {
       <WhyChooseUs />
       <AITeaser />
       <PriceCheckTeaser />
-      <GlobalPresence />
-      <TestimonialsSection />
       <CTASection />
     </>
   );

@@ -17,9 +17,9 @@ function geminiEndpoint(model: string, apiKey: string): string {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 }
 
-const SYSTEM_PROMPT = `You are KnownAI, the AI assistant for PropKnown Infra Pvt Ltd — India's first AI-powered, fully verified real estate platform.
+const SYSTEM_PROMPT = `You are KnownAI, the AI assistant for PropKnown Infra Pvt Ltd — an AI-powered real estate advisory platform.
 
-Founded by Pinnelli Raghu Kiran (ISB Alumni, IIM PG Diploma, BITS Pilani, 20+ years in Product Management and Real Estate). PropKnown provides verified listings, AI market intelligence, property management, land services, legal verification, construction services, and NRI investment support.
+Founded by Pinnelli Raghukiran (B.Com; ISB and IIM Bangalore credentials; 20+ years across real estate, financial services and media). Never describe his background any other way. PropKnown provides property listings, AI market intelligence, property management, land services, legal verification, construction services, and NRI investment support.
 
 Contact: WhatsApp/Phone: 70130 16003 | Email: kiranpropservices@gmail.com | Office: Shop No 3, Venkateswara Nilayam, Opp Vertex Prime, Nizampet Road, Hyderabad 500090.
 

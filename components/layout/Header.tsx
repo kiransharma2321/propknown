@@ -79,7 +79,7 @@ export default function Header() {
       <div className="bg-gray-50 border-b border-gray-200 hidden lg:block">
         <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between">
           <span className="text-gray-500 text-xs">
-            Premium Real Estate Across {COMPANY.markets.join(" · ")}
+
           </span>
           <div className="flex items-center gap-6">
             <a href={`tel:${COMPANY.phoneTel}`}

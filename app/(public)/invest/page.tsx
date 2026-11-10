@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TrendingUp, Globe, Shield, BarChart3, ArrowRight } from "lucide-react";
+import { TrendingUp, BarChart3, ArrowRight } from "lucide-react";
 import LeadForm from "@/components/ui/LeadForm";
 
 export const metadata: Metadata = {
@@ -34,8 +34,6 @@ export default function InvestPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
           {[
             { icon: TrendingUp, title: "AI ROI Analysis",    desc: "Every opportunity backed by data-driven return projections." },
-            { icon: Globe,      title: "Global Markets",     desc: "IN, UAE, UK, USA, Singapore — curated for NRI investors." },
-            { icon: Shield,     title: "RERA Verified",      desc: "Zero unverified projects. Full compliance across all markets." },
             { icon: BarChart3,  title: "Portfolio Tracking", desc: "Monitor your investments across markets in one place." },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="card-dark bg-gray-50 p-5 text-center">

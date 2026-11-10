@@ -18,7 +18,7 @@ const EPISODES = [
   { ep: "EP 12", title: "Hyderabad 2025: Why Gachibowli is the Next Financial District", duration: "42 min", guest: "Rajesh Kumar, Urban Economist" },
   { ep: "EP 11", title: "NRI Investment Guide: Dubai vs Hyderabad — Where to Park ₹1 Crore?", duration: "38 min", guest: "Srinivas Rao, NRI Property Expert" },
   { ep: "EP 10", title: "RERA Deep Dive: Your Rights as a Buyer", duration: "51 min", guest: "Advocate Priya Reddy" },
-  { ep: "EP 09", title: "AI in Real Estate: How Technology is Changing Property Decisions", duration: "44 min", guest: "Pinnelli Raghu Kiran, Founder PropKnown" },
+  { ep: "EP 09", title: "AI in Real Estate: How Technology is Changing Property Decisions", duration: "44 min", guest: "Pinnelli Raghukiran, Founder PropKnown" },
   { ep: "EP 08", title: "Bangalore Off-Plan Opportunity: Early Mover Advantage in Whitefield", duration: "36 min", guest: "Anil Mehta, Developer" },
   { ep: "EP 07", title: "First Home Buyer Blueprint: From Search to Registration", duration: "55 min", guest: "Kavitha Nair, Home Buyer Advocate" },
 ];

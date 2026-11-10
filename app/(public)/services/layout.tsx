@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Property Services — Legal, RERA, Management | PropKnown",
     description:
-      "End-to-end real estate services: legal verification, RERA registration, property management, NRI support. Expert team led by ISB & IIM alumnus Raghu Kiran.",
+      "End-to-end real estate services: legal verification, RERA registration, property management, NRI support. Led by founder Pinnelli Raghukiran (B.Com; ISB and IIM Bangalore credentials; 20+ years across real estate, financial services and media).",
     images: [OG_IMAGE],
   },
 };
