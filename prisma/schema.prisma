@@ -725,3 +725,48 @@ model ListingDraft {
   @@index([reviewStatus, createdAt])
   @@map("listing_drafts")
 }
+
+// Real-estate developments collected daily by the news cron (Task H): headline, link, source
+// and date only -- source text is kept just long enough for the AI to write an ORIGINAL article
+// and is never published. De-duplicated by URL.
+model NewsItem {
+  id          String    @id @default(cuid())
+  url         String    @unique
+  title       String
+  sourceName  String
+  kind        String    // rbi | pib | rera | report | news
+  publishedAt DateTime?
+  fetchedAt   DateTime  @default(now())
+  snippet     String?   @db.Text
+  relevance   Int       @default(0)
+  markets     String[]
+  postId      String?   // the BlogPost it was used in
+
+  @@index([fetchedAt])
+  @@index([relevance])
+  @@map("news_items")
+}
+
+// Blog Studio: AI-drafted articles (daily news + weekly Market Pulse). Nothing is public until
+// the admin approves; citations carry every fact's source link and date.
+model BlogPost {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  kind          String    // news | market_pulse
+  title         String
+  excerpt       String
+  body          String    @db.Text
+  whatItMeans   String    @db.Text
+  citations     Json      @default("[]") // [{ title, url, source, date, quote? }]
+  relatedLinks  Json      @default("[]") // [{ label, href }]
+  socialDrafts  Json?     // { instagram, linkedin } captions for Content Studio, drafts only
+  status        String    @default("draft") // draft | published | rejected
+  rejectReason  String?
+  reviewedBy    String?
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("blog_posts")
+}

@@ -11,7 +11,7 @@ export const revalidate = 3600;
 
 // Static pages carry no lastModified: we don't know when each last changed, and stamping
 // "today" on every crawl tells search engines nothing true.
-const STATIC: { path: string; changeFrequency: "weekly" | "monthly" | "yearly"; priority: number }[] = [
+const STATIC: { path: string; changeFrequency: "daily" | "weekly" | "monthly" | "yearly"; priority: number }[] = [
   { path: "",                 changeFrequency: "weekly",  priority: 1.0 },
   { path: "/buy",             changeFrequency: "weekly",  priority: 0.95 },
   { path: "/sell",            changeFrequency: "monthly", priority: 0.85 },
@@ -32,6 +32,7 @@ const STATIC: { path: string; changeFrequency: "weekly" | "monthly" | "yearly"; 
   { path: "/price-check",     changeFrequency: "monthly", priority: 0.80 },
   { path: "/podcast",         changeFrequency: "monthly", priority: 0.55 },
   { path: "/guides",          changeFrequency: "weekly",  priority: 0.70 },
+  { path: "/news",            changeFrequency: "daily",   priority: 0.70 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -58,5 +59,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE}/guides/${g.slug}`, lastModified: new Date(g.updated), changeFrequency: "monthly", priority: 0.70,
   }));
 
-  return [...staticPages, ...areaPages, ...guidePages, ...propertyPages, ...submissionPages];
+  // Published news / Market Pulse posts only (drafts never appear).
+  const posts = await prisma.blogPost.findMany({ where: { status: "published" }, select: { slug: true, updatedAt: true } }).catch(() => []);
+  const newsPages: MetadataRoute.Sitemap = posts.map((p) => ({
+    url: `${BASE}/news/${p.slug}`, lastModified: p.updatedAt, changeFrequency: "monthly", priority: 0.65,
+  }));
+
+  return [...staticPages, ...areaPages, ...guidePages, ...newsPages, ...propertyPages, ...submissionPages];
 }

@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/automation/sequences", label: "Sequences" },
   { href: "/admin/automation/engine-health", label: "Engine Health" },
   { href: "/admin/automation/guidance-rates", label: "Guidance Rates" },
+  { href: "/admin/automation/blog-studio", label: "Blog Studio" },
   { href: "/admin/automation/content-studio", label: "Content Studio" },
   { href: "/admin/approval-queue", label: "Approval Queue" },
   { href: "/admin/automation/project-finder", label: "Project Finder" },

@@ -24,6 +24,7 @@ const footerLinks = {
     { label: "Price Reality Check",  href: "/price-check" },
     { label: "Legal Shield",         href: "/legal-shield" },
     { label: "Guides",               href: "/guides" },
+    { label: "Market News",          href: "/news" },
     { label: "Podcast",              href: "/podcast" },
     { label: "PropKnown Verified",   href: "/verified" },
   ],
