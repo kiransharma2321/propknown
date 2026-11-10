@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Scale, Building2, ShieldCheck, FileSearch, Calculator, TrendingUp, BarChart3, MessageSquareText, Landmark, Sparkles, Tag, FileDown, Mic2 } from "lucide-react";
 import HomeHero from "@/components/pk/HomeHero";
 import PriceBoard from "@/components/pk/PriceBoard";
-import { Reveal, CountUp } from "@/components/pk/Motion";
+import { Reveal } from "@/components/pk/Reveal";
+import { CountUp, RevealObserver } from "@/components/pk/Motion";
 import { PK, TRUST_FACTS, REGISTRATIONS } from "@/components/pk/tokens";
 import { loadHome } from "@/components/pk/homeData";
 import { getHeroExamples } from "@/lib/heroExamples";
@@ -41,6 +42,8 @@ export default async function HomePage() {
     <>
       {/* Existing: hero (restyled; Project / My quote tabs added inside the check card) */}
       <HomeHero examples={examples} />
+      {/* Below the fold: .pk-cv lets the browser skip layout of off-screen sections (PageSpeed). */}
+      <div className="pk-cv">
       {/* Existing */}
       <StatsSection />
 
@@ -53,7 +56,7 @@ export default async function HomePage() {
             {[
               { icon: Landmark, label: "Govt guidance value", kind: "Official", value: "Not yet entered", note: "Copied by hand from IGRS with its effective date. Not available for this area yet.", muted: true },
               { icon: Sparkles, label: "AI market estimate", kind: "AI estimate", value: d.threeWay.aiArea?.price ? `₹${d.threeWay.aiArea.price.toLocaleString("en-IN")}/sq.ft` : "—", note: d.threeWay.aiArea ? `Financial District · captured ${day(d.threeWay.aiArea.capturedAt)}` : "", muted: false },
-              { icon: Tag, label: "Asking price", kind: "Asking (listings)", value: p ? `₹${p.median.toLocaleString("en-IN")}/sq.ft` : "—", note: p ? `${p.name} · median of ${p.sources} listings · ${day(p.capturedAt)}` : "", muted: false },
+              { icon: Tag, label: "Asking price", kind: "Asking (listings)", value: p ? `₹${p.median.toLocaleString("en-IN")}/sq.ft` : "—", note: p ? `${p.name} · median across ${p.sources} ${p.sources === 1 ? "website" : "websites"} · ${day(p.capturedAt)}` : "", muted: false },
             ].map((c, i) => (
               <Reveal key={c.label} delay={i * 0.08}>
                 <div className="h-full rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:-translate-y-1 hover:border-white/25">
@@ -197,6 +200,8 @@ export default async function HomePage() {
 
       {/* Existing */}
       <CTASection />
+      </div>
+      <RevealObserver />
     </>
   );
 }

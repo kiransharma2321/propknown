@@ -240,3 +240,15 @@ body {
   .pk-skin .fixed.bottom-8.right-24 { bottom: 5.5rem; }
 }
 @media (prefers-reduced-motion: reduce) { .pk-skin .btn-primary, .pk-skin .card-dark { transition: none; } .pk-skin .btn-primary:hover { transform: none; } }
+
+/* Scroll reveal + price-board bars (components/pk/Motion.tsx RevealObserver). Only elements the
+   observer "armed" (below the fold, JS on, motion allowed) start dimmed -- never first paint. */
+[data-reveal] { transition: opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+[data-reveal].pk-armed:not(.is-in) { opacity: .4; transform: translateY(18px); }
+.pk-bar { transform-origin: bottom; transition: transform .9s ease-out; }
+[data-reveal].pk-armed:not(.is-in) .pk-bar { transform: scaleY(.04); }
+@media (prefers-reduced-motion: reduce) { [data-reveal], .pk-bar { transition: none; } }
+
+/* Homepage below-the-fold sections: skip rendering until near the viewport (content stays in the
+   DOM for crawlers, find-in-page and screen readers). */
+.pk-cv > section { content-visibility: auto; contain-intrinsic-size: auto 720px; }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { ArrowRight, Building2, MapPin, Receipt } from "lucide-react";
 import HeroExampleCarousel from "@/components/sections/HeroExampleCarousel";
 import type { HeroExample } from "@/lib/heroExamples";
@@ -46,7 +45,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
     <section className="relative isolate min-h-screen flex flex-col items-center justify-start md:justify-center overflow-hidden">
       <Image src={`${HERO_PHOTO.src}?w=1920&q=70&auto=format&fit=crop`} alt="" fill priority sizes="100vw" quality={70} className="-z-20 object-cover" />
       <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `linear-gradient(180deg, ${PK.navyDeep}D9 0%, ${PK.navy}B3 45%, ${PK.navyDeep}E6 100%)` }} />
-      <div aria-hidden className="pk-glow absolute -z-10 right-[-10%] top-[15%] h-[480px] w-[480px] rounded-full blur-3xl" style={{ background: `${PK.gold}33` }} />
+      <div aria-hidden className="hidden md:block absolute -z-10 right-[-10%] top-[15%] h-[480px] w-[480px] rounded-full blur-3xl" style={{ background: `${PK.gold}33` }} />
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center pt-28 pb-16 md:pt-40 md:pb-24">
         <div className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D6A63E]/40 text-[#D6A63E] text-xs font-medium mb-6 backdrop-blur-sm" style={{ background: "rgba(214,166,62,0.12)" }}>
@@ -69,10 +68,11 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
           <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-2xl grid sm:grid-cols-2 gap-5 text-left ring-1 ring-[#D6A63E]/30">
             <form onSubmit={handleCheck} className="flex flex-col">
               <div className="relative grid grid-cols-3 rounded-full bg-gray-100 p-1 mb-3" role="tablist" aria-label="What do you want to check?">
+                <span aria-hidden className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full transition-transform duration-300 ease-out motion-reduce:transition-none"
+                  style={{ background: PK.navy, transform: `translateX(${["area", "project", "quote"].indexOf(tab) * 100}%)` }} />
                 {([["area", "Area", MapPin], ["project", "Project", Building2], ["quote", "My quote", Receipt]] as const).map(([k, label, Icon]) => (
                   <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
                     className={`relative z-10 inline-flex items-center justify-center gap-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${tab === k ? "text-white" : "text-gray-600"}`}>
-                    {tab === k && <motion.span layoutId="home-hero-tab" className="absolute inset-0 -z-10 rounded-full" style={{ background: PK.navy }} transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
                     <Icon size={12} /> {label}
                   </button>
                 ))}
