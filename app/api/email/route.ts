@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { masterApiSession } from "@/lib/adminGuard";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const NOTIFY_TO = "raghupinnelli@gmail.com";
 
+// Master admin only: without a session check this was an open relay -- anyone could send any
+// HTML from notifications@propknown.com to any address. Nothing in the site calls it today.
 export async function POST(req: NextRequest) {
+  if (!(await masterApiSession())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   try {
     const body = await req.json();
     const { to, subject, html, from: fromOverride } = body;

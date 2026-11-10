@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword, ROLE_LABELS, getAdminSession, canRole } from "@/lib/rbac";
-import { cookies } from "next/headers";
 import { logAudit } from "@/lib/auditLog";
 
 // User Management used to be gated on a literal role === "master" check, independent of the
@@ -16,12 +15,9 @@ async function hasUserManagementAccess(): Promise<boolean> {
 
 // Additive, logging-only -- does not change hasUserManagementAccess's own logic or the access check above.
 async function getActorInfo(): Promise<{ id?: string; name?: string }> {
-  const cookieStore = await cookies();
-  const rbacToken = cookieStore.get("rbac_auth")?.value;
-  if (!rbacToken) return {};
-  const [userId] = rbacToken.split(":");
-  const user = await prisma.adminUser.findUnique({ where: { id: userId }, select: { id: true, name: true } });
-  return user ? { id: user.id, name: user.name } : {};
+  // Same verified session as the access check (the old version trusted the raw cookie).
+  const session = await getAdminSession();
+  return session ? { id: session.userId, name: session.name } : {};
 }
 
 export async function GET() {

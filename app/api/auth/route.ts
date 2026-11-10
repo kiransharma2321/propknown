@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/rbac";
+import { ADMIN_COOKIE, createSessionToken, sessionCookieOptions } from "@/lib/adminSession";
 
 // Single login for both /admin and /crm -- every AdminUser (master/manager/agent) can log in
 // at either portal with the same email + password; what they can actually DO once in is
@@ -19,19 +20,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
+  // Signed session (lib/adminSession.ts): HMAC-signed, expires server-side after 8 hours,
+  // httpOnly + secure (production) + sameSite=strict.
+  const token = createSessionToken(user);
+  if (!token) return NextResponse.json({ error: "Login is temporarily unavailable." }, { status: 503 });
   const res = NextResponse.json({ success: true, role: user.role, name: user.name });
-  res.cookies.set("rbac_auth", `${user.id}:${Date.now()}`, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 8, // 8 hours
-    path: "/",
-  });
+  res.cookies.set(ADMIN_COOKIE, token, sessionCookieOptions);
   return res;
 }
 
 export async function DELETE() {
   const res = NextResponse.json({ success: true });
-  res.cookies.delete("rbac_auth");
+  res.cookies.set(ADMIN_COOKIE, "", { ...sessionCookieOptions, maxAge: 0 });
   return res;
 }

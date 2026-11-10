@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { ADMIN_COOKIE, readSessionToken, verifySessionToken } from "@/lib/adminSession";
 
 // Role/ROLE_LABELS now live in lib/roles.ts (no server-only imports there, so it's safe for
 // client components too -- see app/admin/users/page.tsx). Re-exported here so every existing
@@ -41,12 +42,14 @@ export async function getAdminSession(): Promise<{ role: "master" | Role; name: 
   try {
     const cookieStore = await cookies();
 
-    const rbacToken = cookieStore.get("rbac_auth")?.value;
-    if (!rbacToken) return null;
+    // Signed, unexpired session only (lib/adminSession.ts). Unsigned/old-format, tampered,
+    // expired, or pre-password-change cookies all return null.
+    const rbacToken = cookieStore.get(ADMIN_COOKIE)?.value;
+    const parsed = readSessionToken(rbacToken);
+    if (!rbacToken || !parsed) return null;
 
-    const [userId] = rbacToken.split(":");
-    const user = await prisma.adminUser.findUnique({ where: { id: userId } });
-    if (!user || !user.isActive) return null;
+    const user = await prisma.adminUser.findUnique({ where: { id: parsed.userId } });
+    if (!user || !user.isActive || !verifySessionToken(rbacToken, user)) return null;
 
     return { role: user.role as Role, name: user.name, email: user.email, userId: user.id };
   } catch { return null; }

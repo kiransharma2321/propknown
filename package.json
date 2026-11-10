@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "test:accuracy": "tsx --test tests/accuracy/*.test.ts"
+    "test:accuracy": "tsx --test tests/accuracy/*.test.ts",
+    "test:security": "tsx --test tests/security/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
