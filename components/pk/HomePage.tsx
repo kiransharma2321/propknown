@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Scale, Building2, ShieldCheck, FileSearch, Calculator, TrendingUp, BarChart3, MessageSquareText, Landmark, Sparkles, Tag, FileDown, Mic2 } from "lucide-react";
 import HomeHero from "@/components/pk/HomeHero";
-import PriceBoard from "@/components/pk/PriceBoard";
+import CityPriceBoard from "@/components/pk/CityPriceBoard";
 import { Reveal } from "@/components/pk/Reveal";
-import { CountUp, RevealObserver } from "@/components/pk/Motion";
+import { RevealObserver } from "@/components/pk/Motion";
 import { PK, TRUST_FACTS, REGISTRATIONS } from "@/components/pk/tokens";
 import { loadHome } from "@/components/pk/homeData";
 import { getHeroExamples } from "@/lib/heroExamples";
@@ -71,19 +71,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* NEW: Hyderabad Price Board */}
+      {/* NEW: price board with a city switcher (sourced prices only) */}
       <section className="text-white border-t border-white/10" style={dark}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-center">
           <Reveal className="min-w-0">
-            <h2 className="font-playfair text-3xl sm:text-5xl">Hyderabad, area by area.</h2>
-            <p className="text-white/60 mt-4">Typical apartment rates from live web sources. Tap any bar for its sources, range and captured date.</p>
-            <div className="mt-8 grid grid-cols-3 gap-4">
-              <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.hyderabadLocalities} /></p><p className="text-xs text-white/55">Hyderabad localities with price pages</p></div>
-              <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.areasWithData} /></p><p className="text-xs text-white/55">areas with live price data</p></div>
-              <div><p className="font-playfair text-3xl" style={{ color: PK.gold }}><CountUp value={d.counts.cachedPrices} /></p><p className="text-xs text-white/55">published area prices</p></div>
-            </div>
+            <h2 className="font-playfair text-3xl sm:text-5xl">Real prices, area by area</h2>
+            <p className="text-white/70 mt-4">Typical apartment asking prices from live web sources. Pick a city, then tap any bar for its sources, range and captured date.</p>
+            <ul className="mt-8 grid gap-3">
+              {["Any city, any area, any project", "Every price with sources and date", "India, UAE and beyond"].map((t) => (
+                <li key={t} className="font-playfair text-xl sm:text-2xl border-l-2 pl-3" style={{ borderColor: PK.gold }}>{t}</li>
+              ))}
+            </ul>
           </Reveal>
-          <Reveal delay={0.1} className="min-w-0"><PriceBoard rows={d.boardRows} /></Reveal>
+          <div className="min-w-0"><CityPriceBoard boards={d.boards} /></div>
         </div>
       </section>
 
