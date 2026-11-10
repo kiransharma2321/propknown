@@ -43,6 +43,7 @@ export interface ReportLeadInput {
   askingPricePerUnit?: number;   // price_check
   reraNumber?: string;           // legal_shield
   riskLevel?: string;            // legal_shield: Low | Medium | High
+  projectName?: string;          // project / apartment the visitor named (Task K)
   ip?: string | null;
   attribution?: ReturnType<typeof leadAttribution>;
 }
@@ -122,6 +123,7 @@ export async function createReportLead(input: ReportLeadInput) {
     tool: input.tool, location, locationName: where, propertyType, unit: input.unit ?? null,
     pricePerUnit: snapshot?.currentPricePerSqft ?? null, currencySymbol: snapshot?.currencySymbol ?? null,
     askingPricePerUnit: input.askingPricePerUnit ?? null, riskLevel: input.riskLevel ?? null,
+    projectName: input.projectName?.trim() || null,
     ip: input.ip ?? null,
   };
 
@@ -129,7 +131,7 @@ export async function createReportLead(input: ReportLeadInput) {
     data: {
       name, phone, email,
       source: `${TOOL_LABEL[input.tool]} — ${where}`.slice(0, 120),
-      message: `Requested the full ${TOOL_LABEL[input.tool]} report + 5-year forecast for ${typeLabel} in ${where}.`,
+      message: `Requested the full ${TOOL_LABEL[input.tool]} report + 5-year forecast for ${typeLabel} in ${where}${input.projectName?.trim() ? ` (project: ${input.projectName.trim()})` : ""}.`,
       tags: [input.tool, matchLocality(location) ? `${matchLocality(location)!.citySlug}/${matchLocality(location)!.slug}` : "other-location"],
       reportContext: reportContext as Prisma.InputJsonValue,
       ...(input.attribution ?? {}),

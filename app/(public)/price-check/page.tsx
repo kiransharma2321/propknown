@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Scale, Loader2, AlertCircle, Share2, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
 import UsageLimitPrompt from "@/components/ui/UsageLimitPrompt";
 import ReportLeadForm from "@/components/leads/ReportLeadForm";
+import ProjectCheck from "@/components/tools/ProjectCheck";
 import { ConfidenceBadge, ThreeWayPrice, HowWeGotThis, AI_DISCLAIMER, type Confidence, type GuidanceValue } from "@/components/ai-intel/PriceTrust";
 
 const PROPERTY_TYPES = [
@@ -52,6 +53,7 @@ const VERDICT_STYLE: Record<string, { label: string; color: string; bg: string; 
 export default function PriceCheckPage() {
   const [location, setLocation] = useState("");
   const [propType, setPropType] = useState("apartment");
+  const [projectName, setProjectName] = useState("");
   const [unit,     setUnit]     = useState("sqft");
   const [areaSize, setAreaSize] = useState("");
   const [price,    setPrice]    = useState("");
@@ -178,6 +180,15 @@ export default function PriceCheckPage() {
             </div>
           </div>
 
+          <div className="mb-4">
+            <ProjectCheck
+              area={location.trim()}
+              propertyType={propType}
+              quotedPricePerSqft={unit === "sqft" && Number(price) > 0 && Number(areaSize) > 0 ? Math.round(Number(price) / Number(areaSize)) : undefined}
+              onProjectChange={setProjectName}
+            />
+          </div>
+
           {error && (
             <div className="flex items-start gap-2 error-text mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
               <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{error}</span>
@@ -302,6 +313,7 @@ export default function PriceCheckPage() {
               propertyType={result.propertyType ?? propType}
               unit={result.unit}
               askingPricePerUnit={result.pricePerUnit}
+              projectName={projectName.trim() || undefined}
             />
           </div>
         )}

@@ -24,6 +24,7 @@ export interface ReportLeadFormProps {
   reraNumber?: string;
   riskLevel?: string;
   defaultCountryCode?: string;
+  projectName?: string;
 }
 
 // "Email me the full report + 5-year forecast" -- shown under every Price Check, AI
@@ -52,6 +53,7 @@ export default function ReportLeadForm(props: ReportLeadFormProps) {
           name, email, phone: `${cc}${phone.replace(/\D/g, "").replace(/^0+/, "")}`,
           tool: props.tool, location: props.location, propertyType: props.propertyType, unit: props.unit,
           askingPricePerUnit: props.askingPricePerUnit, reraNumber: props.reraNumber, riskLevel: props.riskLevel,
+          projectName: props.projectName,
         }),
       });
       const data = await res.json();

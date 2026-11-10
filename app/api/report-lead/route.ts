@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       askingPricePerUnit: Number(body.askingPricePerUnit) || undefined,
       reraNumber: body.reraNumber ? String(body.reraNumber) : undefined,
       riskLevel: body.riskLevel ? String(body.riskLevel) : undefined,
+      projectName: body.projectName ? String(body.projectName).slice(0, 100) : undefined,
       ip: getClientIp(req),
       attribution: leadAttribution(req.cookies.get(ATTRIBUTION_COOKIE)?.value),
     });

@@ -11,6 +11,7 @@ import {
 import LeadForm from "@/components/ui/LeadForm";
 import ReportLeadForm from "@/components/leads/ReportLeadForm";
 import FairPriceReportButton from "@/components/leads/FairPriceReportButton";
+import ProjectCheck from "@/components/tools/ProjectCheck";
 import { waLink, searchContextText } from "@/lib/whatsapp";
 import UnitConverter from "@/components/ui/UnitConverter";
 import { useCurrency } from "@/components/ui/CurrencyToggle";
@@ -718,6 +719,10 @@ function AIIntelligenceInner() {
                       )}
                     </div>
                   )}
+
+                  <div className="mt-4">
+                    <ProjectCheck area={[areaValue, cityValue].filter(Boolean).join(", ")} propertyType={propType} />
+                  </div>
 
                   <button onClick={analyze} disabled={loading || overviewLoading}
                     className="btn-primary w-full justify-center mt-4 py-3.5 text-sm disabled:opacity-60">

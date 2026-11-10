@@ -46,7 +46,7 @@ const hostOf = sourceHost;
 export async function getHeroExamples(): Promise<HeroExample[]> {
   let rows: Awaited<ReturnType<typeof prisma.locationMarketCache.findMany>> = [];
   try {
-    rows = await prisma.locationMarketCache.findMany({ orderBy: { fetchedAt: "desc" }, take: 100 });
+    rows = await prisma.locationMarketCache.findMany({ where: { NOT: { locationKey: { startsWith: "project/" } } }, orderBy: { fetchedAt: "desc" }, take: 100 });
   } catch (e) {
     console.warn("[hero-examples] cache read failed:", e);
   }
