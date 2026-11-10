@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { FileSearch, Trash2, Download, ShieldAlert } from "lucide-react";
 import { useBuyer } from "@/components/buyer/BuyerProvider";
-import { DOC_DISCLAIMER, DOC_TYPES, type DocResult } from "@/lib/documentChecker";
+import { DOC_DISCLAIMER, DOC_TYPES, type DocResult } from "@/lib/documentCheckerShared";
 
 // M5: upload a property document for a preliminary AI reading; private vault of past checks.
 interface VaultDoc { id: string; fileName: string; docType: string; status: string; reviewStatus: string; expiresAt: string; createdAt: string; risk: string | null }
