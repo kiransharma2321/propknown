@@ -10,7 +10,7 @@ import type { HeroExample } from "@/lib/heroExamples";
 import { HERO_PHOTO, PK } from "./tokens";
 
 // The existing homepage hero (components/sections/HeroSection.tsx), restyled: same badge,
-// headline, copy, Area + City check (same /ai-intelligence handoff), example carousel and
+// copy (headline updated as approved), Area + City check (same /ai-intelligence handoff), example carousel and
 // stats strip. Added inside the same card: "Project" and "My quote" tabs, which hand off to
 // the Project check on /price-check.
 
@@ -55,9 +55,9 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
         </div>
 
         <h1 className="font-playfair text-3xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-4 md:mb-6 leading-[1.08] max-w-4xl mx-auto">
-          Know What It&apos;s Really Worth
+          Know the fair price
           <br />
-          <span style={{ background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>— Before You Buy</span>
+          <span style={{ background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>before you pay the token.</span>
         </h1>
         <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-6">The honest truth about any property.</p>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block leading-relaxed">

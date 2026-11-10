@@ -1,4 +1,5 @@
-import Header from "@/components/layout/Header";
+import SiteNav from "@/components/pk/SiteNav";
+import StickyActions from "@/components/pk/StickyActions";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ChatLauncher from "@/components/chatbot/ChatLauncher";
@@ -14,14 +15,19 @@ import ChatLauncher from "@/components/chatbot/ChatLauncher";
 // used to be in the root layout unconditionally; moving it here is what actually fixes that,
 // now that app/admin/layout.tsx and app/crm/layout.tsx no longer render competing <html> tags
 // that were accidentally (and invisibly) suppressing the leaked header before.
+// Direction 1 restyle: SiteNav is components/layout/Header.tsx restyled (same items, order and
+// links, plus new entries inside its dropdowns); .pk-skin/.pk-inner/.pk-footer (globals.css)
+// restyle colours, buttons, cards and the footer without changing any content. StickyActions
+// adds the mobile WhatsApp / Call / Get Report bar.
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Header />
-      <main>{children}</main>
-      <Footer />
+    <div className="pk-skin pb-16 md:pb-0">
+      <SiteNav />
+      <main className="pk-inner">{children}</main>
+      <div className="pk-footer"><Footer /></div>
       <WhatsAppButton />
       <ChatLauncher />
-    </>
+      <StickyActions />
+    </div>
   );
 }

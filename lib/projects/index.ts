@@ -61,7 +61,9 @@ interface Extracted {
   pricesPerSqft?: { value: number; source: number }[];
 }
 
-export async function checkProject(input: { name: string; area: string; propertyType?: string }): Promise<ProjectResult> {
+// cacheOnly: never call the search/AI APIs (homepage render); a cached row is used whatever its
+// age -- it carries its own captured date -- and no row means "not found".
+export async function checkProject(input: { name: string; area: string; propertyType?: string; cacheOnly?: boolean }): Promise<ProjectResult> {
   const name = input.name.trim().slice(0, 100);
   const area = input.area.trim().slice(0, 100);
   const propertyType = input.propertyType || "apartment";
@@ -70,8 +72,10 @@ export async function checkProject(input: { name: string; area: string; property
 
   const row = await prisma.locationMarketCache.findUnique({ where: { id } }).catch(() => null);
   let result: ProjectResult;
-  if (row && Date.now() - row.fetchedAt.getTime() < CACHE_TTL_MS) {
+  if (row && (input.cacheOnly || Date.now() - row.fetchedAt.getTime() < CACHE_TTL_MS)) {
     result = { ...(row.data as unknown as ProjectResult), cached: true };
+  } else if (input.cacheOnly) {
+    result = { found: false, name, query: { name, area, propertyType }, facts: {}, price: null, confidence: null, locality: null, verdict: null, cached: false, capturedAt: new Date().toISOString() };
   } else {
     result = await liveProject(name, area, propertyType);
     if (result.found && result.price) {

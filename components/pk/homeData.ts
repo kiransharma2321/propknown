@@ -21,7 +21,7 @@ export async function loadHome() {
   }));
 
   const [project, pagesWithData, cachedPrices, verifiedProjects, news, episodes] = await Promise.all([
-    checkProject({ name: "Prestige High Fields", area: "Financial District, Hyderabad", propertyType: "apartment" }).catch(() => null),
+    checkProject({ name: "Prestige High Fields", area: "Financial District, Hyderabad", propertyType: "apartment", cacheOnly: true }).catch(() => null),
     areaPagesWithData().catch(() => []),
     // Published area prices only: rows with at least one real source (same rule as the engine).
     prisma.locationMarketCache.findMany({ where: { NOT: { locationKey: { startsWith: "project/" } } }, select: { data: true } })

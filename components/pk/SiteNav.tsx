@@ -51,8 +51,9 @@ const NAV: Item[] = [
 const isActive = (pathname: string, href: string) =>
   !!href && (href === "/" ? pathname === "/" : pathname === href.split("#")[0] || pathname.startsWith(href.split("#")[0] + "/"));
 
-export default function SiteNav({ overHero = false }: { overHero?: boolean }) {
+export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean }) {
   const pathname = usePathname() ?? "/";
+  const overHero = overHeroProp ?? pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
