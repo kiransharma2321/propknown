@@ -205,3 +205,24 @@ body {
   .orb-ring-outer, .orb-ring-inner { animation: none; }
   .orb-core { animation-duration: 4s; }
 }
+
+/* Direction 1 hero glow: slow drift, off for reduced motion. */
+@keyframes pkGlow { 0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; } 50% { transform: translate(-40px, 30px) scale(1.12); opacity: 1; } }
+.pk-glow { animation: pkGlow 14s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pk-glow { animation: none; } }
+
+/* ── Direction 1 design system: inner-page skin (.pk-inner) ─────────────────────────────
+   Restyles the shared classes every page already uses, so the new look reaches each page
+   without touching its logic. The page's old title block gives way to the new PageHero. */
+.pk-inner > div:first-child { padding-top: 2.5rem !important; background: #FBF8F2; }
+.pk-inner h1.heading-h1,
+.pk-inner nav[aria-label="Breadcrumb"],
+.pk-inner .text-center.mb-10 > div:first-child:has(svg) { display: none; }
+.pk-inner .btn-primary { background: #D6A63E; color: #0B1B33; border-radius: 9999px; font-weight: 600; transition: transform .2s, box-shadow .2s; }
+.pk-inner .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -10px rgba(214,166,62,.7); }
+.pk-inner .btn-secondary { border-radius: 9999px; border-color: #0B1B33; color: #0B1B33; }
+.pk-inner .input-dark { border-radius: .85rem; background: #fff; border-color: #E5E1D6; }
+.pk-inner .input-dark:focus { border-color: #D6A63E; box-shadow: 0 0 0 3px rgba(214,166,62,.25); outline: none; }
+.pk-inner .card-dark, .pk-inner .rounded-2xl.border { border-radius: 1.5rem; transition: transform .25s, box-shadow .25s; }
+.pk-inner .card-dark:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -24px rgba(11,27,51,.45); }
+@media (prefers-reduced-motion: reduce) { .pk-inner .btn-primary, .pk-inner .card-dark { transition: none; } .pk-inner .btn-primary:hover, .pk-inner .card-dark:hover { transform: none; } }
