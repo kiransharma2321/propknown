@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/buyerAuth";
+import { BUYER_COOKIE, buyerCookieOptions, createBuyerToken, hashPassword } from "@/lib/buyerAuth";
 
 export async function POST(req: NextRequest) {
   const { name, email, phone, password } = await req.json() as {
@@ -17,19 +17,14 @@ export async function POST(req: NextRequest) {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         phone: phone?.trim() || null,
-        passwordHash: hashPassword(password),
+        passwordHash: await hashPassword(password),
       },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, passwordHash: true },
     });
 
     const res = NextResponse.json({ ok: true, name: buyer.name, email: buyer.email }, { status: 201 });
-    res.cookies.set("buyer_auth", `${buyer.id}:${Date.now()}`, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-    });
+    const token = createBuyerToken(buyer);
+    if (token) res.cookies.set(BUYER_COOKIE, token, buyerCookieOptions);
     return res;
   } catch (e: unknown) {
     if (e instanceof Error && e.message.includes("Unique constraint")) {

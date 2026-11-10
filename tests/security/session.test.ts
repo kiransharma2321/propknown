@@ -38,3 +38,24 @@ test("no secret -> no sessions (fails closed)", () => {
   try { assert.equal(createSessionToken(user), null); }
   finally { process.env.NEXTAUTH_SECRET = saved; }
 });
+
+// Customer accounts (lib/buyerAuth.ts) use the same signer with their own key.
+test("admin and customer tokens are not interchangeable", async () => {
+  const { makeSession } = await import("@/lib/signedSession");
+  const admin = makeSession("admin", SESSION_TTL_MS), buyer = makeSession("buyer", SESSION_TTL_MS);
+  const a = admin.create(user)!, b = buyer.create(user)!;
+  assert.equal(buyer.verify(a, user), false);
+  assert.equal(admin.verify(b, user), false);
+  assert.equal(buyer.verify(b, user), true);
+});
+test("customer passwords: legacy hash accepted once and flagged for bcrypt upgrade", async () => {
+  const { createHash } = await import("crypto");
+  const { verifyBuyerPassword, hashPassword } = await import("@/lib/buyerAuth");
+  const legacy = createHash("sha256").update("s3cret-pass" + process.env.NEXTAUTH_SECRET).digest("hex");
+  assert.deepEqual(await verifyBuyerPassword("s3cret-pass", legacy), { ok: true, upgrade: true });
+  assert.deepEqual(await verifyBuyerPassword("wrong", legacy), { ok: false, upgrade: false });
+  const modern = await hashPassword("s3cret-pass");
+  assert.match(modern, /^\$2[aby]\$12\$/);
+  assert.deepEqual(await verifyBuyerPassword("s3cret-pass", modern), { ok: true, upgrade: false });
+  assert.deepEqual(await verifyBuyerPassword("wrong", modern), { ok: false, upgrade: false });
+});
