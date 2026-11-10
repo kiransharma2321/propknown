@@ -1,5 +1,6 @@
 import SiteNav from "@/components/pk/SiteNav";
 import StickyActions from "@/components/pk/StickyActions";
+import { LangProvider } from "@/components/i18n/LangProvider";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ChatLauncher from "@/components/chatbot/ChatLauncher";
@@ -21,6 +22,7 @@ import ChatLauncher from "@/components/chatbot/ChatLauncher";
 // adds the mobile WhatsApp / Call / Get Report bar.
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
+    <LangProvider>
     <div className="pk-skin pb-16 md:pb-0">
       <SiteNav />
       <main className="pk-inner">{children}</main>
@@ -29,5 +31,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <ChatLauncher />
       <StickyActions />
     </div>
+    </LangProvider>
   );
 }

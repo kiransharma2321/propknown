@@ -26,6 +26,8 @@ export const FEATURES = {
   knownaiV2: process.env.NEXT_PUBLIC_FEATURE_KNOWNAI_V2 === "true",
   /** M11: business-intelligence dashboard + CSV export (admin, master only). */
   bi: process.env.NEXT_PUBLIC_FEATURE_BI === "true",
+  /** M13: Telugu + Hindi (navigation, homepage hero, price board). Needs native-speaker review first. */
+  i18n: process.env.NEXT_PUBLIC_FEATURE_I18N === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

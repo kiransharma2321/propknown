@@ -4,6 +4,7 @@ import HomeHero from "@/components/pk/HomeHero";
 import CityPriceBoard from "@/components/pk/CityPriceBoard";
 import { Reveal } from "@/components/pk/Reveal";
 import { RevealObserver } from "@/components/pk/Motion";
+import { T } from "@/components/i18n/LangProvider";
 import { PK, TRUST_FACTS, REGISTRATIONS } from "@/components/pk/tokens";
 import { loadHome } from "@/components/pk/homeData";
 import { FEATURES } from "@/lib/features";
@@ -76,11 +77,11 @@ export default async function HomePage() {
       <section className="text-white border-t border-white/10" style={dark}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-center">
           <Reveal className="min-w-0">
-            <h2 className="font-playfair text-3xl sm:text-5xl">Real prices, area by area</h2>
-            <p className="text-white/70 mt-4">Typical apartment asking prices from live web sources. Pick a city, then tap any bar for its sources, range and captured date.</p>
+            <h2 className="font-playfair text-3xl sm:text-5xl"><T k="board.h2" /></h2>
+            <p className="text-white/70 mt-4"><T k="board.sub" /></p>
             <ul className="mt-8 grid gap-3">
-              {["Any city, any area, any project", "Every price with sources and date", "India, UAE and beyond"].map((t) => (
-                <li key={t} className="font-playfair text-xl sm:text-2xl border-l-2 pl-3" style={{ borderColor: PK.gold }}>{t}</li>
+              {(["board.p1", "board.p2", "board.p3"] as const).map((k) => (
+                <li key={k} className="font-playfair text-xl sm:text-2xl border-l-2 pl-3" style={{ borderColor: PK.gold }}><T k={k} /></li>
               ))}
             </ul>
           </Reveal>

@@ -7,6 +7,7 @@ import { ArrowRight, Building2, MapPin, Receipt } from "lucide-react";
 import HeroExampleCarousel from "@/components/sections/HeroExampleCarousel";
 import type { HeroExample } from "@/lib/heroExamples";
 import { HERO_PHOTO, PK } from "./tokens";
+import { useLang } from "@/components/i18n/LangProvider";
 
 // The existing homepage hero (components/sections/HeroSection.tsx), restyled: same badge,
 // copy (headline updated as approved), Area + City check (same /ai-intelligence handoff), example carousel and
@@ -17,6 +18,7 @@ type Tab = "area" | "project" | "quote";
 
 export default function HomeHero({ examples }: { examples: HeroExample[] }) {
   const router = useRouter();
+  const { t } = useLang();
   const [tab, setTab] = useState<Tab>("area");
   const [area, setArea] = useState("");
   const [city, setCity] = useState("");
@@ -50,18 +52,17 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-4 text-center pt-28 pb-16 md:pt-40 md:pb-24">
         <div className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#D6A63E]/40 text-[#D6A63E] text-xs font-medium mb-6 backdrop-blur-sm" style={{ background: "rgba(214,166,62,0.12)" }}>
           <span className="w-2 h-2 rounded-full bg-[#D6A63E] animate-pulse" />
-          AI-Powered Intelligence · Zero Broker Spam
+          {t("hero.badge")}
         </div>
 
         <h1 className="font-playfair text-3xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold text-white mb-4 md:mb-6 leading-[1.08] max-w-4xl mx-auto">
-          Know the fair price
+          {t("hero.h1a")}
           <br />
-          <span style={{ background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>before you pay the token.</span>
+          <span style={{ background: "linear-gradient(135deg,#D6A63E,#e8c97a,#D6A63E)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{t("hero.h1b")}</span>
         </h1>
-        <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-6">The honest truth about any property.</p>
+        <p className="text-white/80 text-sm sm:hidden max-w-2xl mx-auto mb-6">{t("hero.subShort")}</p>
         <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10 hidden sm:block leading-relaxed">
-          The honest truth about any property —
-          even when it&apos;s not what the seller wants you to hear.
+          {t("hero.sub")}
         </p>
 
         <div className="mx-auto max-w-4xl">
@@ -70,7 +71,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
               <div className="relative grid grid-cols-3 rounded-full bg-gray-100 p-1 mb-3" role="tablist" aria-label="What do you want to check?">
                 <span aria-hidden className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full transition-transform duration-300 ease-out motion-reduce:transition-none"
                   style={{ background: PK.navy, transform: `translateX(${["area", "project", "quote"].indexOf(tab) * 100}%)` }} />
-                {([["area", "Area", MapPin], ["project", "Project", Building2], ["quote", "My quote", Receipt]] as const).map(([k, label, Icon]) => (
+                {([["area", t("hero.tab.area"), MapPin], ["project", t("hero.tab.project"), Building2], ["quote", t("hero.tab.quote"), Receipt]] as const).map(([k, label, Icon]) => (
                   <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
                     className={`relative z-10 inline-flex items-center justify-center gap-1 rounded-full py-1.5 text-xs font-semibold transition-colors ${tab === k ? "text-white" : "text-gray-600"}`}>
                     <Icon size={12} /> {label}
@@ -78,7 +79,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
                 ))}
               </div>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
-                {tab === "area" ? <>Check Any Location&apos;s Real Price</> : tab === "project" ? "Check a project's asking price" : "Is my quoted price fair?"}
+                {tab === "area" ? t("hero.label.area") : tab === "project" ? t("hero.label.project") : t("hero.label.quote")}
               </p>
               <div className="space-y-2 mb-3">
                 {tab !== "area" && <input type="text" value={project} onChange={(e) => setProject(e.target.value)} placeholder="Project / apartment name" aria-label="Project or apartment name" className={inp} />}
@@ -87,7 +88,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
                 {tab === "quote" && <input type="text" inputMode="numeric" value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="Quoted total price (₹)" aria-label="Quoted total price" className={inp} />}
               </div>
               <button type="submit" className="btn-primary justify-center text-sm py-2.5 px-6 w-full mt-auto">
-                Check Real Price <ArrowRight size={15} />
+                {t("hero.button")} <ArrowRight size={15} />
               </button>
             </form>
 
@@ -96,7 +97,7 @@ export default function HomeHero({ examples }: { examples: HeroExample[] }) {
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-6 md:gap-10">
-          {[{ val: "₹0", label: "Brokerage" }].map(({ val, label }) => (
+          {[{ val: "₹0", label: t("hero.brokerage") }].map(({ val, label }) => (
             <div key={label} className="text-center">
               <p className="font-playfair text-2xl font-bold gold-accent">{val}</p>
               <p className="text-white/70 text-xs mt-0.5">{label}</p>

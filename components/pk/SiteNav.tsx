@@ -10,6 +10,11 @@ import AccountLink from "@/components/buyer/AccountLink";
 import { COMPANY } from "@/lib/utils";
 import { PK } from "./tokens";
 import { FEATURES } from "@/lib/features";
+import { LangSwitcher, useLang } from "@/components/i18n/LangProvider";
+import type { MsgKey } from "@/lib/i18n";
+
+// M13: top-level labels in the visitor's language (dropdown entries stay English for now).
+const NAV_KEYS: Record<string, MsgKey> = { Home: "nav.home", Buy: "nav.buy", Sell: "nav.sell", Services: "nav.services", "AI Intel": "nav.aiIntel", "For Builders": "nav.builders", About: "nav.about", Contact: "nav.contact", Resources: "nav.resources" };
 
 // The existing site navigation (components/layout/Header.tsx), restyled only: same items, same
 // order, same links. New features live INSIDE existing items as dropdown entries -- a top-level
@@ -59,6 +64,8 @@ const isActive = (pathname: string, href: string) =>
 
 export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean }) {
   const pathname = usePathname() ?? "/";
+  const { t } = useLang();
+  const tl = (label: string) => (NAV_KEYS[label] ? t(NAV_KEYS[label]) : label);
   const overHero = overHeroProp ?? pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -90,12 +97,12 @@ export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean
         <nav aria-label="Main" className="hidden xl:flex items-center">
           {NAV.map((item) => {
             const active = item.children ? item.children.some((c) => isActive(pathname, c.href)) || isActive(pathname, item.href) : isActive(pathname, item.href);
-            if (!item.children) return <Link key={item.label} href={item.href} className={linkCls(active)}>{item.label}</Link>;
+            if (!item.children) return <Link key={item.label} href={item.href} className={linkCls(active)}>{tl(item.label)}</Link>;
             return (
               <div key={item.label} className="relative group">
                 {item.href
-                  ? <Link href={item.href} aria-haspopup="true" className={linkCls(active)}>{item.label} <ChevronDown size={13} className="transition-transform group-hover:rotate-180" /></Link>
-                  : <button type="button" aria-haspopup="true" className={linkCls(active)}>{item.label} <ChevronDown size={13} className="transition-transform group-hover:rotate-180" /></button>}
+                  ? <Link href={item.href} aria-haspopup="true" className={linkCls(active)}>{tl(item.label)} <ChevronDown size={13} className="transition-transform group-hover:rotate-180" /></Link>
+                  : <button type="button" aria-haspopup="true" className={linkCls(active)}>{tl(item.label)} <ChevronDown size={13} className="transition-transform group-hover:rotate-180" /></button>}
                 <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition absolute left-0 top-full pt-2">
                   <div className="min-w-56 rounded-2xl border border-white/10 p-2 shadow-2xl" style={{ background: PK.navy }}>
                     {item.children.map((c) => (
@@ -108,9 +115,10 @@ export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean
           })}
         </nav>
         <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <LangSwitcher />
           <CurrencyToggle />
           <AccountLink className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10 transition" />
-          <Link href="/contact" className="rounded-lg px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:brightness-105" style={{ background: PK.gold, color: PK.navy }}>Request Consultation</Link>
+          <Link href="/contact" className="rounded-lg px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:brightness-105" style={{ background: PK.gold, color: PK.navy }}>{t("nav.consult")}</Link>
         </div>
         <button className="xl:hidden p-2 text-white" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? <X size={24} /> : <Menu size={24} />}
@@ -123,8 +131,8 @@ export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean
             {NAV.map((item) => (
               <li key={item.label} className="border-b border-white/10 py-1">
                 {item.href
-                  ? <Link href={item.href} onClick={() => setOpen(false)} className={`block py-2.5 text-base ${isActive(pathname, item.href) ? "text-[#D6A63E]" : ""}`}>{item.label}</Link>
-                  : <p className="pt-3 pb-1 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: PK.gold }}>{item.label}</p>}
+                  ? <Link href={item.href} onClick={() => setOpen(false)} className={`block py-2.5 text-base ${isActive(pathname, item.href) ? "text-[#D6A63E]" : ""}`}>{tl(item.label)}</Link>
+                  : <p className="pt-3 pb-1 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: PK.gold }}>{tl(item.label)}</p>}
                 {item.children && (
                   <ul className="pl-3 pb-2">
                     {item.children.filter((c) => c.href !== item.href).map((c) => (
@@ -136,9 +144,9 @@ export default function SiteNav({ overHero: overHeroProp }: { overHero?: boolean
             ))}
           </ul>
           <div className="mt-5 grid gap-3">
-            <div className="lg:hidden"><CurrencyToggle /></div>
+            <div className="lg:hidden flex gap-2"><CurrencyToggle /><LangSwitcher /></div>
             <AccountLink className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg border border-white/30 text-white" />
-            <Link href="/contact" onClick={() => setOpen(false)} className="rounded-lg py-3 text-center text-sm font-semibold" style={{ background: PK.gold, color: PK.navy }}>Request Consultation</Link>
+            <Link href="/contact" onClick={() => setOpen(false)} className="rounded-lg py-3 text-center text-sm font-semibold" style={{ background: PK.gold, color: PK.navy }}>{t("nav.consult")}</Link>
             <a href={`tel:${COMPANY.phoneTel}`} className="text-center text-sm" style={{ color: PK.gold }}>{COMPANY.phone}</a>
             <a href={`mailto:${COMPANY.email}`} className="text-center text-xs text-white/60">{COMPANY.email}</a>
           </div>
