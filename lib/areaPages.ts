@@ -67,18 +67,14 @@ function toTypePrice(type: string, d: Record<string, unknown> | null, capturedAt
   };
 }
 
-// Cache-only read: the engine's location cache first; for a type it doesn't have yet, the
-// older hot-market cache row (each shown with its own captured date).
+// Cache-only read from the ONE price store, location_market_cache (Task F) -- the same rows the
+// homepage, AI Intel, reports, PDF and KnownAI use. Each price carries its own captured date.
 export const getAreaPrices = cache(async (page: AreaPage): Promise<TypePrice[]> => {
   const location = `${page.area}, ${page.city}`;
-  const hot = await prisma.hotMarketCache.findMany({ where: { city: page.city, area: page.area } }).catch(() => []);
-  const hotByType = new Map(hot.map((h) => [h.propertyType, h]));
   return Promise.all(page.types.map(async (type) => {
     const r: EngineResult = await getMarketPrice({ location, propertyType: type, tool: "seo_page", cacheOnly: true, skipLog: true })
       .catch(() => ({ available: false }) as EngineResult);
-    if (r.available) return toTypePrice(type, r, String(r.fetchedAt ?? ""));
-    const h = hotByType.get(type);
-    return toTypePrice(type, (h?.data ?? null) as Record<string, unknown> | null, h ? h.updatedAt.toISOString() : null);
+    return toTypePrice(type, r.available ? r : null, r.available ? String(r.fetchedAt ?? "") : null);
   }));
 });
 
@@ -92,21 +88,13 @@ export function nearbyPages(page: AreaPage, max = 6): AreaPage[] {
 // For the sitemap: area pages that have at least one cached price, with the newest row date.
 export async function areaPagesWithData(): Promise<{ path: string; lastModified: Date }[]> {
   const pages = allAreaPages();
-  const [engineRows, hotRows] = await Promise.all([
-    prisma.locationMarketCache.findMany({ select: { locationKey: true, locationName: true, fetchedAt: true } }),
-    prisma.hotMarketCache.findMany({ select: { city: true, area: true, propertyType: true, updatedAt: true, data: true } }),
-  ]);
+  const engineRows = await prisma.locationMarketCache.findMany({ where: { pricePerUnit: { gt: 0 } }, select: { locationKey: true, locationName: true, propertyType: true, fetchedAt: true } });
   const newest = new Map<string, Date>();
   const bump = (key: string, d: Date) => { const cur = newest.get(key); if (!cur || d > cur) newest.set(key, d); };
   for (const row of engineRows) {
-    const p = pages.find((pg) => row.locationKey === `${pg.citySlug}/${pg.areaSlug}` || row.locationName.toLowerCase() === `${pg.area}, ${pg.city}`.toLowerCase());
+    const p = pages.find((pg) => pg.types.includes(row.propertyType)
+      && (row.locationKey === `${pg.citySlug}/${pg.areaSlug}` || row.locationName.toLowerCase() === `${pg.area}, ${pg.city}`.toLowerCase()));
     if (p) bump(areaPath(p), row.fetchedAt);
-  }
-  for (const h of hotRows) {
-    const d = h.data as { available?: boolean; currentPricePerSqft?: number } | null;
-    if (!d || d.available === false || !(Number(d.currentPricePerSqft) > 0)) continue;
-    const p = pages.find((pg) => pg.city === h.city && pg.area === h.area && pg.types.includes(h.propertyType));
-    if (p) bump(areaPath(p), h.updatedAt);
   }
   return Array.from(newest.entries()).map(([path, lastModified]) => ({ path, lastModified }));
 }
