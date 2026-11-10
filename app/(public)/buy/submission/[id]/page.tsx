@@ -8,6 +8,7 @@ import { MapPin, Phone, MessageCircle, ArrowLeft, CheckCircle, Video, Image as I
 import VerificationBadge, { type VerificationFlags } from "@/components/ui/VerificationBadge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
 import ConstructionProgress from "@/components/ui/ConstructionProgress";
+import { reraBadge } from "@/lib/listings/rera";
 import TrueCostCalculator from "@/components/tools/TrueCostCalculator";
 import { stateFromLocation } from "@/lib/trueCost";
 import RequestVideoTourButton from "@/components/nri/RequestVideoTourButton";
@@ -63,6 +64,8 @@ export default function SubmissionDetailPage() {
   }
 
   const photoUrls = sub.photoIds.map(pid => `/api/files/${pid}`);
+  // RERA shown only when verified by PropKnown, with the number and where to check it.
+  const rera = reraBadge({ reraNumber: sub.reraNumber, flags: sub.verificationFlags, location: `${sub.area} ${sub.city}` });
   const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'm interested in "${sub.title}" at ${sub.area}, ${sub.city}. Asking: ${sub.priceDisplay}`)}`;
 
   // Owner-written caption when available, otherwise a fallback that at least varies per photo
@@ -192,11 +195,12 @@ export default function SubmissionDetailPage() {
                 <div className="flex gap-3"><span className="text-gray-400 w-20 shrink-0">Type</span><span>{sub.propType}</span></div>
                 {sub.bhk && <div className="flex gap-3"><span className="text-gray-400 w-20 shrink-0">Config</span><span>{sub.bhk}</span></div>}
                 {sub.size && <div className="flex gap-3"><span className="text-gray-400 w-20 shrink-0">Size</span><span>{sub.size} {sub.sizeUnit}</span></div>}
-                {sub.reraNumber && (
+                {rera && (
                   <div className="flex gap-3 items-center">
                     <span className="text-gray-400 w-20 shrink-0">RERA</span>
-                    <span className="flex items-center gap-1.5 text-green-700 font-medium text-xs">
-                      <CheckCircle size={12} /> {sub.reraNumber}
+                    <span className="flex flex-wrap items-center gap-1.5 text-green-700 font-medium text-xs">
+                      <CheckCircle size={12} /> {rera.number}
+                      <span className="text-gray-400 font-normal">· verified by PropKnown · check on {rera.sourceUrl ? <a href={rera.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{rera.sourceLabel}</a> : rera.sourceLabel}</span>
                     </span>
                   </div>
                 )}

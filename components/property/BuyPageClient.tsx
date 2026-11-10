@@ -11,6 +11,7 @@ import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import VerificationBadge from "@/components/ui/VerificationBadge";
 import { PUBLIC_LISTINGS } from "@/lib/listings";
+import { reraBadge } from "@/lib/listings/rera";
 
 // Was previously its own hardcoded copy of these 8 listings (with its own drifted image URLs
 // and, at one point, a RERA number silently duplicated from prop-2) -- consolidated to read
@@ -44,6 +45,8 @@ function SubmissionCard({ s }: { s: Submission }) {
   const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'm interested in "${s.title}" at ${s.area}, ${s.city}. Asking: ${s.priceDisplay}`)}`;
   const { add, remove, isAdded } = useComparison();
   const added = isAdded(`sub-${s.id}`);
+  // "✓ RERA" only when a reviewer verified it (never next to "Verification in progress").
+  const rera = reraBadge({ reraNumber: s.reraNumber, flags: s.verificationFlags, location: `${s.area} ${s.city}` });
 
   const compareItem: CompareItem = {
     id: `sub-${s.id}`, title: s.title,
@@ -70,7 +73,7 @@ function SubmissionCard({ s }: { s: Submission }) {
         )}
         <div className="absolute top-2 left-2">
           <span className="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">
-            {s.reraNumber ? "✓ RERA" : "Owner Listed"}
+            {rera ? `✓ RERA ${rera.number}` : "Owner Listed"}
           </span>
         </div>
         <div className="absolute top-2 right-2">
