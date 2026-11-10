@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { cache as reactCache } from "react";
 import { prisma } from "@/lib/db";
 import { getMarketPrice, unitLabel, type EngineResult } from "@/lib/engine";
 import { computeConfidence, sourceDomains, type Confidence } from "@/lib/engine/confidence";
@@ -69,6 +69,10 @@ function toTypePrice(type: string, d: Record<string, unknown> | null, capturedAt
 
 // Cache-only read from the ONE price store, location_market_cache (Task F) -- the same rows the
 // homepage, AI Intel, reports, PDF and KnownAI use. Each price carries its own captured date.
+// React cache() exists only inside Next.js server rendering; outside it (scripts, tests) a
+// plain call is used instead.
+const cache: typeof reactCache = typeof reactCache === "function" ? reactCache : ((fn) => fn) as typeof reactCache;
+
 export const getAreaPrices = cache(async (page: AreaPage): Promise<TypePrice[]> => {
   const location = `${page.area}, ${page.city}`;
   return Promise.all(page.types.map(async (type) => {
