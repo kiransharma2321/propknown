@@ -25,6 +25,8 @@ const resourceLinks = [
   { label: "Invest",       href: "/invest" },
   { label: "NRI",          href: "/nri" },
   { label: "Legal Shield", href: "/legal-shield" },
+  { label: "True Cost",    href: "/true-cost" },
+  { label: "Guides",       href: "/guides" },
 ];
 
 function isActivePath(pathname: string, href: string) {

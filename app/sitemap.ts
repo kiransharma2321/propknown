@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { PUBLIC_LISTINGS } from "@/lib/listings";
 import { prisma } from "@/lib/db";
 import { areaPagesWithData } from "@/lib/areaPages";
+import { GUIDES } from "@/lib/guides";
 
 const BASE = "https://www.propknown.com";
 
@@ -30,6 +31,7 @@ const STATIC: { path: string; changeFrequency: "weekly" | "monthly" | "yearly"; 
   { path: "/legal-shield",    changeFrequency: "monthly", priority: 0.75 },
   { path: "/price-check",     changeFrequency: "monthly", priority: 0.80 },
   { path: "/podcast",         changeFrequency: "monthly", priority: 0.55 },
+  { path: "/guides",          changeFrequency: "weekly",  priority: 0.70 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -51,5 +53,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE}/buy/submission/${s.id}`, lastModified: s.updatedAt, changeFrequency: "monthly", priority: 0.80,
   }));
 
-  return [...staticPages, ...areaPages, ...propertyPages, ...submissionPages];
+  // Guides only once the author has reviewed every claim (drafts are noindex).
+  const guidePages: MetadataRoute.Sitemap = GUIDES.filter((g) => g.reviewed).map((g) => ({
+    url: `${BASE}/guides/${g.slug}`, lastModified: new Date(g.updated), changeFrequency: "monthly", priority: 0.70,
+  }));
+
+  return [...staticPages, ...areaPages, ...guidePages, ...propertyPages, ...submissionPages];
 }
