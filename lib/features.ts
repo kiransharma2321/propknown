@@ -24,6 +24,8 @@ export const FEATURES = {
   builderTrustScore: process.env.NEXT_PUBLIC_FEATURE_BUILDER_TRUST_SCORE === "true",
   /** M9: KnownAI 2.0 -- answers about checked projects, source links under answers, voice input. */
   knownaiV2: process.env.NEXT_PUBLIC_FEATURE_KNOWNAI_V2 === "true",
+  /** M11: business-intelligence dashboard + CSV export (admin, master only). */
+  bi: process.env.NEXT_PUBLIC_FEATURE_BI === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;
