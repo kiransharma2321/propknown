@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, CheckCircle } from "lucide-react";
+import { useCallbackText } from "@/components/useCallbackText";
 
 interface LeadFormProps {
   source: string;
@@ -12,6 +13,7 @@ interface LeadFormProps {
 }
 
 export default function LeadForm({ source, propertyId, title = "Get Expert Advice", subtitle, dark = false }: LeadFormProps) {
+  const callbackText = useCallbackText();
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -45,7 +47,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
         <CheckCircle size={48} className="gold-accent mb-4" />
         <h3 className={dark ? "heading-h3-dark mb-2" : "heading-h3 mb-2"}>Thank You!</h3>
         <p className={dark ? "text-zinc-400" : "text-gray-500"}>
-          We&apos;ve received your enquiry. Our team will reach out within 2 hours.
+          We&apos;ve received your enquiry. {callbackText}
         </p>
         <button
           onClick={() => setSuccess(false)}

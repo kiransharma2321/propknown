@@ -21,6 +21,7 @@ import InvestmentScoreGauge from "@/components/ui/InvestmentScoreGauge";
 import LegalChecklistBadge from "@/components/ui/LegalChecklistBadge";
 import ConstructionProgress from "@/components/ui/ConstructionProgress";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
+import { useCallbackText } from "@/components/useCallbackText";
 
 // Leaflet map — no SSR
 const PropertyMap = dynamic(() => import("@/components/property/PropertyMap"), {
@@ -122,6 +123,7 @@ export default function PropertyDetailClient({
   listing: Listing;
   nearbyListings: Listing[];
 }) {
+  const callbackText = useCallbackText();
   const [imgIdx,  setImgIdx]  = useState(0);
   const [coords,  setCoords]  = useState<{ lat: number; lng: number } | null>(
     listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : null
@@ -625,13 +627,13 @@ out body qt 30;`;
                 {/* h2, not h3 -- this sidebar card isn't a subsection of any h2 above it
                     (it sits in a separate <aside>-like column), so h3 skipped a level. */}
                 <h2 className="font-playfair text-gray-900 font-bold text-base mb-1">Request a Callback</h2>
-                <p className="text-gray-400 text-xs mb-4">We respond within 2 hours.</p>
+                <p className="text-gray-400 text-xs mb-4">{callbackText}</p>
 
                 {fstate === "success" ? (
                   <div className="text-center py-6">
                     <CheckCircle size={36} className="text-green-500 mx-auto mb-3" />
                     <p className="font-semibold text-gray-800">Request sent!</p>
-                    <p className="text-sm text-gray-500 mt-1">Our team will call you within 2 hours.</p>
+                    <p className="text-sm text-gray-500 mt-1">{callbackText}</p>
                   </div>
                 ) : (
                   <form onSubmit={submitLead} className="space-y-3">

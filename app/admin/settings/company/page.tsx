@@ -7,7 +7,7 @@ import PKLogo from "@/components/layout/PKLogo";
 import SettingsNav from "@/components/admin/SettingsNav";
 import { useToast } from "@/components/ui/Toast";
 
-interface CompanySettings { companyName: string | null; founderName: string | null; whatsapp: string | null; email: string | null; address: string | null }
+interface CompanySettings { companyName: string | null; founderName: string | null; whatsapp: string | null; email: string | null; address: string | null; callbackText: string | null }
 
 const inp = "input-dark text-sm px-3 py-2";
 const label = "text-gray-500 text-xs mb-1 block";
@@ -16,7 +16,7 @@ const label = "text-gray-500 text-xs mb-1 block";
 // UI page at all -- this is that missing UI). Single settings row, upserted.
 export default function CompanySettingsPage() {
   const toast = useToast();
-  const [form, setForm] = useState<CompanySettings>({ companyName: "", founderName: "", whatsapp: "", email: "", address: "" });
+  const [form, setForm] = useState<CompanySettings>({ companyName: "", founderName: "", whatsapp: "", email: "", address: "", callbackText: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -24,7 +24,7 @@ export default function CompanySettingsPage() {
     fetch("/api/admin/settings/company").then(r => r.ok ? r.json() : null).then((d: { settings: CompanySettings | null } | null) => {
       if (d?.settings) setForm({
         companyName: d.settings.companyName ?? "", founderName: d.settings.founderName ?? "",
-        whatsapp: d.settings.whatsapp ?? "", email: d.settings.email ?? "", address: d.settings.address ?? "",
+        whatsapp: d.settings.whatsapp ?? "", email: d.settings.email ?? "", address: d.settings.address ?? "", callbackText: d.settings.callbackText ?? "",
       });
       setLoading(false);
     });
@@ -62,6 +62,9 @@ export default function CompanySettingsPage() {
             </div>
             <div><label className={label}>Address</label>
               <textarea value={form.address ?? ""} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} rows={2} className={inp + " w-full resize-none"} /></div>
+            <div><label className={label}>Call-back message on lead forms (empty = &ldquo;We&apos;ll call you back soon.&rdquo;)</label>
+              <input value={form.callbackText ?? ""} onChange={e => setForm(f => ({ ...f, callbackText: e.target.value }))} placeholder="We'll call you back soon." maxLength={140} className={inp + " w-full"} />
+              <p className="text-[11px] text-gray-400 mt-1">Shown on every enquiry form and thank-you message. Only promise a time you can always meet.</p></div>
             <button onClick={save} disabled={saving} className="btn-primary text-sm px-4 py-2 disabled:opacity-50 flex items-center gap-1.5">
               <Save size={14} /> {saving ? "Saving…" : "Save"}
             </button>

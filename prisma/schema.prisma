@@ -440,6 +440,8 @@ model CompanySettings {
   whatsapp    String?
   email       String?
   address     String?
+  // Public "we will call you back" wording on lead forms (admin-editable). Empty = default.
+  callbackText String?
   updatedAt   DateTime @updatedAt
 }
 

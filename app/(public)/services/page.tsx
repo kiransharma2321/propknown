@@ -8,6 +8,7 @@ import {
   FileText, Scale, BadgeCheck,
 } from "lucide-react";
 import SmartLeadForm from "@/components/ui/SmartLeadForm";
+import { getCallbackText } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Real Estate Services — Legal, RERA & Management",
@@ -162,7 +163,8 @@ function ServiceCard({ s }: { s: Service }) {
   );
 }
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const callbackText = await getCallbackText();
   return (
     <div className="pt-32 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
@@ -184,7 +186,7 @@ export default function ServicesPage() {
               formType="services"
               source="services-page"
               title="Enquire About a Service"
-              subtitle="Select the service you need — our team responds within 2 hours."
+              subtitle={`Select the service you need. ${callbackText}`}
             />
           </div>
         </div>
