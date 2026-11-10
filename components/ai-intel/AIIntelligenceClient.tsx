@@ -849,9 +849,9 @@ function AIIntelligenceInner() {
                       guidance={r.guidanceValue}
                       evidenceCount={r.evidence?.count}
                     />
-                    {r.cached && r.fetchedAt && (
+                    {r.fetchedAt && (
                       <p className={`text-[11px] mt-2 ${r.stale ? "text-amber-700" : "text-gray-400"}`}>
-                        Last updated {new Date(r.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {r.cached ? "Last updated" : "Captured"} {new Date(r.fetchedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                         {r.stale && " · live refresh unavailable right now, showing the last good result"}
                       </p>
                     )}
