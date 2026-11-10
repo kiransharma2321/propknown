@@ -194,6 +194,63 @@ model BuyerUser {
   createdAt    DateTime   @default(now())
   favorites    Favorite[]
   alerts       Alert[]
+  // M2: set when the customer proves the address with an emailed one-time code. Only verified
+  // addresses see their Fair-Price Reports (stored as leads keyed by email) in My PropKnown.
+  emailVerifiedAt DateTime?
+  savedSearches   SavedSearch[]
+  priceWatches    PriceWatch[]
+}
+
+// M2: one-time login/sign-up codes for customer accounts. Only a keyed hash of the code is
+// stored; codes expire after 10 minutes and allow 5 attempts.
+model BuyerOtp {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  usedAt    DateTime?
+  ip        String?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@map("buyer_otps")
+}
+
+// M2: a customer's saved search (re-opened from My PropKnown). kind: listings | area | project.
+model SavedSearch {
+  id        String    @id @default(cuid())
+  buyerId   String
+  buyer     BuyerUser @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  name      String
+  kind      String
+  path      String // the page + query string to re-open, e.g. /buy?city=Hyderabad&type=Apartment
+  createdAt DateTime  @default(now())
+
+  @@index([buyerId])
+  @@map("saved_searches")
+}
+
+// M2: price watchlist. A daily job compares the cached (sourced, dated) price with lastPrice and
+// emails the customer when it moves by 3% or more. kind: area | project.
+model PriceWatch {
+  id             String    @id @default(cuid())
+  buyerId        String
+  buyer          BuyerUser @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  watchKey       String // kind|location|project|type, lower-case -- one watch per thing per customer
+  kind           String
+  location       String
+  projectName    String?
+  propertyType   String    @default("apartment")
+  lastPrice      Float?
+  lastCapturedAt DateTime?
+  lastNotifiedAt DateTime?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  @@unique([buyerId, watchKey])
+  @@index([active])
+  @@map("price_watches")
 }
 
 model Favorite {
