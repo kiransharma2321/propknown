@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
+import AttributionCapture from "@/components/AttributionCapture";
 
 // Self-hosted via next/font -- replaces the render-blocking third-party
 // fonts.googleapis.com <link>/@import this site used to make on every single page. Variable
@@ -195,6 +196,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${playfair.variable} ${montserrat.variable}`}>
       <body className="bg-brand-black text-brand-white antialiased">
+        <AttributionCapture />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

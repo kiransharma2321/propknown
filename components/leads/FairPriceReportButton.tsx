@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { FileDown, Loader2, CheckCircle2, MessageCircle } from "lucide-react";
 import { COUNTRY_CODES } from "@/components/leads/ReportLeadForm";
-import { readAttribution } from "@/lib/attribution";
 
 // "Download Free Report" -> name / phone / email + consent -> branded Fair-Price Report PDF,
 // emailed and downloadable, with a WhatsApp share of the (public) area page.
@@ -30,7 +29,6 @@ export default function FairPriceReportButton({ location, propertyType, unit }: 
         body: JSON.stringify({
           name, email, consent, location, propertyType, unit,
           phone: `${cc}${phone.replace(/\D/g, "").replace(/^0+/, "")}`,
-          attribution: readAttribution(),
         }),
       });
       const data = await res.json();

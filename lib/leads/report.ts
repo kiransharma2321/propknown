@@ -5,6 +5,7 @@ import { priceVerdict } from "@/lib/engine/verdict";
 import { reraGuidance } from "@/lib/engine/rera";
 import { matchLocality, localityPath } from "@/lib/localities";
 import { toE164 } from "@/lib/phone";
+import type { leadAttribution } from "@/lib/attribution";
 import { SITE_URL } from "@/lib/site";
 import { waLink, searchContextText } from "@/lib/whatsapp";
 import { notifyNewLead } from "@/lib/notifications";
@@ -43,6 +44,7 @@ export interface ReportLeadInput {
   reraNumber?: string;           // legal_shield
   riskLevel?: string;            // legal_shield: Low | Medium | High
   ip?: string | null;
+  attribution?: ReturnType<typeof leadAttribution>;
 }
 
 export class ReportLeadError extends Error {
@@ -130,6 +132,7 @@ export async function createReportLead(input: ReportLeadInput) {
       message: `Requested the full ${TOOL_LABEL[input.tool]} report + 5-year forecast for ${typeLabel} in ${where}.`,
       tags: [input.tool, matchLocality(location) ? `${matchLocality(location)!.citySlug}/${matchLocality(location)!.slug}` : "other-location"],
       reportContext: reportContext as Prisma.InputJsonValue,
+      ...(input.attribution ?? {}),
     },
   });
   notifyNewLead({ id: lead.id, name, source: lead.source, phone }).catch(() => null);

@@ -18,6 +18,8 @@ interface Lead {
   leadScore: number | null; buyingIntent: string | null; financialStrength: string | null;
   urgencyLevel: string | null; conversionProbability: number | null; bestFollowUpTime: string | null;
   recommendedPropertyId: string | null; nextBestAction: string | null; aiSummary: string | null; aiScoredAt: string | null;
+  utmSource?: string | null; utmMedium?: string | null; utmCampaign?: string | null; utmContent?: string | null;
+  referrer?: string | null; landingPage?: string | null;
 }
 interface TimelineEntry { ts?: string; at?: string; type: string; text?: string; channel?: string; by?: string; }
 interface ProjectOption { id: string; name: string; }
@@ -138,6 +140,14 @@ export default function LeadDetailPage() {
             {lead.email && <span className="flex items-center gap-1.5"><Mail size={13} /> {lead.email}</span>}
           </div>
           {lead.message && <p className="text-gray-500 text-sm bg-gray-50 rounded-lg p-3">{lead.message}</p>}
+
+          {/* First-touch attribution: where this lead first found PropKnown */}
+          <div className="mt-3 text-xs text-gray-500 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            {[["UTM source", lead.utmSource], ["UTM medium", lead.utmMedium], ["UTM campaign", lead.utmCampaign],
+              ["UTM content", lead.utmContent], ["Referrer", lead.referrer], ["Landing page", lead.landingPage]].map(([k, v]) => (
+              <p key={k as string}><span className="text-gray-400">{k}:</span> {v || "—"}</p>
+            ))}
+          </div>
 
           {/* Property Interests -- tags backed by real Settings > Projects */}
           <div className="mt-4">

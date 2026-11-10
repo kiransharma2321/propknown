@@ -19,6 +19,16 @@ export function readAttribution(): Attribution | null {
   }
 }
 
+/** Server: the Lead columns for the first-touch cookie on this request (all null if none). */
+export function leadAttribution(cookieValue: string | undefined | null) {
+  let a: Attribution | null = null;
+  if (cookieValue) { try { a = cleanAttribution(JSON.parse(decodeURIComponent(cookieValue))); } catch { a = null; } }
+  return {
+    utmSource: a?.utm_source ?? null, utmMedium: a?.utm_medium ?? null, utmCampaign: a?.utm_campaign ?? null,
+    utmContent: a?.utm_content ?? null, referrer: a?.referrer ?? null, landingPage: a?.landing_page ?? null,
+  };
+}
+
 /** Keeps only the known keys, as short strings. Used on both client and server. */
 export function cleanAttribution(v: unknown): Attribution | null {
   if (!v || typeof v !== "object") return null;

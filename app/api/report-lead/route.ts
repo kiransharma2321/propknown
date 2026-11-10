@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/lib/clientIp";
+import { leadAttribution, ATTRIBUTION_COOKIE } from "@/lib/attribution";
 import { createReportLead, ReportLeadError, type ReportLeadInput } from "@/lib/leads/report";
 
 export const maxDuration = 30;
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
       reraNumber: body.reraNumber ? String(body.reraNumber) : undefined,
       riskLevel: body.riskLevel ? String(body.riskLevel) : undefined,
       ip: getClientIp(req),
+      attribution: leadAttribution(req.cookies.get(ATTRIBUTION_COOKIE)?.value),
     });
     return NextResponse.json({ ok: true, ...r });
   } catch (e) {

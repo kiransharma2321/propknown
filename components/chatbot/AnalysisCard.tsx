@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { KnownAIAnalysis } from "@/lib/knownai/analysis";
-import { readAttribution } from "@/lib/attribution";
 
 // Side-by-side area comparison + affordability for an Ask KnownAI 2.0 answer, then a
 // "Talk to an expert" lead capture. Shows only what the engine returned (or the user said).
@@ -26,7 +25,6 @@ export default function AnalysisCard({ a, question }: { a: KnownAIAnalysis; ques
         body: JSON.stringify({
           name, phone: phone.replace(/[^\d+]/g, ""), source: "KnownAI — expert request",
           message: `Asked KnownAI: "${question.slice(0, 300)}". Areas: ${a.areas.map((x) => x.name).join(", ")}.`,
-          attribution: readAttribution(),
         }),
       });
       setState(res.ok ? "done" : "error");

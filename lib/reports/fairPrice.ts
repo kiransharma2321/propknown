@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getMarketPrice, unitLabel } from "@/lib/engine";
 import { sourceDomains } from "@/lib/engine/confidence";
 import { toE164 } from "@/lib/phone";
+import type { leadAttribution } from "@/lib/attribution";
 import { SITE_URL } from "@/lib/site";
 import { waLink, searchContextText } from "@/lib/whatsapp";
 import { sendTracked, unsubscribeUrl, normaliseEmail, signValue } from "@/lib/emails/send";
@@ -62,7 +63,7 @@ export function downloadUrl(leadId: string): string {
 export interface FairPriceInput {
   name: string; phone: string; email: string; consent: boolean;
   location: string; propertyType?: string; unit?: string; ip?: string | null;
-  attribution?: Record<string, string | null> | null;
+  attribution?: ReturnType<typeof leadAttribution>;
 }
 
 export async function createFairPriceReport(input: FairPriceInput) {
@@ -101,6 +102,7 @@ export async function createFairPriceReport(input: FairPriceInput) {
         consent: { text: CONSENT_TEXT, at: new Date().toISOString() }, ip: input.ip ?? null,
         snapshot: snapshot as unknown as Prisma.InputJsonValue,
       } as Prisma.InputJsonValue,
+      ...(input.attribution ?? {}),
     },
   });
 

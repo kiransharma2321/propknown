@@ -37,6 +37,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">4. Cookies</h2>
             <p>We use minimal cookies for session management and analytics. No tracking or advertising cookies are used without your consent.</p>
+            <p className="mt-2">When you first visit, we store one first-party cookie (&ldquo;pk_ft&rdquo;, kept for 90 days) recording how you arrived: the campaign tags in the link you used (utm_source, utm_medium, utm_campaign, utm_content), the website that referred you, and the first page you landed on. It is only read if you submit an enquiry form, so we know which channel brought you to us. It contains nothing else and is never shared.</p>
           </section>
           <section>
             <h2 className="text-white text-lg font-semibold mb-2">5. Your Rights</h2>

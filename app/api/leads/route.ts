@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { buildRaghuNotifyWhatsAppLink } from "@/lib/email";
 import { sendLeadAlert } from "@/lib/leads/report";
+import { leadAttribution, ATTRIBUTION_COOKIE } from "@/lib/attribution";
 import { notifyNewLead } from "@/lib/notifications";
 import { toIndianWaNumber } from "@/lib/phone";
 import { getAdminSession, canRole } from "@/lib/rbac";
@@ -37,7 +38,8 @@ export async function POST(req: NextRequest) {
     }
 
     const lead = await prisma.lead.create({
-      data: { name, phone, email, message: finalMessage, source: source ?? "website", propertyId: validPropertyId },
+      data: { name, phone, email, message: finalMessage, source: source ?? "website", propertyId: validPropertyId,
+        ...leadAttribution(req.cookies.get(ATTRIBUTION_COOKIE)?.value) },
     });
     console.log(`[leads] Lead created — id:${lead.id}`);
 

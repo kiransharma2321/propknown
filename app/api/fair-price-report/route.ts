@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "@/lib/clientIp";
+import { leadAttribution, ATTRIBUTION_COOKIE } from "@/lib/attribution";
 import { ReportLeadError } from "@/lib/leads/report";
 import { createFairPriceReport } from "@/lib/reports/fairPrice";
 
@@ -15,6 +16,7 @@ export async function POST(req: NextRequest) {
       consent: body.consent === true, location: String(body.location ?? ""),
       propertyType: body.propertyType ? String(body.propertyType) : undefined,
       unit: body.unit ? String(body.unit) : undefined, ip: getClientIp(req),
+      attribution: leadAttribution(req.cookies.get(ATTRIBUTION_COOKIE)?.value),
     });
     return NextResponse.json({ ok: true, ...r });
   } catch (e) {

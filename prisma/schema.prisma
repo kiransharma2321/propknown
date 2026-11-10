@@ -73,6 +73,14 @@ model Lead {
   phone        String
   message      String?
   source       String
+  // First-touch attribution (Task G): where the visitor first came from, from the 90-day
+  // first-party pk_ft cookie. Nullable -- older leads and direct visits have none.
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmContent   String?
+  referrer     String?
+  landingPage  String?
   status       String    @default("new")
   propertyId   String?
   property     Property? @relation(fields: [propertyId], references: [id])

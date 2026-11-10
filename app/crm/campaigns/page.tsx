@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import LeadSourcesTable from "@/components/crm/LeadSourcesTable";
 import { ArrowLeft, Plus, X, Megaphone } from "lucide-react";
 import PKLogo from "@/components/layout/PKLogo";
 
@@ -51,6 +52,8 @@ export default function CampaignsPage() {
         </div>
         <h1 className="font-playfair text-gray-900 text-xl font-bold mb-1">Marketing Campaigns</h1>
         <p className="text-gray-500 text-sm mb-6">Enter real spend here to see real cost-per-lead on the Executive Dashboard.</p>
+
+        <LeadSourcesTable />
 
         {showForm && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 space-y-3">
