@@ -84,3 +84,31 @@ test("carpet-area rates are left out when built-up rates exist", async () => {
   const pick = pickProjectPrices([{ value: 6500, host: "a.com", url: "https://a.com", listingType: "builder", basis: "built_up" }, { value: 8200, host: "b.com", url: "https://b.com", listingType: "builder", basis: "carpet" }]);
   assert.deepEqual(pick.primary.map((p) => p.value), [6500]);
 });
+
+// General rules used by the broad suite (lib/accuracyRules.ts).
+test("rules: a clean price passes; each kind of error is caught", async () => {
+  const { checkPrice } = await import("@/lib/accuracyRules");
+  const ok = { kind: "area" as const, location: "Kokapet, Hyderabad", price: 12000, min: 8500, max: 17500, currency: "INR", unit: "sqft", sourceUrls: ["https://www.99acres.com/a", "https://squareyards.com/b", "https://www.magicbricks.com/c"], confidence: "High", capturedAt: "2026-11-10T00:00:00Z", claimedSources: 3 };
+  assert.deepEqual(checkPrice(ok, Date.parse("2026-11-11")), []);
+  const rules = (o: object) => checkPrice({ ...ok, ...o }, Date.parse("2026-11-11")).map((f) => f.rule);
+  assert.ok(rules({ sourceUrls: [] }).includes("has a real source"));
+  assert.ok(rules({ sourceUrls: [...ok.sourceUrls, "https://tavily.com/x"] }).includes("only real sources"));
+  assert.ok(rules({ min: 13000 }).includes("min <= price <= max"));
+  assert.ok(rules({ price: 120 }).includes("plausible for currency + unit"));
+  assert.ok(rules({ location: "Business Bay, Dubai" }).includes("currency matches the country"));
+  assert.ok(rules({ sourceUrls: ["https://www.99acres.com/a"], claimedSources: 1 }).includes("High confidence needs 3+ websites"));
+  assert.ok(rules({ claimedSources: 5 }).includes("source count = distinct websites"));
+  assert.ok(rules({ capturedAt: "2027-01-01" }).includes("capture date not in the future"));
+  assert.ok(checkPrice({ ...ok, kind: "project", localityPrice: 3000 }, Date.parse("2026-11-11")).some((f) => f.rule === "project vs its area within reason"));
+});
+
+test("engine plausibility: implausible prices and absurd ranges are never published", async () => {
+  const { isPlausiblePrice, isUsableRange } = await import("@/lib/engine/plausibility");
+  assert.equal(isPlausiblePrice(800, "INR", "sqft"), false, "villa at Rs 800/sqft is a rent or unit mix-up");
+  assert.equal(isPlausiblePrice(104_400, "INR", "sqyard"), true);
+  assert.equal(isPlausiblePrice(15_675_066_00, "INR", "acres"), false, "Rs 156 crore per acre is not farm land");
+  assert.equal(isPlausiblePrice(189_240, "AED", "acres"), false);
+  assert.equal(isUsableRange(11_346, 920, 33_333), false, "36x range");
+  assert.equal(isUsableRange(8_650, 7_000, 10_500), true);
+  assert.equal(isUsableRange(8_650, 9_000, 10_500), false, "price outside its own range");
+});

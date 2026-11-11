@@ -25,6 +25,7 @@ import { defaultUnitFor } from "@/lib/hotMarkets";
 import { computeConfidence, type Confidence, type ConfidenceInput } from "@/lib/engine/confidence";
 import { getGuidanceValue, type GuidanceValue } from "@/lib/engine/guidance";
 import { isPriceSource } from "@/lib/engine/sources";
+import { isPlausiblePrice, isUsableRange } from "@/lib/engine/plausibility";
 
 export const ENGINE_TIMEOUT_MS = 10_000;
 // AI Intelligence + Price Reality Check: grounded search needs more than 10s, and those routes
@@ -217,7 +218,20 @@ export async function getMarketPrice(req: EngineRequest): Promise<EngineResult> 
     const guidanceValue = await getGuidanceValue(resolved.key, propertyType, String(r.pricePerSqftUnit ?? outUnit));
     // Rows cached before rounding was added can hold a fractional price; show whole units.
     const price = typeof r.currentPricePerSqft === "number" ? Math.round(r.currentPricePerSqft) : r.currentPricePerSqft;
-    return { ...r, currentPricePerSqft: price, sourceUrls, confidence, guidanceValue };
+    const unit = String(r.pricePerSqftUnit ?? outUnit), currency = String(r.currency ?? "");
+    // Outside the plausible band for its currency + unit (rents, unit mix-ups): never published.
+    if (typeof price === "number" && !isPlausiblePrice(price, currency, unit)) {
+      console.warn(`[engine] implausible ${currency} ${price}/${unit} for "${resolved.display}" (${propertyType}) -- not published`);
+      return { available: false, message: NOT_ENOUGH_DATA, reason: "implausible", locationKey: resolved.key };
+    }
+    // A range that doesn't contain the price or is > 4x wide mixes in other types or outliers:
+    // use the area-specific evidence range if that one is sound, otherwise show no range.
+    let rangeMin = r.priceRangeMin, rangeMax = r.priceRangeMax;
+    if (typeof price === "number" && !isUsableRange(price, rangeMin, rangeMax)) {
+      const ev = evidence ? scaleEvidence(evidence, baseUnit, outUnit) : null;
+      [rangeMin, rangeMax] = ev && isUsableRange(price, ev.min, ev.max) ? [ev.min, ev.max] : [undefined, undefined];
+    }
+    return { ...r, currentPricePerSqft: price, priceRangeMin: rangeMin, priceRangeMax: rangeMax, sourceUrls, confidence, guidanceValue };
   };
 
   // 1. Cache
