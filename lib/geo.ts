@@ -75,18 +75,28 @@ const OVERPASS_HOSTS = [
 
 export async function nearbyPlaces(center: LatLon, radiusM = 3000): Promise<Nearby | null> {
   const around = `(around:${radiusM},${center.lat.toFixed(5)},${center.lon.toFixed(5)})`;
-  const q = `[out:json][timeout:20];(${Object.values(CATEGORIES).map((c) => `${c.filter}${around};`).join("")});out center tags 300;`;
-  // The main public server often refuses cloud-hosting addresses, so try public mirrors in turn.
-  for (const host of OVERPASS_HOSTS) {
-    const res = await fetch(`${host}?data=${encodeURIComponent(q)}`, {
-      headers: { "User-Agent": UA, Accept: "application/json" }, next: { revalidate: 7 * 86400 }, signal: AbortSignal.timeout(12_000),
-    }).catch((e) => { console.warn(`[geo] ${host} failed: ${e instanceof Error ? e.message : e}`); return null; });
-    if (!res) continue;
-    if (!res.ok) { console.warn(`[geo] ${host} answered ${res.status}`); continue; }
-    const j = (await res.json().catch(() => null)) as { elements?: OsmEl[] } | null;
-    if (j?.elements) return summarise(center, j.elements);
+  const q = `[out:json][timeout:25];(${Object.values(CATEGORIES).map((c) => `${c.filter}${around};`).join("")});out center tags 250;`;
+  // Public Overpass servers are slow from cloud regions, so ask all of them at once (POST, as
+  // Overpass recommends for longer queries) and take the first good answer. The API route caches
+  // a successful result, so this happens rarely.
+  const one = async (host: string): Promise<Nearby> => {
+    const res = await fetch(host, {
+      method: "POST",
+      headers: { "User-Agent": UA, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(q)}`, cache: "no-store", signal: AbortSignal.timeout(25_000),
+    });
+    if (!res.ok) throw new Error(`${host} answered ${res.status}`);
+    const j = (await res.json()) as { elements?: OsmEl[] };
+    if (!j?.elements) throw new Error(`${host}: no elements`);
+    return summarise(center, j.elements);
+  };
+  try {
+    return await Promise.any(OVERPASS_HOSTS.map(one));
+  } catch (e) {
+    const errs = e instanceof AggregateError ? e.errors.map((x) => (x instanceof Error ? x.message : String(x))) : [String(e)];
+    console.warn(`[geo] all Overpass servers failed: ${errs.join(" | ")}`);
+    return null;
   }
-  return null;
 }
 
 export function osmEmbedUrl(c: LatLon, spanDeg = 0.03): string {

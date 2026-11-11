@@ -4,6 +4,8 @@ import { OSM_ATTRIBUTION, geocodeArea, nearbyPlaces, osmEmbedUrl } from "@/lib/g
 
 // M7: map centre + nearby places for an area (OpenStreetMap; cached server-side).
 // GET /api/area-geo?area=Kokapet&city=Hyderabad
+export const maxDuration = 60;
+
 export async function GET(req: NextRequest) {
   if (!FEATURES.maps) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const area = (req.nextUrl.searchParams.get("area") ?? "").trim().slice(0, 80);
@@ -14,6 +16,7 @@ export async function GET(req: NextRequest) {
   const nearby = await nearbyPlaces(center);
   return NextResponse.json(
     { center, mapUrl: osmEmbedUrl(center), nearby, fetchedAt: new Date().toISOString(), attribution: OSM_ATTRIBUTION },
-    { headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400" } },
+    // Cache only a complete answer; a failed nearby lookup must be retried, not cached for a week.
+    { headers: { "Cache-Control": nearby ? "public, s-maxage=604800, stale-while-revalidate=86400" : "no-store" } },
   );
 }
