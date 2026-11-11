@@ -67,15 +67,26 @@ export function summarise(center: LatLon, elements: OsmEl[], perCategory = 5): N
   return out;
 }
 
+const OVERPASS_HOSTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+];
+
 export async function nearbyPlaces(center: LatLon, radiusM = 3000): Promise<Nearby | null> {
   const around = `(around:${radiusM},${center.lat.toFixed(5)},${center.lon.toFixed(5)})`;
   const q = `[out:json][timeout:20];(${Object.values(CATEGORIES).map((c) => `${c.filter}${around};`).join("")});out center tags 300;`;
-  const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`, {
-    headers: { "User-Agent": UA }, next: { revalidate: 7 * 86400 }, signal: AbortSignal.timeout(25_000),
-  }).catch(() => null);
-  if (!res?.ok) return null;
-  const j = (await res.json().catch(() => null)) as { elements?: OsmEl[] } | null;
-  return j?.elements ? summarise(center, j.elements) : null;
+  // The main public server often refuses cloud-hosting addresses, so try public mirrors in turn.
+  for (const host of OVERPASS_HOSTS) {
+    const res = await fetch(`${host}?data=${encodeURIComponent(q)}`, {
+      headers: { "User-Agent": UA, Accept: "application/json" }, next: { revalidate: 7 * 86400 }, signal: AbortSignal.timeout(12_000),
+    }).catch((e) => { console.warn(`[geo] ${host} failed: ${e instanceof Error ? e.message : e}`); return null; });
+    if (!res) continue;
+    if (!res.ok) { console.warn(`[geo] ${host} answered ${res.status}`); continue; }
+    const j = (await res.json().catch(() => null)) as { elements?: OsmEl[] } | null;
+    if (j?.elements) return summarise(center, j.elements);
+  }
+  return null;
 }
 
 export function osmEmbedUrl(c: LatLon, spanDeg = 0.03): string {
