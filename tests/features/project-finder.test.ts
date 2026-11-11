@@ -22,3 +22,10 @@ test("a draft from a project check has no price and no unverified 'approved' cla
   assert.equal(d.city, "Hyderabad");
   assert.equal(draftFromCheck({ ...p, price: null } as ProjectResult), null, "no sourced price -> no draft");
 });
+
+test("venture listings: a verified HMDA/DTCP layout number is a badge; none is 'Approval details pending'", async () => {
+  const { approvalLabel } = await import("@/lib/listings/rera");
+  assert.deepEqual(approvalLabel({ reraNumber: null, flags: { layoutApproved: true, layoutBadge: "HMDA", layoutNumber: "LP 12/2025" }, location: "Medchal Hyderabad" }), { text: "✓ HMDA LP 12/2025", verified: true });
+  assert.equal(approvalLabel({ reraNumber: null, flags: { layoutApproved: true, layoutBadge: "DTCP" }, location: "Medchal" }).text, "Approval details pending", "no number -> no badge");
+  assert.equal(approvalLabel({ reraNumber: null, flags: {}, location: "Medchal" }).text, "Approval details pending");
+});

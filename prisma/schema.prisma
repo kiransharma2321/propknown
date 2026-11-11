@@ -773,6 +773,12 @@ model ListingDraft {
   priceSourceDate    DateTime?
   description        String?   @db.Text
   checklist          Json      @default("[]") // 10 booleans, CHECKLIST_ITEMS order
+  // Venture Quick Add: the approval the owner supplied (RERA / HMDA / DTCP LP number), uploaded
+  // photo ids (UploadedFile, JSON array) and the price as the owner states it (e.g. per sq.yd).
+  approvalAuthority  String?
+  approvalNumber     String?
+  photoIds           String    @default("[]") @db.Text
+  priceNote          String?
   aiPriceCheck       Json?     // engine verdict on the stated price, with its date
   reviewStatus       String    @default("draft") // draft | approved | rejected
   rejectReason       String?

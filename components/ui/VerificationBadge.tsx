@@ -8,6 +8,7 @@ export interface VerificationFlags {
   documentsChecked?: boolean;
   layoutApproved?: boolean;  // HMDA / DTCP
   layoutBadge?: string;      // "HMDA" | "DTCP" etc.
+  layoutNumber?: string;     // the layout / LP approval number a reviewer verified
   encumbranceClear?: boolean;
   propknownVerified?: boolean; // overall PropKnown stamp
 }

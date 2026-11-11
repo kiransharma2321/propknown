@@ -33,9 +33,11 @@ export function reraBadge(input: {
 // Card label for a listing's approval status. A verified RERA badge needs reviewer verification
 // (reraBadge above); a number that hasn't been verified is shown as given, never as "Approved";
 // no number at all -> "Approval details pending".
-export function approvalLabel(input: Parameters<typeof reraBadge>[0]): { text: string; verified: boolean } {
+export function approvalLabel(input: Parameters<typeof reraBadge>[0] & { flags?: { layoutApproved?: boolean; layoutBadge?: string; layoutNumber?: string } | null }): { text: string; verified: boolean } {
   const badge = reraBadge(input);
   if (badge) return { text: `✓ RERA ${badge.number}`, verified: true };
+  const f = input.flags;
+  if (f?.layoutApproved && f.layoutNumber?.trim()) return { text: `✓ ${f.layoutBadge ?? "Layout"} ${f.layoutNumber.trim()}`, verified: true };
   const number = (input.flags?.reraNumber || input.reraNumber || "").trim();
   return number ? { text: `RERA no. ${number} · not yet verified`, verified: false } : { text: "Approval details pending", verified: false };
 }

@@ -25,7 +25,9 @@ export default async function DraftPage({ params }: { params: { id: string } }) 
     propertyType: d.propertyType, configuration: d.configuration, sizeText: d.sizeText, sizeSqft: d.sizeSqft,
     projectStatus: d.projectStatus, possessionDate: d.possessionDate, reraNumber: d.reraNumber, price: d.price,
     priceSourceUrl: d.priceSourceUrl, description: d.description, checklist, reviewStatus: d.reviewStatus,
+    approvalAuthority: d.approvalAuthority, approvalNumber: d.approvalNumber, priceNote: d.priceNote,
   };
+  const photos = (() => { try { return JSON.parse(d.photoIds || "[]") as string[]; } catch { return []; } })();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -42,6 +44,12 @@ export default async function DraftPage({ params }: { params: { id: string } }) 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <DraftEditor d={view} />
         <div className="space-y-4">
+          {photos.length > 0 && (
+            <div className="card-dark p-3 grid grid-cols-3 gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {photos.map((id) => <a key={id} href={`/api/files/${id}`} target="_blank" rel="noopener noreferrer"><img src={`/api/files/${id}`} alt="Venture photo" className="w-full aspect-square object-cover rounded" /></a>)}
+            </div>
+          )}
           <div className="card-dark p-4 text-sm space-y-1">
             <p className="font-semibold text-gray-900">AI price check</p>
             {pc.status === "done" ? (

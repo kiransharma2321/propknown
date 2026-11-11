@@ -9,7 +9,7 @@ import { normaliseChecklist, CHECKLIST_ITEMS } from "@/lib/listings/checklist";
 // anything the text doesn't state stays empty. A price is kept only when the text states it,
 // and is then tied to that text's source link and capture date.
 
-export type DraftOrigin = "quick_add_text" | "quick_add_url" | "rera_feed";
+export type DraftOrigin = "quick_add_text" | "quick_add_url" | "rera_feed" | "venture";
 
 export class DraftError extends Error {}
 
@@ -96,6 +96,42 @@ export async function createDraft(rawText: string, opts: { origin: DraftOrigin; 
   return { draft: await prisma.listingDraft.findUniqueOrThrow({ where: { id: draft.id } }), duplicate: false };
 }
 
+// Venture Quick Add: the owner's own project, typed in (no AI). Every field is what the owner
+// supplied; the approval number is kept as given and only becomes a badge after a reviewer ticks
+// "RERA or HMDA number verified" and approves. No number -> the card says "Approval details pending".
+export const APPROVAL_AUTHORITIES = ["RERA", "HMDA", "DTCP", "GHMC", "BDA", "Other"] as const;
+
+export interface VentureInput {
+  projectName: string; builder?: string | null; location: string; city: string; state?: string | null; propertyType: string;
+  configuration?: string | null; sizeText?: string | null; sizeSqft?: number | null; projectStatus?: string | null; possessionDate?: string | null;
+  approvalAuthority?: string | null; approvalNumber?: string | null; price?: number | null; priceNote?: string | null;
+  description?: string | null; photoIds?: string[];
+}
+
+export async function createVentureDraft(v: VentureInput, by: string) {
+  if (!v.projectName?.trim() || !v.location?.trim() || !v.city?.trim()) throw new DraftError("Project name, locality and city are required.");
+  const authority = APPROVAL_AUTHORITIES.includes(v.approvalAuthority as (typeof APPROVAL_AUTHORITIES)[number]) ? v.approvalAuthority! : null;
+  const number = v.approvalNumber?.trim().toUpperCase() || null;
+  if (number && !authority) throw new DraftError("Pick who issued the approval number (RERA, HMDA, DTCP…).");
+  const reraNumber = authority === "RERA" ? number : null;
+  if (reraNumber && (await prisma.listingDraft.findUnique({ where: { reraNumber } }))) throw new DraftError(`A draft with RERA ${reraNumber} already exists.`);
+  const now = new Date();
+  const hasPrice = typeof v.price === "number" && v.price > 0;
+  const draft = await prisma.listingDraft.create({ data: {
+    origin: "venture", sourceName: `Owner-supplied (entered by ${by})`, fetchedAt: now,
+    projectName: v.projectName.trim(), builder: v.builder?.trim() || null, location: v.location.trim(), city: v.city.trim(), state: v.state?.trim() || null,
+    propertyType: TYPES.includes(v.propertyType) ? v.propertyType : "plot", configuration: v.configuration?.trim() || null,
+    sizeText: v.sizeText?.trim() || null, sizeSqft: v.sizeSqft && v.sizeSqft > 0 ? v.sizeSqft : null,
+    projectStatus: v.projectStatus?.trim() || null, possessionDate: v.possessionDate?.trim() || null,
+    reraNumber, approvalAuthority: number ? authority : null, approvalNumber: number,
+    price: hasPrice ? v.price! : null, priceSourceDate: hasPrice ? now : null, priceNote: v.priceNote?.trim() || null,
+    description: [v.description?.trim(), number ? null : "Approval details pending: add the RERA / HMDA / DTCP number before approving."].filter(Boolean).join("\n\n") || null,
+    photoIds: JSON.stringify((v.photoIds ?? []).slice(0, 20)), checklist: CHECKLIST_ITEMS.map(() => false),
+  } });
+  await runPriceCheck(draft.id).catch(() => null);
+  return draft;
+}
+
 // AI price check: the stated price per sq.ft against the engine's area price. Skipped (with a
 // reason) when the draft has no stated price, size or location -- never estimated.
 export async function runPriceCheck(id: string) {
@@ -129,17 +165,20 @@ export async function approveDraft(id: string, reviewer: string) {
   if (!normaliseChecklist(d.checklist).every(Boolean)) throw new DraftError("Tick all 10 checklist items before approving.");
   if (!d.location && !d.city) throw new DraftError("Add a location before approving.");
 
+  const photos = (() => { try { return (JSON.parse(d.photoIds || "[]") as string[]).map((id) => `/api/files/${id}`); } catch { return []; } })();
+  const layout = d.approvalNumber && d.approvalAuthority && d.approvalAuthority !== "RERA" ? { layoutApproved: true, layoutBadge: d.approvalAuthority, layoutNumber: d.approvalNumber } : {};
   const property = await prisma.property.create({
     data: {
       title: [d.projectName, d.configuration].filter(Boolean).join(" — "),
-      description: d.description, location: d.location ?? d.city ?? "", city: d.city ?? "", state: d.state ?? "",
+      description: [d.description, d.priceNote ? `Price as stated by the owner: ${d.priceNote}` : null].filter(Boolean).join("\n\n") || null, location: d.location ?? d.city ?? "", city: d.city ?? "", state: d.state ?? "",
       price: d.price ?? 0, currency: d.currency, sqft: d.sizeSqft, propertyType: d.propertyType, listingType: "sale",
-      reraNumber: d.reraNumber, images: [], amenities: [], status: "approved",
+      reraNumber: d.reraNumber, images: photos, amenities: [], status: "approved",
       verified: true, reraVerified: !!d.reraNumber, accuratePrice: !!d.price, ownerConsent: true,
       expectedCompletion: d.possessionDate,
       verificationFlags: {
         propknownVerified: true, titleVerified: true,
         ...(d.reraNumber ? { reraVerified: true, reraNumber: d.reraNumber } : {}),
+        ...layout,
       },
     },
   });

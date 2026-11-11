@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { masterApiSession } from "@/lib/adminGuard";
 import { logAudit } from "@/lib/auditLog";
 import { CHECKLIST_ITEMS } from "@/lib/listings/checklist";
-import { createDraft, fetchPageText, runPriceCheck, approveDraft, rejectDraft, DraftError } from "@/lib/listings/drafts";
+import { createDraft, createVentureDraft, fetchPageText, runPriceCheck, approveDraft, rejectDraft, DraftError } from "@/lib/listings/drafts";
 
 export interface ActionState { ok: boolean; message: string }
 
@@ -40,7 +40,30 @@ export async function quickAddDraft(_prev: ActionState, form: FormData): Promise
   redirect(`/admin/approval-queue/${id}`);
 }
 
-const FIELDS = ["projectName", "builder", "location", "city", "state", "propertyType", "configuration", "sizeText", "projectStatus", "possessionDate", "reraNumber", "description"] as const;
+// Venture Quick Add (your own projects): typed fields + photos already uploaded -> draft, no AI.
+export async function quickAddVenture(_prev: ActionState, form: FormData): Promise<ActionState> {
+  let id: string;
+  try {
+    const s = await session();
+    const t = (k: string, n = 300) => String(form.get(k) ?? "").trim().slice(0, n) || null;
+    const n = (k: string) => { const v = Number(String(form.get(k) ?? "").replace(/,/g, "")); return v > 0 ? v : null; };
+    const photoIds = String(form.get("photoIds") ?? "").split(",").map((x) => x.trim()).filter((x) => /^[a-z0-9]{10,40}$/i.test(x));
+    const draft = await createVentureDraft({
+      projectName: t("projectName") ?? "", builder: t("builder"), location: t("location") ?? "", city: t("city") ?? "", state: t("state"),
+      propertyType: t("propertyType") ?? "plot", configuration: t("configuration"), sizeText: t("sizeText"), sizeSqft: n("sizeSqft"),
+      projectStatus: t("projectStatus"), possessionDate: t("possessionDate"), approvalAuthority: t("approvalAuthority"), approvalNumber: t("approvalNumber", 80),
+      price: n("price"), priceNote: t("priceNote"), description: t("description", 3000), photoIds,
+    }, s.name);
+    logAudit({ actorId: s.userId, actorName: s.name, action: "listing_draft.create", entity: "ListingDraft", entityId: draft.id }).catch(() => null);
+    id = draft.id;
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/admin/approval-queue");
+  redirect(`/admin/approval-queue/${id}`);
+}
+
+const FIELDS = ["projectName", "builder", "location", "city", "state", "propertyType", "configuration", "sizeText", "projectStatus", "possessionDate", "reraNumber", "description", "approvalAuthority", "approvalNumber", "priceNote"] as const;
 
 export async function saveDraft(_prev: ActionState, form: FormData): Promise<ActionState> {
   try {

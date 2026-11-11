@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireMasterPage } from "@/lib/adminGuard";
 import { normaliseChecklist } from "@/lib/listings/checklist";
-import { QuickAddForm } from "./forms";
+import { QuickAddForm, VentureForm } from "./forms";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,7 @@ export default async function ApprovalQueuePage({ searchParams }: { searchParams
             })}
           </div>
         </div>
-        {!missing && <QuickAddForm />}
+        {!missing && <div className="space-y-4"><VentureForm /><QuickAddForm /></div>}
       </div>
     </div>
   );

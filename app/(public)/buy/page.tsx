@@ -55,7 +55,8 @@ export default async function BuyPage() {
     city:        p.city,
     area:        p.location.trim().replace(/^\w/, c => c.toUpperCase()),
     reraNumber:  p.reraNumber?.trim() || undefined,
-    photoIds:    [], videoIds: [], videoUrls: [],
+    // Venture photos are stored as /api/files/<id> (uploaded in the Approval Queue).
+    photoIds:    p.images.filter((u) => u.startsWith("/api/files/")).map((u) => u.slice("/api/files/".length)), videoIds: [], videoUrls: [],
     // adminFlag is an internal review note (admin dashboard only) -- never sent to the page.
     verificationFlags: p.verified ? (({ adminFlag: _a, ...f }) => f)(p.verificationFlags as Submission["verificationFlags"] & { adminFlag?: string }) : {},
     createdAt:   p.createdAt.toISOString(),
