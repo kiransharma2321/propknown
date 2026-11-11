@@ -62,3 +62,25 @@ test("m1: per-site median", async () => {
   const perSite = [medianOf([8000, 8200, 8235]), medianOf([6800])];
   assert.equal(medianOf(perSite), 7500);
 });
+
+// Kowsalya Manidweepam (Nov 2026): listing pages mixed the builder price with resale flats and a
+// registry rate. Figures as extracted from the real search results on 11 Nov 2026.
+test("project price uses builder figures; resale and registry rates are kept out", async () => {
+  const { pickProjectPrices } = await import("@/lib/projects/sites");
+  const f = (value: number, host: string, listingType?: string, basis?: string, kind?: string) => ({ value, host, url: `https://${host}/x`, listingType, basis, kind });
+  const pick = pickProjectPrices([
+    f(7814, "nobroker.in", "unknown"), f(7131, "magicbricks.com", "unknown"),
+    f(2500, "99acres.com", "unknown", "unknown", "registered"),
+    f(7037, "nobroker.in", "resale", "built_up"), f(8831, "nobroker.in", "resale", "built_up"),
+    f(6274, "proptiger.com", "builder", "built_up"), f(6800, "proplocators.com", "builder"), f(6800, "propertypistol.com", "builder", "built_up"),
+  ]);
+  assert.equal(pick.primaryKind, "builder");
+  assert.deepEqual(pick.primary.map((p) => p.value).sort(), [6274, 6800, 6800]);
+  assert.deepEqual(pick.resale.map((p) => p.value).sort(), [7037, 8831]);
+  assert.ok(pick.dropped.some((d) => d.value === 2500 && /registered/.test(d.reason)));
+});
+test("carpet-area rates are left out when built-up rates exist", async () => {
+  const { pickProjectPrices } = await import("@/lib/projects/sites");
+  const pick = pickProjectPrices([{ value: 6500, host: "a.com", url: "https://a.com", listingType: "builder", basis: "built_up" }, { value: 8200, host: "b.com", url: "https://b.com", listingType: "builder", basis: "carpet" }]);
+  assert.deepEqual(pick.primary.map((p) => p.value), [6500]);
+});

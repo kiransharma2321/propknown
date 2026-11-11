@@ -22,7 +22,11 @@ export interface ProjectResult {
   name: string;
   query: { name: string; area: string; propertyType: string };
   facts: Partial<Record<"reraNumber" | "builder" | "location" | "projectType" | "status" | "possession", ProjectFact>>;
-  price: { min: number; max: number; median: number; unit: string; currency: string; sources: { host: string; url: string }[]; capturedAt: string } | null;
+  // basis: "builder" = the builder's / new-launch asking price; "listings" = unclassified listing
+  // figures; "resale" = only resale listings were found. (Older cached rows have no basis.)
+  price: { min: number; max: number; median: number; unit: string; currency: string; sources: { host: string; url: string }[]; capturedAt: string; basis?: "builder" | "listings" | "resale" } | null;
+  // Resale listings for the project, reported separately from the builder price.
+  resale?: { min: number; max: number; median: number; sources: { host: string; url: string }[] } | null;
   confidence: Confidence | null;
   locality: { price: number; rangeMin: number | null; rangeMax: number | null; unit: string; capturedAt: string | null; confidence: Confidence | null } | null;
   verdict: { label: "Fair" | "Above market" | "Below market"; pctVsLocality: number } | null;
@@ -34,7 +38,7 @@ export function projectSlug(name: string, area: string): string {
   return `${name} ${area}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
-import { medianOf } from "./sites";
+import { medianOf, pickProjectPrices, type PriceFigure } from "./sites";
 export { sourceSiteCount, medianOf } from "./sites";
 
 interface Hit { title: string; url: string; content: string }
@@ -61,7 +65,7 @@ interface Extracted {
   status?: { value: string; source: number } | null;
   possession?: { value: string; source: number } | null;
   reraNumber?: { value: string; source: number } | null;
-  pricesPerSqft?: { value: number; source: number }[];
+  pricesPerSqft?: { value: number; source: number; listingType?: string; basis?: string; kind?: string }[];
 }
 
 // cacheOnly: never call the search/AI APIs (homepage render); a cached row is used whatever its
@@ -112,7 +116,10 @@ async function liveProject(name: string, area: string, propertyType: string): Pr
   const x = await geminiJson<Extracted>(`Do these search results describe the real-estate project "${name}" in or near "${area}"? Different English spellings of the same Indian name (e.g. Kousalya / Kowsalya, Sri / Shri) and a builder-name prefix count as the same project; a different project in the same area does not. Extract facts ONLY as written in the results, and prices ONLY from results about this project.
 Return JSON: {"matchesProject": boolean (false if the results are about a different project or no specific project),
 "builder","location","projectType","status","possession","reraNumber": each {"value","source": result index} or null,
-"pricesPerSqft": [{"value": number (asking price per sq.ft in local currency, as stated or as stated price / stated area for THIS project), "source": result index}] }.
+"pricesPerSqft": [{"value": number (price per sq.ft in local currency, as stated or as stated price / stated area for THIS project), "source": result index,
+  "listingType": "builder" (builder / new-launch / project price) | "resale" (an individual flat resold by an owner, or an average of resale listings) | "unknown",
+  "basis": "super_built_up" | "built_up" | "carpet" | "unknown" (as the result states the area),
+  "kind": "asking" | "registered" (registry / transaction / guidance rate) | "unknown"}] }.
 Never guess. A RERA number must be copied exactly from a result. Skip "starting from" prices unless no other price is given.
 
 RESULTS:
@@ -133,31 +140,27 @@ ${numbered}`, { timeoutMs: 40_000, temperature: 0.1 }).catch(() => null);
   }
   for (const k of Object.keys(facts) as (keyof typeof facts)[]) if (!facts[k]) delete facts[k];
 
-  const raw = (x.pricesPerSqft ?? []).filter((p) => p.value > 100 && hits[p.source]);
-  // Drop outliers (a registered/guidance rate, a plot rate or a typo quoted as the asking price):
-  // anything below 0.6x or above 1.67x the median of all figures.
-  const rawMid = raw.length ? medianOf(raw.map((p) => p.value)) : 0;
-  const prices = raw.filter((p) => p.value >= rawMid * 0.6 && p.value <= rawMid / 0.6);
+  // Builder vs resale vs registered, area basis, outliers: see pickProjectPrices (tested).
+  const figs: PriceFigure[] = (x.pricesPerSqft ?? []).filter((p) => p.value > 100 && hits[p.source])
+    .map((p) => ({ value: p.value, url: hits[p.source].url, host: sourceHost(hits[p.source].url) ?? hits[p.source].url, listingType: p.listingType, basis: p.basis, kind: p.kind }));
+  const pick = pickProjectPrices(figs);
+  const prices = pick.primary;
   const isDubai = /dubai|uae/i.test(area);
-  let price: ProjectResult["price"] = null;
-  if (prices.length) {
-    const vals = prices.map((p) => p.value).sort((a, b) => a - b);
-    // Median per website first, then across websites: one portal with many listings must not
-    // outvote the others.
+  // Median per website first, then across websites: one portal with many listings must not
+  // outvote the others.
+  const summary = (list: PriceFigure[]) => {
+    const vals = list.map((p) => p.value).sort((a, b) => a - b);
     const bySite = new Map<string, number[]>();
-    for (const p of prices) { const h = sourceHost(hits[p.source].url) ?? hits[p.source].url; bySite.set(h, [...(bySite.get(h) ?? []), p.value]); }
-    const median = medianOf(Array.from(bySite.values()).map(medianOf));
-    const urls = Array.from(new Set(prices.map((p) => hits[p.source].url)));
-    price = {
-      min: Math.round(vals[0]), max: Math.round(vals[vals.length - 1]), median: Math.round(median),
-      unit: "sqft", currency: isDubai ? "AED" : "INR",
-      sources: urls.map((url) => ({ url, host: sourceHost(url) ?? url })), capturedAt: now,
-    };
-  }
+    for (const p of list) bySite.set(p.host, [...(bySite.get(p.host) ?? []), p.value]);
+    const urls = Array.from(new Set(list.map((p) => p.url)));
+    return { min: Math.round(vals[0]), max: Math.round(vals[vals.length - 1]), median: Math.round(medianOf(Array.from(bySite.values()).map(medianOf))), sources: urls.map((url) => ({ url, host: sourceHost(url) ?? url })) };
+  };
+  const price: ProjectResult["price"] = prices.length ? { ...summary(prices), unit: "sqft", currency: isDubai ? "AED" : "INR", capturedAt: now, basis: pick.primaryKind } : null;
+  const resale: ProjectResult["resale"] = pick.resale.length ? summary(pick.resale) : null;
   const confidence = price
     ? computeConfidence({ sourceUrls: price.sources.map((s) => s.url), evidence: { count: prices.length, min: price.min, max: price.max, median: price.median }, currentPricePerSqft: price.median, fetchedAt: now })
     : null;
-  return { ...base, found: true, facts, price, confidence };
+  return { ...base, found: true, facts, price, resale, confidence };
 }
 
 async function withLocality(r: ProjectResult, area: string, propertyType: string): Promise<ProjectResult> {

@@ -104,7 +104,7 @@ export async function compareItem(i: CompareItem): Promise<CompareResult> {
     r.possession = p.facts.possession?.value ?? null;
     r.status = p.facts.status?.value ?? null;
     if (!p.price || !p.price.sources.length) { r.missing = "Project found, but no dated asking price yet."; return r; }
-    r.price = { value: p.price.median, min: p.price.min, max: p.price.max, symbol: p.price.currency === "INR" ? "₹" : `${p.price.currency} `, unit: "sq.ft", label: "Asking price (median of listings)" };
+    r.price = { value: p.price.median, min: p.price.min, max: p.price.max, symbol: p.price.currency === "INR" ? "₹" : `${p.price.currency} `, unit: "sq.ft", label: p.price.basis === "builder" ? "Builder asking price (median)" : p.price.basis === "resale" ? "Resale asking price (median)" : "Asking price (median of listings)" };
     r.confidence = p.confidence?.level ?? null;
     r.sources = sourceSiteCount(p.price);
     r.capturedAt = p.price.capturedAt;

@@ -45,3 +45,15 @@ test("m1: cached project prices are sourced and internally consistent", async ()
   }
   assert.deepEqual(bad, []);
 });
+
+// Kowsalya Manidweepam (checked 11 Nov 2026): independent sources put the builder price at about
+// Rs 6,200-6,800/sq.ft (squareyards, roofandfloor, propertypistol, proptiger). Our stored price
+// must be the builder price and stay within that band; resale listings are kept separate.
+test("m1: Kowsalya Manidweepam shows the builder price, not resale listings", async () => {
+  const { findCachedProject } = await import("@/lib/projects");
+  const p = await findCachedProject("Kowsalya Manidweepam", "Bachupally");
+  if (!p?.price) return; // no stored check is an honest outcome
+  if (p.price.basis) assert.equal(p.price.basis, "builder");
+  assert.ok(p.price.max <= 7200, `max Rs ${p.price.max}/sq.ft looks like resale listings`);
+  assert.ok(p.price.min >= 5500, `min Rs ${p.price.min}/sq.ft is below the builder band`);
+});

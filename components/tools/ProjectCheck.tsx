@@ -101,8 +101,9 @@ export default function ProjectCheck({ area, propertyType, quotedPricePerSqft, o
           </div>
           {result.price ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1">
-              <p className="font-semibold text-gray-900">Current asking price: {result.price.currency === "INR" ? "₹" : `${result.price.currency} `}{result.price.min.toLocaleString("en-IN")}–{result.price.max.toLocaleString("en-IN")}/sq.ft</p>
+              <p className="font-semibold text-gray-900">{result.price.basis === "builder" ? "Builder asking price" : result.price.basis === "resale" ? "Resale asking price" : "Current asking price"}: {result.price.currency === "INR" ? "₹" : `${result.price.currency} `}{result.price.min.toLocaleString("en-IN")}–{result.price.max.toLocaleString("en-IN")}/sq.ft</p>
               <p className="text-xs text-gray-500">{sourceSiteCount(result.price)} source{sourceSiteCount(result.price) === 1 ? "" : "s"}, captured {day(result.price.capturedAt)}: {result.price.sources.map((s, i) => <span key={s.url}>{i > 0 && ", "}<a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{s.host}<ExternalLink size={9} className="inline" /></a></span>)}</p>
+              {result.resale && <p className="text-xs text-gray-600">Resale listings (owners reselling flats): ₹{result.resale.min.toLocaleString("en-IN")}–{result.resale.max.toLocaleString("en-IN")}/sq.ft, from {new Set(result.resale.sources.map((s) => s.host)).size} website{new Set(result.resale.sources.map((s) => s.host)).size === 1 ? "" : "s"}. Shown separately, not mixed into the builder price.</p>}
               {result.verdict && result.locality && (
                 <p><b>{result.verdict.label}</b>: {result.verdict.pctVsLocality > 0 ? "+" : ""}{result.verdict.pctVsLocality}% vs {area}&apos;s typical ₹{result.locality.price.toLocaleString("en-IN")}/sq.ft{result.locality.capturedAt ? ` (captured ${day(result.locality.capturedAt)})` : ""}.</p>
               )}
