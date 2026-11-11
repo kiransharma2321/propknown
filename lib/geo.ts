@@ -83,7 +83,7 @@ export async function nearbyPlaces(center: LatLon, radiusM = 3000): Promise<Near
     const res = await fetch(host, {
       method: "POST",
       headers: { "User-Agent": UA, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(q)}`, cache: "no-store", signal: AbortSignal.timeout(25_000),
+      body: `data=${encodeURIComponent(q)}`, cache: "no-store", signal: AbortSignal.timeout(8_000),
     });
     if (!res.ok) throw new Error(`${host} answered ${res.status}`);
     const j = (await res.json()) as { elements?: OsmEl[] };
@@ -94,9 +94,48 @@ export async function nearbyPlaces(center: LatLon, radiusM = 3000): Promise<Near
     return await Promise.any(OVERPASS_HOSTS.map(one));
   } catch (e) {
     const errs = e instanceof AggregateError ? e.errors.map((x) => (x instanceof Error ? x.message : String(x))) : [String(e)];
-    console.warn(`[geo] all Overpass servers failed: ${errs.join(" | ")}`);
-    return null;
+    console.warn(`[geo] all Overpass servers failed: ${errs.join(" | ")} -- falling back to Nominatim`);
+    return nearbyViaNominatim(center, radiusM);
   }
+}
+
+// Fallback when Overpass is unreachable (it times out from Vercel's Mumbai region): Nominatim
+// place search inside the same box, one category per request, 1.1 s apart (its usage policy).
+// Nominatim returns at most 40 per search, so a count of 40 means "40 or more" (capped).
+const NOMINATIM: Record<Category, { q: string; types: string[] }> = {
+  schools: { q: "school", types: ["amenity/school"] },
+  hospitals: { q: "hospital", types: ["amenity/hospital"] },
+  transit: { q: "railway station", types: ["railway/station", "public_transport/station"] },
+  malls: { q: "shopping mall", types: ["shop/mall"] },
+  parks: { q: "park", types: ["leisure/park"] },
+};
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export async function nearbyViaNominatim(center: LatLon, radiusM = 3000): Promise<Nearby | null> {
+  const dLat = radiusM / 111_000, dLon = dLat / Math.cos((center.lat * Math.PI) / 180);
+  const viewbox = [center.lon - dLon, center.lat + dLat, center.lon + dLon, center.lat - dLat].map((n) => n.toFixed(5)).join(",");
+  const elements: OsmEl[] = [];
+  let answered = 0;
+  for (const [cat, n] of Object.entries(NOMINATIM) as [Category, (typeof NOMINATIM)[Category]][]) {
+    if (answered) await sleep(1100);
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&bounded=1&limit=40&viewbox=${viewbox}&q=${encodeURIComponent(n.q)}`, {
+      headers: { "User-Agent": UA, "Accept-Language": "en" }, next: { revalidate: 30 * 86400 }, signal: AbortSignal.timeout(10_000),
+    }).catch(() => null);
+    if (!res?.ok) continue;
+    answered++;
+    const rows = (await res.json().catch(() => [])) as { lat: string; lon: string; name?: string; category?: string; type?: string }[];
+    for (const r of rows) {
+      if (!n.types.includes(`${r.category}/${r.type}`)) continue;
+      const pos = { lat: Number(r.lat), lon: Number(r.lon) };
+      if (distanceKm(center, pos) > radiusM / 1000) continue;
+      // Tag it so categorise() files it under this category.
+      const tags: Record<string, string> = { name: r.name ?? "" };
+      if (cat === "schools") tags.amenity = "school"; else if (cat === "hospitals") tags.amenity = "hospital";
+      else if (cat === "transit") tags.railway = "station"; else if (cat === "malls") tags.shop = "mall"; else tags.leisure = "park";
+      elements.push({ lat: pos.lat, lon: pos.lon, tags });
+    }
+  }
+  return answered ? summarise(center, elements) : null;
 }
 
 export function osmEmbedUrl(c: LatLon, spanDeg = 0.03): string {
