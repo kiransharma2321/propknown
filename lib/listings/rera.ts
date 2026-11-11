@@ -29,3 +29,13 @@ export function reraBadge(input: {
     ? { number, sourceLabel: state.authorityName, sourceUrl: state.portalUrl }
     : { number, sourceLabel: "the state RERA portal", sourceUrl: null };
 }
+
+// Card label for a listing's approval status. A verified RERA badge needs reviewer verification
+// (reraBadge above); a number that hasn't been verified is shown as given, never as "Approved";
+// no number at all -> "Approval details pending".
+export function approvalLabel(input: Parameters<typeof reraBadge>[0]): { text: string; verified: boolean } {
+  const badge = reraBadge(input);
+  if (badge) return { text: `✓ RERA ${badge.number}`, verified: true };
+  const number = (input.flags?.reraNumber || input.reraNumber || "").trim();
+  return number ? { text: `RERA no. ${number} · not yet verified`, verified: false } : { text: "Approval details pending", verified: false };
+}

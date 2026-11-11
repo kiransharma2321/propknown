@@ -22,6 +22,8 @@ interface Property {
   price: number; currency: string; status: string; propertyType?: string;
   reraVerified: boolean; realPhotos: boolean; accuratePrice: boolean; ownerConsent: boolean;
   createdAt: string;
+  // Admin-only review flag, e.g. "Owner to confirm: location corrected ..." (verificationFlags.adminFlag).
+  verificationFlags?: { adminFlag?: string } | null;
   documents?: DocFile[];
   // AI scores (Section 5 / Q) -- populated only by the "Score" action below, never fabricated.
   aiScore?: number | null; legalScore?: number | null; aiScoredAt?: string | null;
@@ -1431,6 +1433,7 @@ function AdminDashboardInner() {
                         <td className="px-4 py-3">
                           <p className="text-gray-900 font-medium line-clamp-1">{p.title}</p>
                           <p className="text-gray-500 text-xs">{p.location}</p>
+                          {p.verificationFlags?.adminFlag && <p className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-1 inline-block">⚠ {p.verificationFlags.adminFlag}</p>}
                         </td>
                         <td className="px-4 py-3 text-gray-700">{p.city}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: "var(--gold)" }}>{formatPrice(p.price, p.currency)}</td>

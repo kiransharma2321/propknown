@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { runFinderAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,11 @@ export default async function ProjectFinderPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="border border-gray-200 rounded-xl bg-white p-4 mb-8 text-sm flex flex-wrap items-center justify-between gap-3">
+        <p className="text-gray-600 max-w-2xl"><b>PropKnown project checks</b> (allowed source): every project checked with sources becomes a draft, with only the facts and asking rates the cited websites state. A RERA number from a website is marked &quot;verify on the RERA portal&quot;.</p>
+        <form action={runFinderAction}><button className="btn-primary text-sm">Run finder now</button></form>
       </div>
 
       <h2 className="font-semibold text-gray-900 mb-2">Drafted projects</h2>

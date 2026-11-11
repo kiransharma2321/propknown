@@ -112,3 +112,13 @@ test("engine plausibility: implausible prices and absurd ranges are never publis
   assert.equal(isUsableRange(8_650, 7_000, 10_500), true);
   assert.equal(isUsableRange(8_650, 9_000, 10_500), false, "price outside its own range");
 });
+
+test("listings: no approval number -> 'Approval details pending'; unverified number is never 'Approved'", async () => {
+  const { approvalLabel } = await import("@/lib/listings/rera");
+  assert.deepEqual(approvalLabel({ reraNumber: "", flags: {}, location: "Shadnagar Hyderabad" }), { text: "Approval details pending", verified: false });
+  const given = approvalLabel({ reraNumber: "P02400007234", flags: {}, location: "Kokapet Hyderabad" });
+  assert.equal(given.verified, false);
+  assert.match(given.text, /not yet verified/);
+  assert.doesNotMatch(given.text, /approved/i);
+  assert.equal(approvalLabel({ reraNumber: "P02400007234", flags: { reraVerified: true }, location: "Kokapet Hyderabad" }).text, "✓ RERA P02400007234");
+});

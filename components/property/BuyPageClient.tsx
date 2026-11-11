@@ -11,7 +11,7 @@ import CurrencyPrice from "@/components/ui/CurrencyPrice";
 import FavoriteButton from "@/components/buyer/FavoriteButton";
 import VerificationBadge from "@/components/ui/VerificationBadge";
 import { PUBLIC_LISTINGS } from "@/lib/listings";
-import { reraBadge } from "@/lib/listings/rera";
+import { approvalLabel } from "@/lib/listings/rera";
 import { useCallbackText } from "@/components/useCallbackText";
 import SaveSearchButton from "@/components/buyer/SaveSearchButton";
 
@@ -37,6 +37,8 @@ export interface Submission {
   createdAt: string;
   /** Details page; defaults to /buy/submission/[id]. null = no details page (admin-added listing). */
   detailHref?: string | null;
+  /** Who listed it: an owner (submission) or PropKnown (admin-added / approved project). */
+  listedBy?: "owner" | "propknown";
 }
 
 // Below this many listings the page looks empty, so we show the "coming soon" block instead.
@@ -47,8 +49,9 @@ function SubmissionCard({ s }: { s: Submission }) {
   const waMsg = `https://wa.me/917013016003?text=${encodeURIComponent(`Hi, I'm interested in "${s.title}" at ${s.area}, ${s.city}. Asking: ${s.priceDisplay}`)}`;
   const { add, remove, isAdded } = useComparison();
   const added = isAdded(`sub-${s.id}`);
-  // "✓ RERA" only when a reviewer verified it (never next to "Verification in progress").
-  const rera = reraBadge({ reraNumber: s.reraNumber, flags: s.verificationFlags, location: `${s.area} ${s.city}` });
+  // "✓ RERA" only when a reviewer verified it (never next to "Verification in progress");
+  // otherwise the number as given, or "Approval details pending" -- never "Approved".
+  const approval = approvalLabel({ reraNumber: s.reraNumber, flags: s.verificationFlags, location: `${s.area} ${s.city}` });
 
   const compareItem: CompareItem = {
     id: `sub-${s.id}`, title: s.title,
@@ -74,8 +77,8 @@ function SubmissionCard({ s }: { s: Submission }) {
           </div>
         )}
         <div className="absolute top-2 left-2">
-          <span className="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">
-            {rera ? `✓ RERA ${rera.number}` : "Owner Listed"}
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${approval.verified ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+            {approval.text}
           </span>
         </div>
         <div className="absolute top-2 right-2">
@@ -94,7 +97,7 @@ function SubmissionCard({ s }: { s: Submission }) {
       </div>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-gray-900 font-bold text-sm mb-1 line-clamp-1">{s.title}</h3>
-        <div className="flex items-center gap-1 text-gray-400 text-xs mb-2"><MapPin size={10} />{s.area}, {s.city}</div>
+        <div className="flex items-center gap-1 text-gray-400 text-xs mb-2"><MapPin size={10} />{s.area}, {s.city}<span className="ml-auto text-[10px]">{s.listedBy === "propknown" ? "Listed by PropKnown" : "Owner listed"}</span></div>
         <p className="font-playfair text-xl font-bold mb-2" style={{ color:"var(--gold-text)" }}>{s.priceDisplay}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-2">
           {s.bhk && <span>{s.bhk}</span>}
