@@ -1,6 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { geminiJson } from "@/lib/ai/gemini";
+import { aiJson } from "@/lib/ai/router";
+import { webSearch } from "@/lib/search";
 import { recordApiCall } from "@/lib/engine/usage";
 import { sourceHost, isPriceSource } from "@/lib/engine/sources";
 import { computeConfidence, type Confidence } from "@/lib/engine/confidence";
@@ -43,7 +45,7 @@ export { sourceSiteCount, medianOf } from "./sites";
 
 interface Hit { title: string; url: string; content: string }
 
-async function search(query: string, domains?: string[], maxResults = 6): Promise<Hit[]> {
+async function searchTavily(query: string, domains?: string[], maxResults = 6): Promise<Hit[]> {
   const key = process.env.TAVILY_API_KEY;
   if (!key) return [];
   const res = await fetch("https://api.tavily.com/search", {
@@ -98,7 +100,17 @@ export async function checkProject(input: { name: string; area: string; property
   return withLocality(result, area, propertyType);
 }
 
-async function liveProject(name: string, area: string, propertyType: string): Promise<ProjectResult> {
+// Own Engine variant (free search chain + free-tier AI router), for the old-vs-new comparison.
+// Same prompt, same price classification; never writes the cache.
+export function liveProjectOwn(name: string, area: string, propertyType = "apartment"): Promise<ProjectResult> {
+  return liveProject(name, area, propertyType, true);
+}
+
+async function liveProject(name: string, area: string, propertyType: string, own = false): Promise<ProjectResult> {
+  const search = own
+    ? async (q: string, domains?: string[], max = 6): Promise<Hit[]> => (await webSearch(q, { domains, maxResults: max, priceSourcesOnly: true })).map(({ title, url, content }) => ({ title, url, content }))
+    : searchTavily;
+  const extractJson = own ? async <T,>(prompt: string) => (await aiJson<T>(prompt, { timeoutMs: 40_000, maxTokens: 3000 })).value : geminiJson;
   const now = new Date().toISOString();
   const base: ProjectResult = { found: false, name, query: { name, area, propertyType }, facts: {}, price: null, confidence: null, locality: null, verdict: null, cached: false, capturedAt: now };
   // Portal search twice: exact phrase, and unquoted -- Telugu/Hindi names are spelt many ways in
@@ -113,7 +125,7 @@ async function liveProject(name: string, area: string, propertyType: string): Pr
   if (!hits.length) return base;
 
   const numbered = hits.map((h, i) => `[${i}] ${h.title}\n${h.content.slice(0, 900)}`).join("\n\n");
-  const x = await geminiJson<Extracted>(`Do these search results describe the real-estate project "${name}" in or near "${area}"? Different English spellings of the same Indian name (e.g. Kousalya / Kowsalya, Sri / Shri) and a builder-name prefix count as the same project; a different project in the same area does not. Extract facts ONLY as written in the results, and prices ONLY from results about this project.
+  const x = await extractJson<Extracted>(`Do these search results describe the real-estate project "${name}" in or near "${area}"? Different English spellings of the same Indian name (e.g. Kousalya / Kowsalya, Sri / Shri) and a builder-name prefix count as the same project; a different project in the same area does not. Extract facts ONLY as written in the results, and prices ONLY from results about this project.
 Return JSON: {"matchesProject": boolean (false if the results are about a different project or no specific project),
 "builder","location","projectType","status","possession","reraNumber": each {"value","source": result index} or null,
 "pricesPerSqft": [{"value": number (price per sq.ft in local currency, as stated or as stated price / stated area for THIS project), "source": result index,

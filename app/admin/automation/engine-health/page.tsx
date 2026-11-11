@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { GEMINI_MODEL } from "@/lib/marketIntel";
-import { quotas, utcDay, USAGE_WARN_RATIO } from "@/lib/engine/usage";
+import { quotas, utcDay, USAGE_WARN_RATIO, COST_PER_CALL_INR, type ApiProvider } from "@/lib/engine/usage";
+import { ownEngineStatus } from "@/lib/ownEngine";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,11 @@ export default async function EngineHealthPage() {
     return { ...q, ...u, ratio, warn: ratio >= USAGE_WARN_RATIO };
   });
   const warnings = rows.filter((r) => r.warn);
+  // Own Engine: free tiers only, so this month's cost is calls x 0. Shown so any paid call would stand out.
+  const own = ownEngineStatus();
+  const OWN: ApiProvider[] = ["gemini", "groq", "cerebras", "openrouter", "searxng", "tavily", "brave", "serper", "fetch"];
+  const ownCalls = usage.filter((u) => OWN.includes(u.provider as ApiProvider)).reduce((a, u) => a + u.calls, 0);
+  const ownCost = usage.reduce((a, u) => a + u.calls * (COST_PER_CALL_INR[u.provider as ApiProvider] ?? 0), 0);
 
   return (
     <div>
@@ -83,6 +89,14 @@ export default async function EngineHealthPage() {
           {newest && <p>Newest: {newest.locationName}, {fmt(newest.fetchedAt)}</p>}
           {oldest && <p>Oldest: {oldest.locationName}, {fmt(oldest.fetchedAt)}</p>}
         </div>
+      </div>
+
+      <div className="card-dark p-4 text-sm mb-6">
+        <p className="text-[11px] uppercase tracking-wider text-gray-400 mb-2">PropKnown Own Engine (free tiers)</p>
+        <p>Site uses: <b>{own.mode === "own" ? "Own Engine" : "current engine"}</b>{own.mode !== "own" && " (Own Engine on standby: switches only with ENGINE_MODE=own after owner approval)"}</p>
+        <p>AI router: {own.ai.join(" → ") || "no free AI provider configured"} · Search: {own.search.join(" → ") || "none"} · Fetcher: own, robots.txt respected</p>
+        <p>Cache plan: areas {own.ttl.area} days, projects {own.ttl.project} days</p>
+        <p>This month: {ownCalls.toLocaleString()} calls · cost <b>₹{ownCost.toLocaleString("en-IN")}</b> (free tiers only)</p>
       </div>
 
       <h2 className="font-semibold text-gray-900 mb-2">Daily usage this month</h2>

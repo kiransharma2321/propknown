@@ -1307,4 +1307,7 @@ export async function computeMarketIntelFromHits(
   return unavailableResponse(`own engine failed for "${loc}" (${propType}): ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 }
 
-export const ownEngineQuery = buildTavilyQuery;
+export async function ownEngineQuery(loc: string, propType: string, unit: string): Promise<string> {
+  const { countryCode } = await detectCurrency(loc);
+  return buildTavilyQuery(loc, propType, unit, countryCode);
+}

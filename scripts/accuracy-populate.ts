@@ -46,4 +46,5 @@ async function main() {
     console.log("AREA", loc, type, "|", r?.available ? `${r.currencySymbol}${r.currentPricePerSqft}/${r.pricePerSqftUnit}${c?.available ? " (cached)" : ""}` : `no price (${r?.reason ?? "error"})`);
   });
 }
-main().then(() => process.exit(0));
+// Only when run directly (other scripts import the suite lists).
+if (/accuracy-populate/.test(process.argv[1] ?? "")) main().then(() => process.exit(0));
