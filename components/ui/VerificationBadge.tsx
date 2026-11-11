@@ -11,6 +11,8 @@ export interface VerificationFlags {
   layoutNumber?: string;     // the layout / LP approval number a reviewer verified
   encumbranceClear?: boolean;
   propknownVerified?: boolean; // overall PropKnown stamp
+  // Fair-Price check at approval: the stated price per sq.ft was within the sourced area range.
+  fairPrice?: { checkedAt: string; marketPerSqft?: number; range?: [number, number] };
 }
 
 const CHECKS: { key: keyof VerificationFlags; label: string; desc: string }[] = [

@@ -106,6 +106,12 @@ function SubmissionCard({ s }: { s: Submission }) {
         </div>
         <div className="mb-2 flex items-center gap-2 flex-wrap">
           <VerificationBadge compact flags={s.verificationFlags ?? {}} />
+          {s.verificationFlags?.fairPrice && (
+            <span title={`Price per sq.ft within the sourced area range when checked on ${new Date(s.verificationFlags.fairPrice.checkedAt).toLocaleDateString("en-IN")}`}
+              className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-50 border border-green-200 text-green-800">
+              ✓ Fair price · checked {new Date(s.verificationFlags.fairPrice.checkedAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+            </span>
+          )}
           {s.constructionPct != null && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
               🏗 {s.constructionPct}% built

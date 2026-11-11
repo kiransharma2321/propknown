@@ -167,6 +167,8 @@ export async function approveDraft(id: string, reviewer: string) {
 
   const photos = (() => { try { return (JSON.parse(d.photoIds || "[]") as string[]).map((id) => `/api/files/${id}`); } catch { return []; } })();
   const layout = d.approvalNumber && d.approvalAuthority && d.approvalAuthority !== "RERA" ? { layoutApproved: true, layoutBadge: d.approvalAuthority, layoutNumber: d.approvalNumber } : {};
+  const pc = (d.aiPriceCheck ?? {}) as { status?: string; verdict?: string; checkedAt?: string; marketPerSqft?: number; range?: [number, number] };
+  const fair = pc.status === "done" && pc.verdict === "fair" && pc.checkedAt ? { fairPrice: { checkedAt: pc.checkedAt, marketPerSqft: pc.marketPerSqft, range: pc.range } } : {};
   const property = await prisma.property.create({
     data: {
       title: [d.projectName, d.configuration].filter(Boolean).join(" — "),
@@ -179,6 +181,7 @@ export async function approveDraft(id: string, reviewer: string) {
         propknownVerified: true, titleVerified: true,
         ...(d.reraNumber ? { reraVerified: true, reraNumber: d.reraNumber } : {}),
         ...layout,
+        ...fair,
       },
     },
   });
