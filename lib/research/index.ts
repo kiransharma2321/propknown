@@ -9,7 +9,7 @@ import { CHECKLIST_ITEMS } from "@/lib/listings/checklist";
 import { sameProject } from "@/lib/listings/finder";
 import {
   CATEGORIES, researchQueries, isResaleOrSellerPage, redactContacts, supportedBy, conflicts, missingFields,
-  confidenceScore, describe, priceLabel, perUnitNumber, type Facts, type FactKey, type ResearchCategory,
+  confidenceScore, describe, priceLabel, perUnitNumber, mayBeIndividualSeller, type Facts, type FactKey, type ResearchCategory,
 } from "./rules";
 
 // Auto Listing Researcher (flag NEXT_PUBLIC_FEATURE_LISTING_RESEARCHER). Finds projects on sale
@@ -119,7 +119,11 @@ export async function extractCandidates(city: string, cat: ResearchCategory, sou
       for (const k of FIELDS) for (const f of facts[k] ?? []) if (!(same.facts[k] ?? []).some((x) => x.sourceUrl === f.sourceUrl)) (same.facts[k] ??= []).push(f);
     } else merged.push({ facts });
   }
-  return merged;
+  return merged.filter((m) => {
+    if (!mayBeIndividualSeller(m.facts)) return true;
+    stats.possibleIndividualSeller = (stats.possibleIndividualSeller ?? 0) + 1;
+    return false;
+  });
 }
 
 const toPerSqft = (price: number, unit?: string) => (/yd|yard|gaj/i.test(unit ?? "") ? price / 9 : /acre/i.test(unit ?? "") ? price / 43_560 : price);

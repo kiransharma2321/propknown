@@ -93,3 +93,11 @@ test("re-check: only changed key facts are reported", async () => {
   assert.deepEqual(factChanges(a, { possession: f("Dec 2027"), pricePerUnit: f("6800") }), []);
   assert.equal(factChanges(a, { possession: f("Jun 2028"), pricePerUnit: f("6800") }).length, 1);
 });
+
+test("a portal-only candidate with no builder and no approval number may be a private seller: dropped", async () => {
+  const { mayBeIndividualSeller } = await import("@/lib/research/rules");
+  const p = "https://www.99acres.com/agricultural-land-in-x-ffid";
+  assert.equal(mayBeIndividualSeller({ name: f("Sahaja nature lake", p), location: f("Budhera", p) }), true);
+  assert.equal(mayBeIndividualSeller({ name: f("Wonder Vista", p), approvalNumber: f("0817/HMDA/SWDL/2025", p) }), false);
+  assert.equal(mayBeIndividualSeller({ name: f("West Woods", "https://kshethragroup.com/x"), location: f("Chevella", "https://kshethragroup.com/x") }), false, "builder's own site");
+});

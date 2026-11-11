@@ -414,6 +414,19 @@ async function fetchTavilyContext(
   if (!res.ok) throw new Error(`Tavily ${res.status}`);
 
   const data: TavilyResponse = await res.json();
+  void data.answer;
+  return contextFromResults(data.results, location, propertyType, unit);
+}
+
+// The search results -> the text the model reads + the area-specific text the regex parses.
+// Shared by the live engine (Tavily) and the Own Engine (any search provider + fetched pages).
+function contextFromResults(
+  results: TavilyResult[] | undefined,
+  location: string,
+  propertyType: string,
+  unit: string,
+): { snippets: string; hasData: boolean; sourceUrls: string[]; rawText: string; extractionText: string } {
+  const data = { results };
   const parts: string[] = [];
   const extractionParts: string[] = [];
   const sourceUrls: string[] = [];
@@ -431,7 +444,6 @@ async function fetchTavilyContext(
   // have misread as per-sqft figures. Feeding that summary to Gemini let it inherit the same
   // fabrication. Relying only on the raw listing snippets -- the actual source documents -- is
   // what makes "grounded in real data" a true claim rather than one more layer of paraphrase.
-  void data.answer;
   const isLandQuery = propertyType === "plot" || propertyType === "agriculture" || unit === "sqyard" || unit === "acres";
   // A result titled around "apartment"/"flat" showing up in a land/plot search (Tavily's own
   // relevance matching isn't perfect) would otherwise pollute the price-extraction pass with an
@@ -1263,3 +1275,36 @@ export async function computeMarketIntel(
   const reason = lastError instanceof Error ? lastError.message : String(lastError ?? "no live listing data found");
   return unavailableResponse(`all Gemini steps failed for "${loc}" (${propType}): ${reason}`);
 }
+
+
+// ─── Own Engine (free tiers) ──────────────────────────────────────────────────
+// Same steps as the live engine's ungrounded path -- context building, prompt, JSON parsing,
+// normalisation and the regex GROUNDING RULE -- so old and new can be compared like for like.
+// Only the inputs differ: search hits (+ fetched page text) from lib/search, and the model reply
+// from the free-tier AI router. Caller supplies both, so this file stays provider-agnostic.
+export async function computeMarketIntelFromHits(
+  loc: string,
+  propType: string,
+  resolvedUnit: string,
+  hits: { title: string; url: string; content: string }[],
+  ask: (prompt: string) => Promise<string>,
+): Promise<Record<string, unknown>> {
+  const { countryCode, currency } = await detectCurrency(loc);
+  const ctx = contextFromResults(hits.map((h) => ({ ...h, score: 0 })), loc, propType, resolvedUnit);
+  if (!ctx.hasData) return unavailableResponse(`own engine: no price-bearing search results for "${loc}" (${propType})`);
+  const searchAgg = aggregateRates(extractRatesPerSqft(ctx.extractionText, currency.code));
+  const prompt = getPrompt(loc, propType, resolvedUnit, currency, countryCode, ctx.snippets, "tavily", undefined, false);
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const raw = parseGemini(await ask(prompt));
+      return normalise(raw, loc, propType, resolvedUnit, "real_data", "AI estimate based on live web search", currency, undefined, undefined, searchAgg, ctx.sourceUrls);
+    } catch (e) {
+      lastError = e;
+      if (e instanceof NoAreaDataError) break;
+    }
+  }
+  return unavailableResponse(`own engine failed for "${loc}" (${propType}): ${lastError instanceof Error ? lastError.message : String(lastError)}`);
+}
+
+export const ownEngineQuery = buildTavilyQuery;

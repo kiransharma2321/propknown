@@ -12,7 +12,9 @@ export class AiRouterError extends Error {}
 interface Provider { id: ApiProvider; label: string; key: () => string | undefined; call: (prompt: string, o: Opts, key: string) => Promise<Response> }
 interface Opts { system?: string; temperature?: number; timeoutMs?: number; json?: boolean; maxTokens?: number; retryWaitMs?: number }
 
-const openAiCompatible = (url: string, model: () => string, extraHeaders: Record<string, string> = {}) =>
+const geminiLiteModels = () => (process.env.GEMINI_LITE_MODELS || "gemini-flash-lite-latest,gemini-3.5-flash-lite,gemini-2.5-flash-lite").split(",").map((m) => m.trim()).filter(Boolean);
+
+const openAiCompatible =(url: string, model: () => string, extraHeaders: Record<string, string> = {}) =>
   (prompt: string, o: Opts, key: string) => fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...extraHeaders },
@@ -27,15 +29,27 @@ const openAiCompatible = (url: string, model: () => string, extraHeaders: Record
 export const PROVIDERS: Provider[] = [
   {
     id: "gemini", label: "Gemini Flash-Lite (free tier)", key: () => process.env.GEMINI_API_KEY,
-    call: (prompt, o, key) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_LITE_MODEL || "gemini-2.5-flash-lite"}:generateContent?key=${key}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...(o.system ? { system_instruction: { parts: [{ text: o.system }] } } : {}),
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: o.temperature ?? 0.2, maxOutputTokens: o.maxTokens ?? 2048, thinkingConfig: { thinkingBudget: 0 }, ...(o.json ? { responseMimeType: "application/json" } : {}) },
-      }),
-      signal: AbortSignal.timeout(o.timeoutMs ?? 25_000),
-    }),
+    // Each Flash-Lite model has its own free daily quota: try them in turn (429 / 404 -> next).
+    call: async (prompt, o, key) => {
+      let last: Response | null = null;
+      for (const model of geminiLiteModels()) {
+        last = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(o.system ? { system_instruction: { parts: [{ text: o.system }] } } : {}),
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: o.temperature ?? 0.2, maxOutputTokens: o.maxTokens ?? 2048,
+              thinkingConfig: model.startsWith("gemini-2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "minimal" },
+              ...(o.json ? { responseMimeType: "application/json" } : {}),
+            },
+          }),
+          signal: AbortSignal.timeout(o.timeoutMs ?? 25_000),
+        });
+        if (last.status !== 429 && last.status !== 404) return last;
+      }
+      return last!;
+    },
   },
   { id: "groq", label: "Groq (free tier)", key: () => process.env.GROQ_API_KEY,
     call: openAiCompatible("https://api.groq.com/openai/v1/chat/completions", () => process.env.GROQ_MODEL || "llama-3.3-70b-versatile") },
@@ -75,7 +89,7 @@ export async function aiText(prompt: string, o: Opts = {}, only?: ApiProvider[])
       let res = await p.call(prompt, o, key);
       recordApiCall(p.id, res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");
       // Free tiers have per-minute limits: wait once and retry the same provider before moving on.
-      if (res.status === 429 && (o.retryWaitMs ?? 20_000) > 0) {
+      if ((res.status === 429 || res.status === 503) && (o.retryWaitMs ?? 20_000) > 0) {
         await new Promise((r) => setTimeout(r, o.retryWaitMs ?? 20_000));
         res = await p.call(prompt, o, key);
         recordApiCall(p.id, res.ok ? "ok" : res.status === 429 ? "rate_limited" : "error");

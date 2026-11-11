@@ -35,6 +35,16 @@ export function isResaleOrSellerPage(url: string): boolean {
   try { const u = new URL(url); return RESALE_HOSTS.test(u.hostname + u.pathname) || RESALE_PATH.test(u.pathname); } catch { return true; }
 }
 
+// A portal search page lists individual sellers next to developer ventures. A candidate found
+// ONLY on such portals, naming neither a builder nor an approval number, may be a private seller:
+// it is dropped rather than risk listing someone's own property.
+const PORTALS = /(^|\.)(99acres\.com|magicbricks\.com|housing\.com|squareyards\.com|makaan\.com|proptiger\.com|nobroker\.in|commonfloor\.com|bayut\.com|propertyfinder\.ae)$/i;
+export function mayBeIndividualSeller(f: { builder?: unknown[]; approvalNumber?: unknown[] } & Record<string, { sourceUrl: string }[] | undefined>): boolean {
+  if (f.builder?.length || f.approvalNumber?.length) return false;
+  const urls = Object.values(f).flat().map((x) => (x as { sourceUrl: string }).sourceUrl);
+  return urls.length > 0 && urls.every((u) => { try { return PORTALS.test(new URL(u).hostname.replace(/^www\./, "")); } catch { return false; } });
+}
+
 // Phone numbers and emails are removed from page text BEFORE the AI sees it, so no one's contact
 // details can be extracted or stored.
 export function redactContacts(text: string): string {
