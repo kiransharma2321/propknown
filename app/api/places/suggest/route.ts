@@ -7,6 +7,9 @@ import { loadGuideAreas, sameCity } from "@/lib/areaGuides";
 // built for autocomplete -- Nominatim's policy forbids autocomplete) + projects we have checked.
 // GET /api/places/suggest?q=jurong
 const UA = "PropKnown/1.0 (raghupinnelli@gmail.com)";
+const COUNTRY: Record<string, string> = { "united arab emirates": "UAE", "united states": "USA", "united states of america": "USA" };
+const normCountry = (c: string) => COUNTRY[c.toLowerCase()] ?? c;
+const FOCUS = ["India", "UAE", "United Kingdom", "Singapore", "Canada", "USA"];
 const PLACE_KINDS = new Set(["suburb", "neighbourhood", "quarter", "city", "town", "village", "borough", "locality", "district", "hamlet"]);
 
 export async function GET(req: NextRequest) {
@@ -26,10 +29,19 @@ export async function GET(req: NextRequest) {
     const city = p.city || p.county || p.state || (p.countrycode === "SG" ? "Singapore" : "");
     const area = p.name;
     const page = pages.find((pg) => pg.area.toLowerCase() === area.toLowerCase() && sameCity(pg.city, city));
-    // Already priced (any spelling of the city, e.g. Bangalore / Bengaluru) -> open it, no new check.
-    const cached = guide.find((g) => g.area.toLowerCase() === area.toLowerCase() && sameCity(g.city, city));
-    return { area, city: city === area ? "" : city, country: p.country ?? "", label: [area, city !== area ? city : "", p.country].filter(Boolean).join(" · "), href: page ? areaPath(page) : cached?.href ?? null };
-  }).filter((p) => { const k = p.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
+    // Already priced -> open it, no new check. Match the city under any spelling (Bangalore /
+    // Bengaluru), or -- when OpenStreetMap files the area under a village or "Greater London" --
+    // the only priced area of that name in the same country.
+    const country = normCountry(p.country ?? "");
+    const sameName = guide.filter((g) => g.area.toLowerCase() === area.toLowerCase());
+    const inCountry = sameName.filter((g) => g.country === country);
+    const cached = sameName.find((g) => sameCity(g.city, city)) ?? (inCountry.length === 1 ? inCountry[0] : undefined);
+    const shownCity = cached?.city ?? (city === area ? "" : city);
+    return { area, city: shownCity, country, label: [area, shownCity, p.country].filter(Boolean).join(" · "), href: page ? areaPath(page) : cached?.href ?? null };
+  }).filter((p) => { const k = p.label.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
+    // Priced places first, then our main markets, then everywhere else.
+    .sort((a, b) => Number(!!b.href) - Number(!!a.href) || (FOCUS.indexOf(a.country) + 1 || 99) - (FOCUS.indexOf(b.country) + 1 || 99))
+    .slice(0, 6);
 
   const projects = projectRows
     .map((r) => r.data as { found?: boolean; name?: string; query?: { area?: string } } | null)
