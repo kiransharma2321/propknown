@@ -6,6 +6,13 @@ import BuyPageClient, { type Submission } from "@/components/property/BuyPageCli
 // stale snapshot to everyone until the next deploy, rather than freshly-approved listings.
 export const dynamic = "force-dynamic";
 
+// Verification flags without the internal adminFlag review note.
+function publicFlags(v: unknown): Submission["verificationFlags"] {
+  const f = { ...((v ?? {}) as Submission["verificationFlags"] & { adminFlag?: string }) };
+  delete f.adminFlag;
+  return f;
+}
+
 function inrDisplay(n: number): string {
   if (n >= 10_000_000) return `₹${+(n / 10_000_000).toFixed(2)} Cr`;
   if (n >= 100_000) return `₹${+(n / 100_000).toFixed(2)} L`;
@@ -58,7 +65,7 @@ export default async function BuyPage() {
     // Venture photos are stored as /api/files/<id> (uploaded in the Approval Queue).
     photoIds:    p.images.filter((u) => u.startsWith("/api/files/")).map((u) => u.slice("/api/files/".length)), videoIds: [], videoUrls: [],
     // adminFlag is an internal review note (admin dashboard only) -- never sent to the page.
-    verificationFlags: p.verified ? (({ adminFlag: _a, ...f }) => f)(p.verificationFlags as Submission["verificationFlags"] & { adminFlag?: string }) : {},
+    verificationFlags: p.verified ? publicFlags(p.verificationFlags) : {},
     createdAt:   p.createdAt.toISOString(),
     detailHref:  null,
     listedBy:    "propknown" as const,
