@@ -76,13 +76,12 @@ function SubmissionCard({ s }: { s: Submission }) {
             <Building2 size={40} />
           </div>
         )}
-        <div className="absolute top-2 left-2">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${approval.verified ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+        {/* One row: the approval label wraps instead of running under the "New" tag. */}
+        <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2">
+          <span className={`min-w-0 text-[10px] leading-snug font-bold px-2 py-0.5 rounded border ${approval.verified ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
             {approval.text}
           </span>
-        </div>
-        <div className="absolute top-2 right-2">
-          <span className="flex items-center gap-1 bg-black/70 text-xs font-bold px-2 py-1 rounded-full text-gray-200">
+          <span className="shrink-0 flex items-center gap-1 bg-black/70 text-xs font-bold px-2 py-1 rounded-full text-gray-200">
             <Clock size={9} /> New
           </span>
         </div>
@@ -282,7 +281,7 @@ function BuyPageInner({ initialSubmissions }: { initialSubmissions: Submission[]
         {filteredSubs.length > 0 && (
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-5">
-              <h2 className="heading-h3">Owner-Listed Properties</h2>
+              <h2 className="heading-h3">Verified Listings</h2>
               <span className="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{filteredSubs.length} new</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
