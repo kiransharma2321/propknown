@@ -6,6 +6,8 @@ import { leadAttribution, ATTRIBUTION_COOKIE } from "@/lib/attribution";
 import { notifyNewLead } from "@/lib/notifications";
 import { toIndianWaNumber } from "@/lib/phone";
 import { getAdminSession, canRole } from "@/lib/rbac";
+import { FEATURES } from "@/lib/features";
+import { recordConsentAndWelcome } from "@/lib/whatsapp/automation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,6 +57,12 @@ export async function POST(req: NextRequest) {
     notifyNewLead({ id: lead.id, name, source: src, phone })
       .then(() => console.log(`[leads] Bell notification created for lead ${lead.id}`))
       .catch((e) => console.error(`[leads] Bell notification FAILED for lead ${lead.id}:`, e));
+
+    // M12: WhatsApp consent (only when the visitor ticked the box) -> logged + welcome template.
+    if (FEATURES.whatsapp && body.whatsappConsent === true) {
+      await recordConsentAndWelcome({ leadId: lead.id, phone, name, source: src, ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null })
+        .catch((e) => console.error(`[leads] WhatsApp consent/welcome failed for lead ${lead.id}:`, e instanceof Error ? e.message : e));
+    }
 
     // wa.me links — one to message the lead directly, one to notify Raghu with the full
     // lead summary pre-filled (his own number, for logging/forwarding to whoever follows up)

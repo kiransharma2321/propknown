@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import WhatsAppConsent from "@/components/ui/WhatsAppConsent";
 import { Send, CheckCircle } from "lucide-react";
 import { useCallbackText } from "@/components/useCallbackText";
 
@@ -18,6 +19,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [waConsent, setWaConsent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, source, propertyId }),
+        body: JSON.stringify({ ...form, source, propertyId, whatsappConsent: waConsent }),
       });
       if (res.ok) { setSuccess(true); setForm({ name: "", phone: "", email: "", message: "" }); }
       else { setError("Something went wrong. Please try again."); }
@@ -114,6 +116,7 @@ export default function LeadForm({ source, propertyId, title = "Get Expert Advic
             onChange={(e) => setForm({ ...form, message: e.target.value })}
           />
         </div>
+        <WhatsAppConsent checked={waConsent} onChange={setWaConsent} dark={dark} />
         {error && <p className={dark ? "text-red-400 text-sm" : "error-text"}>{error}</p>}
         <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
           {loading ? (

@@ -925,3 +925,63 @@ model InfraProject {
   @@index([citySlug])
   @@map("infra_projects")
 }
+
+// M12: WhatsApp on Meta's official WhatsApp Cloud API (no BSP). A contact can only receive
+// business-initiated messages after explicit, logged consent; "STOP" opts out immediately.
+model WhatsAppContact {
+  phone             String    @id // digits only, with country code (e.g. 919876543210)
+  leadId            String?
+  name              String?
+  consentAt         DateTime?
+  consentSource     String? // where consent was given, e.g. "price-check form"
+  consentText       String? // the exact wording the person agreed to
+  consentIp         String?
+  optedOutAt        DateTime?
+  aiEnabled         Boolean   @default(true)
+  humanTakeoverAt   DateTime?
+  lastInboundAt     DateTime? // opens Meta's 24-hour window for free-form replies
+  followupStep      Int       @default(0) // 0 none, 1 welcome sent, 2 day-2 sent, 3 day-5 sent
+  followupStartedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([leadId])
+  @@map("whatsapp_contacts")
+}
+
+model WhatsAppMessage {
+  id           String    @id @default(cuid())
+  phone        String
+  leadId       String?
+  direction    String // in | out
+  kind         String // text | template | other
+  body         String?   @db.Text
+  templateName String?
+  waMessageId  String?   @unique
+  status       String // received | sent | delivered | read | failed | blocked
+  error        String?
+  byAi         Boolean   @default(false)
+  sentBy       String?
+  createdAt    DateTime  @default(now())
+  statusAt     DateTime?
+
+  @@index([phone, createdAt])
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppTemplate {
+  id          String    @id @default(cuid())
+  name        String    @unique // lowercase_with_underscores, as Meta requires
+  language    String    @default("en")
+  category    String // MARKETING | UTILITY
+  body        String    @db.Text // with {{1}}, {{2}} placeholders
+  example     Json? // sample values for the placeholders (Meta needs them)
+  status      String    @default("draft") // draft | PENDING | APPROVED | REJECTED | PAUSED
+  metaId      String?
+  reason      String?
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("whatsapp_templates")
+}

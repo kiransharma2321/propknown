@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import WhatsAppConsent from "@/components/ui/WhatsAppConsent";
 import { Send, CheckCircle } from "lucide-react";
 import { useContextualWhatsApp } from "@/components/useContextualWhatsApp";
 import { useCallbackText } from "@/components/useCallbackText";
@@ -30,6 +31,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError]     = useState("");
+  const [waConsent, setWaConsent] = useState(false);
 
   const [qual, setQual] = useState({
     propertyType: "", budget: "", location: "", timeline: "",
@@ -54,7 +56,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...contact, source, propertyId,
+          ...contact, source, propertyId, whatsappConsent: waConsent,
           message: [qualText, contact.message].filter(Boolean).join("\n"),
         }),
       });
@@ -226,6 +228,7 @@ export default function SmartLeadForm({ formType, source, propertyId, title, sub
               <textarea id={`smartlead-message-${source}`} className={`${inp} resize-none`} rows={3} placeholder="Any specific requirements or questions?" value={contact.message} onChange={e => setContact(c => ({ ...c, message: e.target.value }))} />
             </div>
 
+            <WhatsAppConsent checked={waConsent} onChange={setWaConsent} />
             {error && <p className="error-text">{error}</p>}
 
             <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
