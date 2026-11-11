@@ -120,3 +120,27 @@ export async function reject(_prev: ActionState, form: FormData): Promise<Action
     return { ok: true, message: "Rejected." };
   } catch (e) { return fail(e); }
 }
+
+// Bulk approve (Listing Researcher): publishes eligible drafts WITHOUT the Verified badge.
+export async function bulkPublishAction(form: FormData) {
+  const s = await session();
+  const { publishUnverified } = await import("@/lib/listings/drafts");
+  for (const id of form.getAll("ids").map(String).slice(0, 100)) {
+    try {
+      const p = await publishUnverified(id, s.name);
+      logAudit({ actorId: s.userId, actorName: s.name, action: "listing_draft.bulk_publish", entity: "ListingDraft", entityId: id, details: { propertyId: p.id } }).catch(() => null);
+    } catch { /* not eligible any more: skipped */ }
+  }
+  revalidatePath("/admin/approval-queue"); revalidatePath("/buy");
+}
+
+// "Request builder details": an outreach task for a person to send (nothing is emailed automatically).
+export async function requestDetailsAction(form: FormData) {
+  await session();
+  const id = String(form.get("id"));
+  const d = await prisma.listingDraft.findUniqueOrThrow({ where: { id } });
+  const missing = ((d.checks ?? {}) as { missing?: string[] }).missing ?? [];
+  await prisma.outreachTask.create({ data: { draftId: d.id, kind: "request_details", builder: d.builder, website: d.builderWebsite, projectName: d.projectName,
+    notes: `Ask for: ${[...missing, "photos with permission to use them"].join(", ")}. ${String(form.get("note") ?? "").slice(0, 500)}`.trim() } });
+  revalidatePath(`/admin/approval-queue/${id}`);
+}

@@ -32,6 +32,8 @@ export const FEATURES = {
   socialHub: process.env.NEXT_PUBLIC_FEATURE_SOCIAL_HUB === "true",
   /** M12: WhatsApp (Meta Cloud API) -- consent box on lead forms, webhook, automations, admin inbox. */
   whatsapp: process.env.NEXT_PUBLIC_FEATURE_WHATSAPP === "true",
+  /** Auto Listing Researcher: daily project discovery -> Approval Queue, broker portal, re-checks. */
+  listingResearcher: process.env.NEXT_PUBLIC_FEATURE_LISTING_RESEARCHER === "true",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireMasterPage } from "@/lib/adminGuard";
 import { normaliseChecklist } from "@/lib/listings/checklist";
 import { DraftEditor, ReviewActions, type DraftView } from "../forms";
+import ResearchFacts from "./ResearchFacts";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ export default async function DraftPage({ params }: { params: { id: string } }) 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <DraftEditor d={view} />
         <div className="space-y-4">
+          {d.facts && <ResearchFacts id={d.id} facts={d.facts as Record<string, { value: string; sourceUrl: string; capturedAt: string }[]>} checks={d.checks as Record<string, unknown> | null} confidence={d.confidence} open={d.reviewStatus === "draft"} />}
           {photos.length > 0 && (
             <div className="card-dark p-3 grid grid-cols-3 gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}

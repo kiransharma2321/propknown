@@ -169,10 +169,19 @@ export async function approveDraft(id: string, reviewer: string) {
   const layout = d.approvalNumber && d.approvalAuthority && d.approvalAuthority !== "RERA" ? { layoutApproved: true, layoutBadge: d.approvalAuthority, layoutNumber: d.approvalNumber } : {};
   const pc = (d.aiPriceCheck ?? {}) as { status?: string; verdict?: string; checkedAt?: string; marketPerSqft?: number; range?: [number, number] };
   const fair = pc.status === "done" && pc.verdict === "fair" && pc.checkedAt ? { fairPrice: { checkedAt: pc.checkedAt, marketPerSqft: pc.marketPerSqft, range: pc.range } } : {};
+  // A re-check draft updates the listing it was made for (facts that changed), not a new one.
+  if (d.recheckOfPropertyId) {
+    const property = await prisma.property.update({ where: { id: d.recheckOfPropertyId }, data: {
+      description: [d.description, d.priceNote ? `Price: ${d.priceNote}` : null].filter(Boolean).join("\n\n") || null,
+      expectedCompletion: d.possessionDate, ...(d.reraNumber ? { reraNumber: d.reraNumber } : {}),
+    } });
+    await prisma.listingDraft.update({ where: { id }, data: { reviewStatus: "approved", reviewedBy: reviewer, reviewedAt: new Date(), propertyId: property.id } });
+    return property;
+  }
   const property = await prisma.property.create({
     data: {
       title: [d.projectName, d.configuration].filter(Boolean).join(" — "),
-      description: [d.description, d.priceNote ? `Price as stated by the owner: ${d.priceNote}` : null].filter(Boolean).join("\n\n") || null, location: d.location ?? d.city ?? "", city: d.city ?? "", state: d.state ?? "",
+      description: [d.description, d.priceNote ? (d.origin === "venture" ? `Price as stated by the owner: ${d.priceNote}` : `Price: ${d.priceNote}`) : null].filter(Boolean).join("\n\n") || null, location: d.location ?? d.city ?? "", city: d.city ?? "", state: d.state ?? "",
       price: d.price ?? 0, currency: d.currency, sqft: d.sizeSqft, propertyType: d.propertyType, listingType: "sale",
       reraNumber: d.reraNumber, images: photos, amenities: [], status: "approved",
       verified: true, reraVerified: !!d.reraNumber, accuratePrice: !!d.price, ownerConsent: true,
@@ -189,6 +198,29 @@ export async function approveDraft(id: string, reviewer: string) {
     where: { id },
     data: { reviewStatus: "approved", reviewedBy: reviewer, reviewedAt: new Date(), propertyId: property.id },
   });
+  return property;
+}
+
+// Bulk publish (Auto Listing Researcher): high-confidence researched drafts with no conflicts and
+// no duplicate go live WITHOUT the Verified badge -- the card shows the approval number as "not
+// yet verified" (or "Approval details pending") until a reviewer completes the 10-point checklist.
+export const BULK_MIN_CONFIDENCE = 75;
+export function bulkEligible(d: { origin: string; reviewStatus: string; confidence: number | null; checks: unknown; location: string | null; city: string | null }): boolean {
+  const c = (d.checks ?? {}) as { conflicts?: string[]; duplicateOf?: string | null };
+  return d.origin === "research" && d.reviewStatus === "draft" && (d.confidence ?? 0) >= BULK_MIN_CONFIDENCE && !(c.conflicts?.length) && !c.duplicateOf && !!(d.location || d.city);
+}
+
+export async function publishUnverified(id: string, reviewer: string) {
+  const d = await prisma.listingDraft.findUniqueOrThrow({ where: { id } });
+  if (!bulkEligible(d)) throw new DraftError(`${d.projectName}: not eligible for bulk publishing.`);
+  const property = await prisma.property.create({ data: {
+    title: [d.projectName, d.configuration].filter(Boolean).join(" — "),
+    description: [d.description, d.priceNote ? `Price: ${d.priceNote}` : null].filter(Boolean).join("\n\n") || null,
+    location: d.location ?? d.city ?? "", city: d.city ?? "", state: d.state ?? "", price: 0, currency: d.currency, sqft: d.sizeSqft,
+    propertyType: d.propertyType, listingType: "sale", reraNumber: d.reraNumber, images: [], amenities: [], status: "approved",
+    verified: false, reraVerified: false, accuratePrice: false, ownerConsent: false, expectedCompletion: d.possessionDate, verificationFlags: {},
+  } });
+  await prisma.listingDraft.update({ where: { id }, data: { reviewStatus: "approved", reviewedBy: `bulk (unverified): ${reviewer}`, reviewedAt: new Date(), propertyId: property.id } });
   return property;
 }
 

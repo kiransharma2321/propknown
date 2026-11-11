@@ -21,6 +21,8 @@ const LINKS = [
   { href: "/admin/automation/insights", label: "Business Insights" },
   { href: "/admin/automation/social-hub", label: "Social Media Hub" },
   { href: "/admin/automation/whatsapp", label: "WhatsApp" },
+  { href: "/admin/automation/listing-research", label: "Listing Research" },
+  { href: "/admin/automation/brokers", label: "Brokers" },
 ];
 
 export default async function AutomationLayout({ children }: { children: React.ReactNode }) {
